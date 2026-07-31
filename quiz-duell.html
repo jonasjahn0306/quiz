@@ -329,6 +329,20 @@
           und hier einfügen:</li>
     </ol>
     <textarea id="fbIn" rows="7" placeholder='const firebaseConfig = {&#10;  apiKey: "AIza…",&#10;  databaseURL: "https://…firebasedatabase.app",&#10;  …&#10;};'></textarea>
+
+    <div class="hide" id="fbRules" style="margin-top:18px">
+      <div class="okbox">
+        <b>Lösung:</b> Firebase-Konsole öffnen → links <b>Realtime Database</b> → oben Reiter
+        <b>Regeln</b> (englisch: <i>Rules</i>) → den kompletten Inhalt durch das hier ersetzen →
+        <b>Veröffentlichen</b>. Danach hier auf „Erneut versuchen“.
+      </div>
+      <div class="box">
+        <label>Diese Regeln einsetzen</label>
+        <textarea id="fbRulesTxt" rows="8" readonly></textarea>
+      </div>
+      <button class="ghost" style="width:100%" id="fbRulesCopy">Regeln kopieren</button>
+    </div>
+
     <button class="big" id="fbSave">Speichern und Raum erstellen</button>
     <div style="margin-top:14px"><button class="linkbtn" id="fbBack">Abbrechen</button></div>
   </div>
@@ -687,6 +701,41 @@ function buildNames() {
 const pool = () => cfg.diff === "mix" ? BANK : BANK.filter(q => q.d === +cfg.diff);
 const maxPerPlayer = () => cfg.mode === "alt" ? Math.floor(pool().length / cfg.np) : pool().length;
 
+/* ================= Fragen-Gedächtnis =================
+   Merkt sich die zuletzt gestellten Fragen, damit sie sich
+   über mehrere Spiele hinweg nicht wiederholen (LRU).       */
+const SEEN_KEY = "quizduell.seen";
+function seenList() {
+  try { const a = JSON.parse(localStorage.getItem(SEEN_KEY) || "[]");
+        return Array.isArray(a) ? a.filter(i => Number.isInteger(i) && BANK[i]) : []; }
+  catch (e) { return []; }
+}
+function markSeen(idxs) {
+  const keep = seenList().filter(i => !idxs.includes(i)).concat(idxs);
+  try { localStorage.setItem(SEEN_KEY, JSON.stringify(keep.slice(-BANK.length))); } catch (e) {}
+  renderHint();
+  return idxs;
+}
+function resetSeen() {
+  try { localStorage.removeItem(SEEN_KEY); } catch (e) {}
+  renderHint();
+}
+/* Rang je Index: je kleiner, desto länger her. Noch nie gestellte fehlen ganz. */
+function seenRank() {
+  const r = {}; seenList().forEach((i, pos) => r[i] = pos); return r;
+}
+/* Noch nie gestellte zuerst (zufällig), danach die am längsten zurückliegenden. */
+function freshFirst(arr) {
+  const rank = seenRank();
+  const fresh = shuffle(arr.filter(i => !(i in rank)));
+  const old = arr.filter(i => i in rank).sort((a, b) => rank[a] - rank[b]);
+  return [...fresh, ...old];
+}
+function freshCount() {
+  const rank = seenRank();
+  return pool().map(q => BANK.indexOf(q)).filter(i => !(i in rank)).length;
+}
+
 function updateAvail() {
   $("fPlayers").classList.toggle("hide", SOLO());
   $("lblLen").textContent = cfg.mode === "alt" ? "Fragen pro Spieler" : "Anzahl Fragen";
@@ -706,11 +755,23 @@ function updateAvail() {
     if (pick) { pick.classList.add("on"); cfg.len = +pick.dataset.v; }
   } else cfg.len = +chips.find(c => c.classList.contains("on")).dataset.v;
 
+  renderHint(mp);
+}
+
+function renderHint(mp) {
+  if (mp === undefined) mp = maxPerPlayer();
   const dn = cfg.diff === "mix" ? "gemischt" : DIFF[cfg.diff].n;
-  $("availHint").innerHTML =
+  const base =
     cfg.mode === "alt" ? `${pool().length} Fragen (${dn}) im Pool, jeder bekommt eigene – max. <b>${mp}</b> pro Spieler bei ${cfg.np} Spielern.`
     : cfg.mode === "seq" ? `Alle spielen dieselben Fragen – max. <b>${mp}</b> möglich (${dn}).`
     : `Du spielst diese Fragen zuerst, dein Gegner bekommt exakt dieselben – max. <b>${mp}</b> (${dn}).`;
+  const fresh = freshCount();
+  const memo = fresh
+    ? `Davon <b>${fresh}</b> noch nie gestellt – die kommen zuerst.`
+    : `Alle Fragen waren schon dran – es kommen jetzt die am längsten zurückliegenden. <a href="#" id="resetSeen">Gedächtnis leeren</a>`;
+  $("availHint").innerHTML = base + "<br>" + memo;
+  const rs = $("resetSeen");
+  if (rs) rs.onclick = e => { e.preventDefault(); resetSeen(); };
 }
 
 function wireChips(boxId, key, after) {
@@ -742,17 +803,35 @@ updateAvail();
 /* ================= Fragen ziehen ================= */
 function drawIdx(n) {
   const src = pool().map(q => BANK.indexOf(q));
-  if (cfg.diff !== "mix") return shuffle(src).slice(0, n);
+  if (cfg.diff !== "mix") return markSeen(freshFirst(src).slice(0, n));
+  const rank = seenRank();
   const byDiff = {1:[],2:[],3:[]};
   src.forEach(i => byDiff[BANK[i].d].push(i));
-  [1,2,3].forEach(d => byDiff[d] = shuffle(byDiff[d]));
-  let want = {1: Math.round(n*.45), 2: Math.round(n*.40), 3: 0};
+  [1,2,3].forEach(d => byDiff[d] = freshFirst(byDiff[d]));
+
+  const want = {1: Math.round(n*.45), 2: Math.round(n*.40), 3: 0};
   want[3] = n - want[1] - want[2];
-  const out = [];
-  [1,2,3].forEach(d => { for (let i = 0; i < want[d] && byDiff[d].length; i++) out.push(byDiff[d].pop()); });
-  const rest = shuffle([...byDiff[1], ...byDiff[2], ...byDiff[3]]);
-  while (out.length < n && rest.length) out.push(rest.pop());
-  return shuffle(out).slice(0, n);
+
+  const out = [], used = new Set();
+  const take = i => { used.add(i); out.push(i); };
+  const left = (d, onlyFresh) =>
+    byDiff[d].filter(i => !used.has(i) && !(onlyFresh && i in rank));
+  const missing = d => want[d] - out.filter(i => BANK[i].d === d).length;
+
+  /* 1. Wunschmischung – aber nur mit Fragen, die noch nie dran waren. */
+  [1,2,3].forEach(d => left(d, true).slice(0, want[d]).forEach(take));
+  /* 2. Lücken: lieber die Mischung verletzen als eine Frage wiederholen. */
+  const fresh = shuffle([1,2,3].flatMap(d => left(d, true)));
+  while (out.length < n && fresh.length) take(fresh.shift());
+  /* 3. Pool erschöpft – Wunschmischung mit den ältesten Fragen auffüllen. */
+  [1,2,3].forEach(d => {
+    const m = Math.min(missing(d), n - out.length);
+    if (m > 0) left(d, false).slice(0, m).forEach(take);
+  });
+  const rest = [1,2,3].flatMap(d => left(d, false)).sort((a, b) => rank[a] - rank[b]);
+  while (out.length < n && rest.length) take(rest.shift());
+
+  return markSeen(shuffle(out).slice(0, n));
 }
 
 const scoreOf = (idxs, res) => idxs.reduce((s, qi, j) => s + (res[j] ? DIFF[BANK[qi].d].p : 0), 0);
@@ -803,6 +882,7 @@ function openInvite(pl) {
 $("invGo").onclick = () => {
   const pl = pending;
   const me = ($("invName").value || "").trim() || "Du";
+  markSeen(pl.q);
   G = {
     names: [me], np: 1, mode: "link", perPlayer: pl.q.length, time: pl.t,
     qIdx: pl.q, score: [0], right: [0], res: [[]], cat: {},
@@ -1173,13 +1253,26 @@ async function connect() {
 const now = () => Date.now() + srvOff;
 
 /* ---- Einrichtung ---- */
-function showFbSetup(msg) {
+const RULES = `{
+  "rules": {
+    "rooms": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}`;
+
+function showFbSetup(msg, rules) {
   only("fbsetup");
   const e = $("fbErr");
-  if (msg) { e.innerHTML = "<b>" + esc(msg) + "</b>"; e.style.display = ""; } else e.style.display = "none";
+  if (msg) { e.innerHTML = "<b>" + msg + "</b>"; e.style.display = ""; } else e.style.display = "none";
+  $("fbRules").classList.toggle("hide", !rules);
+  $("fbRulesTxt").value = RULES;
+  $("fbSave").textContent = rules ? "Erneut versuchen" : "Speichern und Raum erstellen";
   const c = liveCfg();
   if (c) $("fbIn").value = JSON.stringify(c, null, 2);
 }
+$("fbRulesCopy").onclick = () => copyOut("fbRulesTxt", "fbRulesCopy");
 $("fbBack").onclick = () => only("setup");
 $("fbSave").onclick = () => {
   const raw = ($("fbIn").value || "").trim();
@@ -1203,15 +1296,38 @@ async function liveCreate() {
   catch (e) { return showFbSetup(e.message === "nocfg" ? null : e.message); }
   const code = rnd(4), me = rnd(9), q = drawIdx(cfg.len);
   try {
-    await d.ref("rooms/" + code).set({
+    await withTimeout(d.ref("rooms/" + code).set({
       host: me, state: "lobby", time: cfg.time, q, cur: -1,
       created: firebase.database.ServerValue.TIMESTAMP,
       players: { [me]: { name, ts: firebase.database.ServerValue.TIMESTAMP } }
-    });
+    }), 9000);
   } catch (e) {
-    return showFbSetup("Schreiben in die Datenbank nicht erlaubt. Prüfe in der Firebase-Konsole unter Realtime Database → Regeln, ob der Testmodus aktiv ist.");
+    return showFbSetup(fbError(e), isDenied(e));
   }
   enterRoom(code, me, name, true);
+}
+
+/* Firebase-Fehler in Klartext übersetzen */
+function withTimeout(p, ms) {
+  return Promise.race([p, new Promise((_, rej) =>
+    setTimeout(() => rej(new Error("__timeout")), ms))]);
+}
+const isDenied = e => {
+  const t = ((e && (e.code || e.message)) || "").toString().toUpperCase();
+  return t.includes("PERMISSION") || t.includes("DENIED");
+};
+function fbError(e) {
+  const raw = (e && (e.message || e.code) || "").toString();
+  if (isDenied(e))
+    return "Firebase verweigert den Zugriff (PERMISSION_DENIED). Das heißt: Die Datenbank steht auf „gesperrt“ – "
+         + "entweder wurde beim Anlegen <i>Im gesperrten Modus starten</i> gewählt, oder der 30-Tage-Testmodus ist abgelaufen.";
+  if (raw === "__timeout")
+    return "Keine Antwort von der Datenbank. Das passiert, wenn die <i>databaseURL</i> nicht zur angelegten Datenbank passt "
+         + "(z.B. falsche Region) oder die Internetverbindung hängt. Prüfe die URL in den Projekteinstellungen.";
+  if (/database.*(not|doesn).*exist|no.*database/i.test(raw))
+    return "Zu dieser Adresse gibt es keine Realtime Database. Hast du vielleicht <i>Cloud Firestore</i> statt "
+         + "<i>Realtime Database</i> angelegt? Beides sind verschiedene Produkte – für das Quiz braucht es die Realtime Database.";
+  return "Verbindung fehlgeschlagen: " + esc(raw || "unbekannter Fehler");
 }
 
 /* ---- Raum beitreten ---- */
@@ -1220,7 +1336,7 @@ function showJoin(code, msg) {
   $("joinCode").value = code || "";
   $("joinSub").textContent = code ? "Du wurdest in Raum " + code + " eingeladen." : "Gib den Code ein, den dir dein Mitspieler geschickt hat.";
   const e = $("joinErr");
-  if (msg) { e.innerHTML = "<b>" + esc(msg) + "</b>"; e.style.display = ""; } else e.style.display = "none";
+  if (msg) { e.innerHTML = "<b>" + msg + "</b>"; e.style.display = ""; } else e.style.display = "none";
   ($("joinName").value ? $("joinGo") : $("joinName")).focus();
 }
 $("joinBack").onclick = () => { location.hash = ""; only("setup"); };
@@ -1232,13 +1348,16 @@ $("joinGo").onclick = async () => {
   let d;
   try { d = await connect(); } catch (e) { return showJoin(code, e.message); }
   let snap;
-  try { snap = await d.ref("rooms/" + code).once("value"); }
-  catch (e) { return showJoin(code, "Kein Zugriff auf die Datenbank. Sind die Regeln im Testmodus?"); }
+  try { snap = await withTimeout(d.ref("rooms/" + code).once("value"), 9000); }
+  catch (e) { return isDenied(e) ? showFbSetup(fbError(e), true) : showJoin(code, fbError(e)); }
   const v = snap.val();
   if (!v) return showJoin(code, "Diesen Raum gibt es nicht. Tippfehler im Code?");
   if (v.state === "done") return showJoin(code, "Diese Runde ist schon vorbei. Lass dir einen neuen Raum öffnen.");
   const me = rnd(9);
-  await d.ref("rooms/" + code + "/players/" + me).set({ name, ts: firebase.database.ServerValue.TIMESTAMP });
+  try {
+    await withTimeout(d.ref("rooms/" + code + "/players/" + me)
+      .set({ name, ts: firebase.database.ServerValue.TIMESTAMP }), 9000);
+  } catch (e) { return isDenied(e) ? showFbSetup(fbError(e), true) : showJoin(code, fbError(e)); }
   enterRoom(code, me, name, false);
 };
 
@@ -1330,6 +1449,8 @@ function liveScores(v) {
 /* ---- Synchronisierung während des Spiels ---- */
 function liveSync() {
   const v = LV.room;
+  /* Fragen des Raums einmalig ins Gedächtnis – auch beim Gast. */
+  if (!LV.marked && Array.isArray(v.q)) { LV.marked = true; markSeen(v.q); }
   if (v.cur !== LV.cur) {
     LV.cur = v.cur; LV.answered = false; LV.revealed = false; LV.timerFor = null;
     liveRenderQ();

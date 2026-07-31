@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz-Duell – Allgemeinwissen für 2 bis 4 Spieler</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1020;
+    --card2: #232647;
+    --line: #33375f;
+    --txt: #eef0ff;
+    --dim: #9298c4;
+    --p1: #47c2ff;
+    --p2: #ff7ab8;
+    --p3: #3ddc84;
+    --p4: #ffcf5c;
+    --ok: #3ddc84;
+    --no: #ff5a6e;
+    --gold: #ffcf5c;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(1200px 700px at 15% -10%, #26295a 0%, transparent 60%),
+                radial-gradient(1000px 600px at 90% 110%, #4a2050 0%, transparent 60%),
+                var(--bg);
+    color: var(--txt);
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 18px;
+  }
+  .wrap { width: 100%; max-width: 780px; }
+  .panel {
+    background: rgba(26,28,53,.85);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 28px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 24px 60px rgba(0,0,0,.45);
+  }
+  h1 { font-size: 2.1rem; letter-spacing: -.02em; margin-bottom: 6px; }
+  h1 span { background: linear-gradient(90deg, var(--p1), var(--p2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: var(--dim); margin-bottom: 24px; font-size: .95rem; line-height: 1.5; }
+  label { display: block; font-size: .78rem; text-transform: uppercase; letter-spacing: .09em; color: var(--dim); margin-bottom: 7px; }
+  .hint { font-size: .82rem; color: var(--dim); margin-top: 8px; line-height: 1.45; }
+  .hint b { color: var(--gold); }
+  input[type=text], textarea {
+    width: 100%; padding: 12px 14px; border-radius: 11px;
+    border: 1px solid var(--line); background: #14162e; color: var(--txt);
+    font-size: 1rem; outline: none; font-family: inherit;
+  }
+  input[type=text]:focus, textarea:focus { border-color: var(--p1); }
+  textarea { resize: vertical; font-size: .82rem; line-height: 1.5; word-break: break-all; }
+  .names { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .names .nf { position: relative; }
+  .names .dot { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 9px; height: 9px; border-radius: 99px; }
+  .field { margin-bottom: 20px; }
+  .chips { display: flex; gap: 9px; flex-wrap: wrap; }
+  .chip {
+    padding: 10px 17px; border-radius: 999px; border: 1px solid var(--line);
+    background: #14162e; color: var(--dim); cursor: pointer; font-size: .93rem;
+    transition: .15s; user-select: none;
+  }
+  .chip:hover:not(.off) { border-color: var(--p1); color: var(--txt); }
+  .chip.on { background: linear-gradient(90deg, var(--p1), var(--p2)); color: #0f1020; border-color: transparent; font-weight: 600; }
+  .chip.off { opacity: .3; cursor: not-allowed; }
+  .modes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 11px; }
+  .mode {
+    padding: 15px; border-radius: 14px; border: 1px solid var(--line); background: #14162e;
+    cursor: pointer; transition: .15s;
+  }
+  .mode:hover { border-color: var(--p1); }
+  .mode.on { border-color: transparent; background: linear-gradient(135deg, rgba(71,194,255,.18), rgba(255,122,184,.18)); box-shadow: inset 0 0 0 2px var(--p1); }
+  .mode .mt { font-weight: 600; margin-bottom: 5px; font-size: .95rem; }
+  .mode .md { font-size: .8rem; color: var(--dim); line-height: 1.4; }
+  button.big {
+    width: 100%; padding: 16px; border-radius: 13px; border: 0; cursor: pointer;
+    background: linear-gradient(90deg, var(--p1), var(--p2));
+    color: #0f1020; font-size: 1.05rem; font-weight: 700; margin-top: 8px;
+    transition: transform .12s;
+  }
+  button.big:hover { transform: translateY(-2px); }
+  button.ghost {
+    padding: 13px 22px; border-radius: 11px; cursor: pointer;
+    background: transparent; border: 1px solid var(--line); color: var(--txt); font-size: .95rem;
+  }
+  button.ghost:hover { border-color: var(--p1); }
+  .linkbtn { background: none; border: 0; color: var(--p1); cursor: pointer; font-size: .86rem; text-decoration: underline; padding: 0; font-family: inherit; }
+  .divider { border-top: 1px solid var(--line); margin: 22px 0 20px; }
+
+  /* scoreboard */
+  .score { display: flex; gap: 9px; margin-bottom: 18px; }
+  .pcard {
+    flex: 1; min-width: 0; background: var(--card2); border: 2px solid transparent;
+    border-radius: 14px; padding: 11px 13px; transition: .2s;
+  }
+  .pcard .nm { font-size: .8rem; color: var(--dim); margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pcard .pt { font-size: 1.5rem; font-weight: 700; }
+  .pcard.active { box-shadow: 0 0 22px rgba(255,255,255,.12); }
+
+  .bar { height: 6px; background: #14162e; border-radius: 99px; overflow: hidden; margin-bottom: 20px; }
+  .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--p1), var(--p2)); width: 0; transition: width .3s; }
+
+  .meta { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .tag { font-size: .75rem; padding: 5px 11px; border-radius: 99px; background: #14162e; border: 1px solid var(--line); color: var(--dim); }
+  .tag.d1 { color: var(--ok); border-color: rgba(61,220,132,.4); }
+  .tag.d2 { color: var(--gold); border-color: rgba(255,207,92,.4); }
+  .tag.d3 { color: var(--no); border-color: rgba(255,90,110,.4); }
+  .timer { margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1.05rem; }
+  .timer.warn { color: var(--no); }
+
+  .turn { font-size: .9rem; color: var(--dim); margin-bottom: 8px; }
+  .turn b { color: var(--txt); }
+  .q { font-size: 1.42rem; line-height: 1.35; margin-bottom: 22px; letter-spacing: -.01em; }
+
+  .opts { display: grid; gap: 11px; }
+  .opt {
+    text-align: left; padding: 15px 17px; border-radius: 13px;
+    border: 1px solid var(--line); background: #14162e; color: var(--txt);
+    font-size: 1rem; cursor: pointer; transition: .13s; display: flex; gap: 12px; align-items: center;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--p1); background: #1b1e3d; }
+  .opt .k {
+    width: 26px; height: 26px; flex: 0 0 26px; border-radius: 7px; background: #262a52;
+    display: grid; place-items: center; font-size: .8rem; font-weight: 700; color: var(--dim);
+  }
+  .opt.correct { border-color: var(--ok); background: rgba(61,220,132,.13); }
+  .opt.correct .k { background: var(--ok); color: #0f1020; }
+  .opt.wrong { border-color: var(--no); background: rgba(255,90,110,.13); }
+  .opt.wrong .k { background: var(--no); color: #fff; }
+  .opt.chosen { border-color: var(--p1); background: #1b1e3d; }
+  .opt.chosen .k { background: var(--p1); color: #0f1020; }
+  .opt:disabled { cursor: default; }
+
+  /* live */
+  .wait { margin-top: 18px; padding: 14px 17px; border-radius: 13px; background: var(--card2);
+          font-size: .95rem; color: var(--dim); display: flex; align-items: center; gap: 11px; }
+  .dots { display: inline-flex; gap: 4px; }
+  .dots i { width: 6px; height: 6px; border-radius: 99px; background: var(--p1); animation: bl 1.2s infinite; }
+  .dots i:nth-child(2) { animation-delay: .2s } .dots i:nth-child(3) { animation-delay: .4s }
+  @keyframes bl { 0%,100% { opacity: .25 } 50% { opacity: 1 } }
+  .roomcode {
+    font-size: 2.6rem; font-weight: 800; letter-spacing: .22em; text-align: center;
+    padding: 16px; border-radius: 15px; background: #14162e; border: 1px dashed var(--line);
+    margin-bottom: 12px; color: var(--p1); font-family: ui-monospace, Menlo, Consolas, monospace;
+  }
+  .plist { display: grid; gap: 8px; margin-bottom: 18px; }
+  .prow { display: flex; align-items: center; gap: 11px; padding: 11px 14px; background: var(--card2);
+          border-radius: 12px; font-size: .95rem; text-align: left; }
+  .prow .av { width: 10px; height: 10px; border-radius: 99px; flex: 0 0 10px; }
+  .prow .pn { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .prow .tagme { font-size: .74rem; color: var(--dim); }
+  .warnbox { background: rgba(255,90,110,.1); border: 1px solid rgba(255,90,110,.35);
+             border-radius: 12px; padding: 12px 14px; font-size: .87rem; line-height: 1.5; text-align: left; margin-bottom: 16px; }
+  .okbox { background: rgba(61,220,132,.1); border: 1px solid rgba(61,220,132,.35);
+           border-radius: 12px; padding: 12px 14px; font-size: .87rem; line-height: 1.5; text-align: left; margin-bottom: 16px; }
+  ol.guide { text-align: left; color: var(--dim); font-size: .89rem; line-height: 1.75; margin: 0 0 18px 18px; }
+  ol.guide b { color: var(--txt); }
+  ol.guide code { background: #14162e; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; font-size: .85em; }
+
+  .fb { margin-top: 18px; padding: 15px 17px; border-radius: 13px; background: var(--card2); font-size: .97rem; line-height: 1.5; }
+  .fb.ok { border-left: 4px solid var(--ok); }
+  .fb.no { border-left: 4px solid var(--no); }
+  .fb b { display: block; margin-bottom: 3px; }
+
+  /* centered info panels */
+  .ctr { text-align: center; }
+  .ctr .ico { font-size: 3.4rem; margin-bottom: 14px; }
+  .ctr h2 { font-size: 1.7rem; margin-bottom: 10px; }
+  .ctr p { color: var(--dim); line-height: 1.55; margin-bottom: 20px; }
+
+  .box {
+    background: #14162e; border: 1px solid var(--line); border-radius: 13px;
+    padding: 14px; text-align: left; margin-bottom: 12px;
+  }
+  .steps { text-align: left; color: var(--dim); font-size: .88rem; line-height: 1.7; margin-bottom: 20px; }
+  .steps b { color: var(--txt); }
+
+  /* end screen */
+  .winner { text-align: center; padding: 6px 0 22px; }
+  .trophy { font-size: 3.6rem; margin-bottom: 10px; }
+  .winner h2 { font-size: 1.9rem; margin-bottom: 8px; }
+  .winner p { color: var(--dim); }
+  .rank { margin-bottom: 22px; }
+  .rrow {
+    display: flex; align-items: center; gap: 12px; padding: 13px 15px;
+    background: var(--card2); border-radius: 13px; margin-bottom: 9px;
+    border-left: 4px solid transparent;
+  }
+  .rrow .pos { font-size: 1.1rem; font-weight: 700; color: var(--dim); width: 28px; }
+  .rrow .rn { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rrow .rq { font-size: .84rem; color: var(--dim); margin-right: 10px; white-space: nowrap; }
+  .rrow .rp { font-size: 1.2rem; font-weight: 700; }
+  .catlist { margin-bottom: 22px; }
+  .catrow { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: .9rem; }
+  .catrow .cn { flex: 1; color: var(--dim); }
+  .catrow .cs { font-weight: 700; width: 30px; text-align: right; }
+
+  /* head to head */
+  .h2h { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; margin-bottom: 22px; }
+  .h2h .side { background: var(--card2); border-radius: 15px; padding: 16px 12px; text-align: center; }
+  .h2h .side .n { font-size: .88rem; color: var(--dim); margin-bottom: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .h2h .side .p { font-size: 2rem; font-weight: 700; }
+  .h2h .side .r { font-size: .78rem; color: var(--dim); margin-top: 4px; }
+  .h2h .vs { color: var(--dim); font-weight: 700; font-size: .9rem; }
+  .qlist { margin-bottom: 22px; }
+  .qrow { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: .88rem; }
+  .qrow .qt { flex: 1; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .qrow .m { width: 22px; text-align: center; font-weight: 700; }
+  .qrow .m.y { color: var(--ok); }
+  .qrow .m.n { color: var(--no); }
+  .hide { display: none !important; }
+  @media (max-width: 620px) {
+    .modes { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    .panel { padding: 20px; }
+    h1 { font-size: 1.7rem; }
+    .q { font-size: 1.2rem; }
+    .names { grid-template-columns: 1fr; }
+    .pcard .pt { font-size: 1.2rem; }
+    .pcard { padding: 9px 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ SETUP ============ -->
+  <div class="panel" id="setup">
+    <h1><span>Quiz-Duell</span></h1>
+    <p class="sub">Allgemeinwissen für 2 bis 4 Spieler – an einem Gerät oder online per Challenge-Link. Punkte nach Schwierigkeit: leicht = 1, mittel = 2, schwer = 3.</p>
+
+    <div class="field">
+      <label>Spielmodus</label>
+      <div class="modes">
+        <div class="mode on" data-mode="alt">
+          <div class="mt">Abwechselnd</div>
+          <div class="md">Reihum an einem Gerät, jeder bekommt eigene Fragen.</div>
+        </div>
+        <div class="mode" data-mode="seq">
+          <div class="mt">Nacheinander</div>
+          <div class="md">Erst spielt einer allein durch, dann die anderen mit denselben Fragen.</div>
+        </div>
+        <div class="mode" data-mode="link">
+          <div class="mt">Online-Challenge</div>
+          <div class="md">Du spielst, verschickst einen Link. Der andere spielt dieselben Fragen.</div>
+        </div>
+        <div class="mode" data-mode="live">
+          <div class="mt">Live online ⚡</div>
+          <div class="md">Raum öffnen, Code teilen, alle spielen gleichzeitig mit Live-Punktestand.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field" id="fPlayers">
+      <label>Anzahl Spieler</label>
+      <div class="chips" id="cPlayers">
+        <div class="chip on" data-v="2">2 Spieler</div>
+        <div class="chip" data-v="3">3 Spieler</div>
+        <div class="chip" data-v="4">4 Spieler</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label id="lblNames">Namen</label>
+      <div class="names" id="nameBox"></div>
+    </div>
+
+    <div class="field">
+      <label>Schwierigkeit</label>
+      <div class="chips" id="cDiff">
+        <div class="chip on" data-v="mix">Gemischt</div>
+        <div class="chip" data-v="1">Leicht</div>
+        <div class="chip" data-v="2">Mittel</div>
+        <div class="chip" data-v="3">Schwer</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label id="lblLen">Fragen pro Spieler</label>
+      <div class="chips" id="cLen">
+        <div class="chip" data-v="5">5</div>
+        <div class="chip on" data-v="10">10</div>
+        <div class="chip" data-v="15">15</div>
+        <div class="chip" data-v="20">20</div>
+        <div class="chip" data-v="30">30</div>
+      </div>
+      <div class="hint" id="availHint"></div>
+    </div>
+
+    <div class="field">
+      <label>Bedenkzeit pro Frage</label>
+      <div class="chips" id="cTime">
+        <div class="chip" data-v="15">15 Sek.</div>
+        <div class="chip on" data-v="30">30 Sek.</div>
+        <div class="chip" data-v="60">60 Sek.</div>
+        <div class="chip" data-v="0">Ohne Limit</div>
+      </div>
+    </div>
+
+    <button class="big" id="start">Spiel starten</button>
+
+    <div class="divider"></div>
+    <button class="linkbtn" id="showRedeem">Challenge erhalten? Code oder Link hier einfügen →</button>
+    <div class="hide" id="redeemBox" style="margin-top:12px">
+      <textarea id="redeemIn" rows="3" placeholder="Link oder Code einfügen…"></textarea>
+      <button class="ghost" style="width:100%;margin-top:10px" id="redeemGo">Challenge öffnen</button>
+      <div class="hint" id="redeemErr"></div>
+    </div>
+  </div>
+
+  <!-- ============ FIREBASE-EINRICHTUNG ============ -->
+  <div class="panel hide ctr" id="fbsetup">
+    <div class="ico">⚡</div>
+    <h2>Live-Modus einrichten</h2>
+    <p>Einmalig, danach nie wieder. Für das gleichzeitige Spielen braucht es eine kostenlose Datenbank,
+       die die Fragen zwischen euren Geräten synchronisiert.</p>
+    <div class="warnbox" id="fbErr" style="display:none"></div>
+    <ol class="guide">
+      <li>Auf <b>console.firebase.google.com</b> mit Google-Konto anmelden.</li>
+      <li><b>Projekt erstellen</b> → Name z.B. <code>quiz</code> → Google Analytics kannst du überspringen.</li>
+      <li>Links im Menü <b>Build → Realtime Database</b> → <b>Datenbank erstellen</b> →
+          Standort <code>europe-west1</code> → <b>Im Testmodus starten</b>.</li>
+      <li>Zahnrad oben links → <b>Projekteinstellungen</b> → runterscrollen zu <b>Meine Apps</b> →
+          Web-Symbol <code>&lt;/&gt;</code> → Name eingeben → <b>App registrieren</b>.</li>
+      <li>Den angezeigten Block <code>const firebaseConfig = { … }</code> komplett kopieren
+          und hier einfügen:</li>
+    </ol>
+    <textarea id="fbIn" rows="7" placeholder='const firebaseConfig = {&#10;  apiKey: "AIza…",&#10;  databaseURL: "https://…firebasedatabase.app",&#10;  …&#10;};'></textarea>
+    <button class="big" id="fbSave">Speichern und Raum erstellen</button>
+    <div style="margin-top:14px"><button class="linkbtn" id="fbBack">Abbrechen</button></div>
+  </div>
+
+  <!-- ============ LOBBY ============ -->
+  <div class="panel hide ctr" id="lobby">
+    <div class="ico">⚡</div>
+    <h2 id="lobTitle">Raum offen</h2>
+    <p id="lobSub">Teile den Code oder den Link – ihr spielt dann gleichzeitig.</p>
+    <div class="roomcode" id="lobCode">····</div>
+    <div class="box" id="lobLinkBox">
+      <label>Einladungs-Link</label>
+      <textarea id="lobLink" rows="3" readonly></textarea>
+    </div>
+    <button class="ghost" style="width:100%;margin-bottom:18px" id="lobCopy">Link kopieren</button>
+    <label style="text-align:left">Spieler im Raum</label>
+    <div class="plist" id="lobPlayers"></div>
+    <button class="big" id="lobStart">Spiel starten</button>
+    <div class="hint" id="lobHint"></div>
+    <div style="margin-top:14px"><button class="linkbtn" id="lobLeave">Raum verlassen</button></div>
+  </div>
+
+  <!-- ============ BEITRETEN ============ -->
+  <div class="panel hide ctr" id="join">
+    <div class="ico">⚡</div>
+    <h2 id="joinTitle">Raum beitreten</h2>
+    <p id="joinSub"></p>
+    <div class="warnbox" id="joinErr" style="display:none"></div>
+    <div style="text-align:left;margin-bottom:14px">
+      <label>Raum-Code</label>
+      <input type="text" id="joinCode" maxlength="6" placeholder="z.B. K4TM" style="text-transform:uppercase">
+    </div>
+    <div style="text-align:left;margin-bottom:18px">
+      <label>Dein Name</label>
+      <input type="text" id="joinName" maxlength="18" placeholder="Name eingeben">
+    </div>
+    <button class="big" id="joinGo">Beitreten</button>
+    <div style="margin-top:14px"><button class="linkbtn" id="joinBack">Abbrechen</button></div>
+  </div>
+
+  <!-- ============ INVITE ============ -->
+  <div class="panel hide ctr" id="invite">
+    <div class="ico">⚔️</div>
+    <h2 id="invTitle"></h2>
+    <p id="invText"></p>
+    <div style="text-align:left;margin-bottom:18px">
+      <label>Dein Name</label>
+      <input type="text" id="invName" maxlength="18" placeholder="Name eingeben">
+    </div>
+    <button class="big" id="invGo">Challenge annehmen</button>
+    <div style="margin-top:14px"><button class="linkbtn" id="invBack">Abbrechen</button></div>
+  </div>
+
+  <!-- ============ PASS (Übergabe) ============ -->
+  <div class="panel hide ctr" id="pass">
+    <div class="ico">🙈</div>
+    <h2 id="passName"></h2>
+    <p id="passText"></p>
+    <button class="big" id="passGo">Los geht's</button>
+  </div>
+
+  <!-- ============ GAME ============ -->
+  <div class="panel hide" id="game">
+    <div class="score" id="score"></div>
+    <div class="bar"><i id="prog"></i></div>
+
+    <div class="meta">
+      <span class="tag" id="tagCat"></span>
+      <span class="tag d1" id="tagDiff"></span>
+      <span class="timer" id="timer"></span>
+    </div>
+
+    <div class="turn" id="turn"></div>
+    <div class="q" id="qtext"></div>
+    <div class="opts" id="opts"></div>
+    <div class="fb hide" id="fb"></div>
+    <div class="wait hide" id="wait"></div>
+    <button class="big hide" id="next">Weiter</button>
+    <button class="ghost hide" style="width:100%;margin-top:12px" id="force">Ohne die Fehlenden weitermachen</button>
+  </div>
+
+  <!-- ============ LIVE-ERGEBNIS ============ -->
+  <div class="panel hide" id="liveEnd">
+    <div class="winner">
+      <div class="trophy" id="leTrophy">🏆</div>
+      <h2 id="leText"></h2>
+      <p id="leSub"></p>
+    </div>
+    <div class="rank" id="leRank"></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button class="ghost" style="flex:1" id="leAgain">Neuen Raum öffnen</button>
+      <button class="ghost" style="flex:1" id="leHome">Zurück zum Start</button>
+    </div>
+  </div>
+
+  <!-- ============ SHARE (Link erzeugt) ============ -->
+  <div class="panel hide ctr" id="share">
+    <div class="ico">📨</div>
+    <h2 id="shTitle"></h2>
+    <p id="shSub"></p>
+    <div class="box">
+      <label id="shLbl">Dein Challenge-Link</label>
+      <textarea id="shOut" rows="4" readonly></textarea>
+    </div>
+    <button class="big" id="shCopy">Kopieren</button>
+    <div style="margin:12px 0 18px"><button class="linkbtn" id="shToggle"></button></div>
+    <div class="steps" id="shSteps"></div>
+    <button class="ghost" style="width:100%" id="shHome">Zurück zum Start</button>
+  </div>
+
+  <!-- ============ END (lokal) ============ -->
+  <div class="panel hide" id="end">
+    <div class="winner">
+      <div class="trophy" id="trophy">🏆</div>
+      <h2 id="wtext"></h2>
+      <p id="wsub"></p>
+    </div>
+    <div class="rank" id="rank"></div>
+    <div class="catlist" id="cats"></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button class="ghost" style="flex:1" id="again">Nochmal spielen</button>
+      <button class="ghost" style="flex:1" id="menu">Einstellungen ändern</button>
+    </div>
+  </div>
+
+  <!-- ============ VS (Direktvergleich) ============ -->
+  <div class="panel hide" id="vs">
+    <div class="winner">
+      <div class="trophy" id="vsTrophy">🏆</div>
+      <h2 id="vsText"></h2>
+      <p id="vsSub"></p>
+    </div>
+    <div class="h2h" id="vsCards"></div>
+    <div class="qlist" id="vsQs"></div>
+    <button class="big hide" id="vsShare">Ergebnis zurückschicken</button>
+    <button class="ghost hide" style="width:100%;margin-top:12px" id="vsRevenge">Rückrunde starten</button>
+    <button class="ghost hide" style="width:100%;margin-top:12px" id="vsHome">Zurück zum Start</button>
+  </div>
+
+</div>
+
+<script>
+/* ================= Fragenkatalog =================
+   ACHTUNG: Reihenfolge nicht ändern – Challenge-Links
+   verweisen über den Index auf diese Liste.
+   d: 1 = leicht, 2 = mittel, 3 = schwer
+   a: [richtige Antwort, falsch, falsch, falsch]        */
+const BANK = [
+/* ===== Geografie ===== */
+{k:"Geografie",d:1,q:"Welcher Fluss ist der längste Afrikas?",a:["Nil","Kongo","Niger","Sambesi"]},
+{k:"Geografie",d:1,q:"Wie heißt die Hauptstadt Australiens?",a:["Canberra","Sydney","Melbourne","Perth"]},
+{k:"Geografie",d:1,q:"Welches ist der kleinste Staat der Welt?",a:["Vatikanstadt","Monaco","San Marino","Liechtenstein"]},
+{k:"Geografie",d:1,q:"In welchem Gebirge liegt der Mount Everest?",a:["Himalaya","Anden","Karakorum","Alpen"]},
+{k:"Geografie",d:1,q:"Welche Großstadt liegt auf zwei Kontinenten?",a:["Istanbul","Kairo","Athen","Lissabon"]},
+{k:"Geografie",d:1,q:"Welcher ist der größte Ozean der Erde?",a:["Pazifik","Atlantik","Indischer Ozean","Arktischer Ozean"]},
+{k:"Geografie",d:1,q:"Welcher ist der größte Kontinent der Erde?",a:["Asien","Afrika","Nordamerika","Europa"]},
+{k:"Geografie",d:1,q:"Welche Sprache wird in Brasilien gesprochen?",a:["Portugiesisch","Spanisch","Brasilianisch","Französisch"]},
+{k:"Geografie",d:1,q:"Durch welche Stadt fließt die Donau?",a:["Wien","Zürich","Prag","Warschau"]},
+{k:"Geografie",d:2,q:"Wie heißt die Hauptstadt Kanadas?",a:["Ottawa","Toronto","Vancouver","Montreal"]},
+{k:"Geografie",d:2,q:"Welcher See ist der tiefste der Welt?",a:["Baikalsee","Tanganjikasee","Kaspisches Meer","Oberer See"]},
+{k:"Geografie",d:2,q:"Welches Land hat die größte Fläche der Erde?",a:["Russland","Kanada","China","USA"]},
+{k:"Geografie",d:2,q:"An welches Meer grenzt Bulgarien?",a:["Schwarzes Meer","Adria","Ägäis","Kaspisches Meer"]},
+{k:"Geografie",d:2,q:"Wie heißt die Hauptstadt der Schweiz?",a:["Bern","Zürich","Genf","Basel"]},
+{k:"Geografie",d:2,q:"Welches ist die größte Insel der Welt?",a:["Grönland","Neuguinea","Borneo","Madagaskar"]},
+{k:"Geografie",d:2,q:"Wie heißt der höchste Berg Deutschlands?",a:["Zugspitze","Brocken","Feldberg","Watzmann"]},
+{k:"Geografie",d:2,q:"Welches Land hat aktuell die meisten Einwohner?",a:["Indien","China","USA","Indonesien"]},
+{k:"Geografie",d:2,q:"Wie heißt die Hauptstadt von Neuseeland?",a:["Wellington","Auckland","Christchurch","Sydney"]},
+{k:"Geografie",d:3,q:"Durch wie viele Länder fließt die Donau?",a:["10","6","8","13"]},
+{k:"Geografie",d:3,q:"Welches Land hat wegen seiner Überseegebiete die meisten Zeitzonen?",a:["Frankreich","Russland","USA","Australien"]},
+{k:"Geografie",d:3,q:"Wie heißt die Hauptstadt von Kasachstan?",a:["Astana","Almaty","Taschkent","Bischkek"]},
+{k:"Geografie",d:3,q:"Wie heißt die tiefste bekannte Stelle der Weltmeere?",a:["Marianengraben","Tongagraben","Javagraben","Puerto-Rico-Graben"]},
+{k:"Geografie",d:3,q:"Wie heißt die Hauptstadt von Marokko?",a:["Rabat","Casablanca","Marrakesch","Fès"]},
+{k:"Geografie",d:3,q:"Über wie viele Zeitzonen erstreckt sich Russland?",a:["11","9","7","13"]},
+{k:"Geografie",d:3,q:"In welchem Land liegt die Stadt Timbuktu?",a:["Mali","Niger","Tschad","Senegal"]},
+
+/* ===== Geschichte ===== */
+{k:"Geschichte",d:1,q:"In welchem Jahr fiel die Berliner Mauer?",a:["1989","1990","1987","1991"]},
+{k:"Geschichte",d:1,q:"Wer war der erste Bundeskanzler der Bundesrepublik Deutschland?",a:["Konrad Adenauer","Willy Brandt","Ludwig Erhard","Helmut Schmidt"]},
+{k:"Geschichte",d:1,q:"In welchem Jahr begann der Erste Weltkrieg?",a:["1914","1918","1912","1916"]},
+{k:"Geschichte",d:1,q:"In welchem Jahr erreichte Christoph Kolumbus Amerika?",a:["1492","1498","1453","1520"]},
+{k:"Geschichte",d:1,q:"Wer entwickelte in Europa den Buchdruck mit beweglichen Lettern?",a:["Johannes Gutenberg","Martin Luther","Leonardo da Vinci","Galileo Galilei"]},
+{k:"Geschichte",d:1,q:"Welches berühmte Passagierschiff sank 1912 auf seiner Jungfernfahrt?",a:["Titanic","Lusitania","Britannic","Andrea Doria"]},
+{k:"Geschichte",d:1,q:"Welches Bauwerk gilt als längste Mauer der Welt?",a:["Chinesische Mauer","Hadrianswall","Limes","Berliner Mauer"]},
+{k:"Geschichte",d:2,q:"Wer war der erste römische Kaiser?",a:["Augustus","Julius Cäsar","Nero","Konstantin"]},
+{k:"Geschichte",d:2,q:"In welchem Jahr stürmten die Pariser die Bastille?",a:["1789","1799","1776","1804"]},
+{k:"Geschichte",d:2,q:"Welche englische Königin regierte von 1558 bis 1603?",a:["Elisabeth I.","Victoria","Maria Stuart","Anne"]},
+{k:"Geschichte",d:2,q:"Wer war der erste Mensch auf dem Mond?",a:["Neil Armstrong","Buzz Aldrin","Juri Gagarin","Michael Collins"]},
+{k:"Geschichte",d:2,q:"In welchem Jahr wurde die Bundesrepublik Deutschland gegründet?",a:["1949","1945","1955","1948"]},
+{k:"Geschichte",d:2,q:"Wer erfand das Dynamit?",a:["Alfred Nobel","Thomas Edison","Nikola Tesla","Robert Bunsen"]},
+{k:"Geschichte",d:3,q:"In welchem Jahr endete der Dreißigjährige Krieg?",a:["1648","1618","1655","1701"]},
+{k:"Geschichte",d:3,q:"Welche Hochkultur erbaute die Stadt Machu Picchu?",a:["Inka","Maya","Azteken","Olmeken"]},
+{k:"Geschichte",d:3,q:"In welchem Jahr wurden die Vereinten Nationen gegründet?",a:["1945","1948","1919","1950"]},
+{k:"Geschichte",d:3,q:"In welchem Jahr kam der Euro als Bargeld in Umlauf?",a:["2002","1999","2000","2004"]},
+{k:"Geschichte",d:3,q:"Welcher Vertrag begründete 1957 die Europäische Wirtschaftsgemeinschaft?",a:["Römische Verträge","Vertrag von Maastricht","Vertrag von Lissabon","Schengener Abkommen"]},
+{k:"Geschichte",d:3,q:"Welche Stadt war ab 1861 die erste Hauptstadt des vereinigten Italiens?",a:["Turin","Rom","Florenz","Mailand"]},
+
+/* ===== Wissenschaft & Natur ===== */
+{k:"Wissenschaft",d:1,q:"Was ist das chemische Symbol für Gold?",a:["Au","Ag","Go","Gd"]},
+{k:"Wissenschaft",d:1,q:"Welcher Planet ist der Sonne am nächsten?",a:["Merkur","Venus","Mars","Erde"]},
+{k:"Wissenschaft",d:1,q:"Wer stellte die Relativitätstheorie auf?",a:["Albert Einstein","Isaac Newton","Niels Bohr","Max Planck"]},
+{k:"Wissenschaft",d:1,q:"Welches Element hat die Ordnungszahl 1?",a:["Wasserstoff","Helium","Sauerstoff","Kohlenstoff"]},
+{k:"Wissenschaft",d:1,q:"Welcher ist der größte Planet unseres Sonnensystems?",a:["Jupiter","Saturn","Neptun","Uranus"]},
+{k:"Wissenschaft",d:1,q:"Was ist die härteste natürlich vorkommende Substanz?",a:["Diamant","Quarz","Granit","Stahl"]},
+{k:"Wissenschaft",d:1,q:"Wie viele Beine hat eine Spinne?",a:["8","6","10","4"]},
+{k:"Wissenschaft",d:1,q:"Welches ist das größte Tier der Welt?",a:["Blauwal","Afrikanischer Elefant","Pottwal","Giraffe"]},
+{k:"Wissenschaft",d:1,q:"Welcher Vogel lebt in der Antarktis und kann nicht fliegen?",a:["Pinguin","Albatros","Kormoran","Strauß"]},
+{k:"Wissenschaft",d:1,q:"Welches Organ pumpt das Blut durch den Körper?",a:["Herz","Lunge","Leber","Niere"]},
+{k:"Wissenschaft",d:1,q:"Welcher Planet wird auch „Roter Planet“ genannt?",a:["Mars","Venus","Jupiter","Merkur"]},
+{k:"Wissenschaft",d:2,q:"Wie viele Knochen hat ein erwachsener Mensch etwa?",a:["206","150","280","320"]},
+{k:"Wissenschaft",d:2,q:"Welches Gas macht rund 78 % der Erdatmosphäre aus?",a:["Stickstoff","Sauerstoff","Kohlendioxid","Argon"]},
+{k:"Wissenschaft",d:2,q:"Welches Organ produziert Insulin?",a:["Bauchspeicheldrüse","Leber","Niere","Milz"]},
+{k:"Wissenschaft",d:2,q:"Wie viele Chromosomenpaare hat der Mensch?",a:["23","24","46","22"]},
+{k:"Wissenschaft",d:2,q:"Wie schnell breitet sich Licht im Vakuum ungefähr aus?",a:["300.000 km/s","30.000 km/s","3.000.000 km/s","150.000 km/s"]},
+{k:"Wissenschaft",d:2,q:"Welches Metall ist bei Zimmertemperatur flüssig?",a:["Quecksilber","Blei","Zinn","Natrium"]},
+{k:"Wissenschaft",d:2,q:"Wie viele Zähne hat ein erwachsener Mensch normalerweise?",a:["32","28","30","36"]},
+{k:"Wissenschaft",d:2,q:"Welcher Farbstoff färbt Pflanzenblätter grün?",a:["Chlorophyll","Karotin","Melanin","Hämoglobin"]},
+{k:"Wissenschaft",d:2,q:"Welches Element hat das chemische Symbol „K“?",a:["Kalium","Kohlenstoff","Kalzium","Krypton"]},
+{k:"Wissenschaft",d:2,q:"Welches Element ist im Universum am häufigsten?",a:["Wasserstoff","Helium","Sauerstoff","Eisen"]},
+{k:"Wissenschaft",d:2,q:"Welches Teilchen im Atomkern trägt keine elektrische Ladung?",a:["Neutron","Proton","Elektron","Positron"]},
+{k:"Wissenschaft",d:2,q:"Welches Landtier hat die längste Tragzeit?",a:["Elefant","Nashorn","Giraffe","Nilpferd"]},
+{k:"Wissenschaft",d:3,q:"Welche Person erhielt Nobelpreise in zwei verschiedenen Naturwissenschaften?",a:["Marie Curie","Albert Einstein","Linus Pauling","Werner Heisenberg"]},
+{k:"Wissenschaft",d:3,q:"Was misst die Einheit Pascal?",a:["Druck","Energie","Leistung","Frequenz"]},
+{k:"Wissenschaft",d:3,q:"Wofür steht die Abkürzung „Laser“?",a:["Light Amplification by Stimulated Emission of Radiation","Linear Amplified Signal Emission Ray","Light Absorption by Strong Energy Rays","Long Adaptive Spectrum Emission Reactor"]},
+{k:"Wissenschaft",d:3,q:"Welches Tier besitzt drei Herzen?",a:["Krake","Hai","Krokodil","Kolibri"]},
+{k:"Wissenschaft",d:3,q:"Welche Einheit misst die Lichtstärke?",a:["Candela","Lumen","Lux","Watt"]},
+{k:"Wissenschaft",d:3,q:"Wie viele Knochen hat ein neugeborenes Baby ungefähr?",a:["ca. 300","ca. 206","ca. 150","ca. 400"]},
+{k:"Wissenschaft",d:3,q:"Welches Element hat das chemische Symbol „W“?",a:["Wolfram","Wasserstoff","Wismut","Vanadium"]},
+{k:"Wissenschaft",d:3,q:"Welche Blutgruppe gilt bei roten Blutkörperchen als Universalspender?",a:["0 negativ","AB positiv","A negativ","B positiv"]},
+
+/* ===== Kunst & Literatur ===== */
+{k:"Kunst & Literatur",d:1,q:"Wer malte die Mona Lisa?",a:["Leonardo da Vinci","Michelangelo","Raffael","Rembrandt"]},
+{k:"Kunst & Literatur",d:1,q:"Wer schrieb den „Faust“?",a:["Johann Wolfgang von Goethe","Friedrich Schiller","Heinrich Heine","Thomas Mann"]},
+{k:"Kunst & Literatur",d:1,q:"Welcher Maler schnitt sich einen Teil seines Ohres ab?",a:["Vincent van Gogh","Paul Gauguin","Claude Monet","Edvard Munch"]},
+{k:"Kunst & Literatur",d:1,q:"Wer schrieb „Romeo und Julia“?",a:["William Shakespeare","Charles Dickens","Oscar Wilde","Molière"]},
+{k:"Kunst & Literatur",d:2,q:"Wer schrieb die Erzählung „Die Verwandlung“?",a:["Franz Kafka","Thomas Mann","Hermann Hesse","Robert Musil"]},
+{k:"Kunst & Literatur",d:2,q:"Aus welchem Land stammte der Maler Salvador Dalí?",a:["Spanien","Italien","Frankreich","Portugal"]},
+{k:"Kunst & Literatur",d:2,q:"Wer schrieb den Roman „Krieg und Frieden“?",a:["Leo Tolstoi","Fjodor Dostojewski","Anton Tschechow","Iwan Turgenjew"]},
+{k:"Kunst & Literatur",d:2,q:"Welche Kunstrichtung begründeten Pablo Picasso und Georges Braque?",a:["Kubismus","Surrealismus","Impressionismus","Expressionismus"]},
+{k:"Kunst & Literatur",d:2,q:"Wer schrieb „Der kleine Prinz“?",a:["Antoine de Saint-Exupéry","Jules Verne","Albert Camus","Victor Hugo"]},
+{k:"Kunst & Literatur",d:2,q:"Wer malte „Sternennacht“?",a:["Vincent van Gogh","Claude Monet","Paul Cézanne","Henri Matisse"]},
+{k:"Kunst & Literatur",d:2,q:"Wer schrieb den Roman „1984“?",a:["George Orwell","Aldous Huxley","Ray Bradbury","H. G. Wells"]},
+{k:"Kunst & Literatur",d:3,q:"Wer schrieb den Roman „Die Blechtrommel“?",a:["Günter Grass","Heinrich Böll","Siegfried Lenz","Martin Walser"]},
+{k:"Kunst & Literatur",d:3,q:"In welchem Museum hängt Picassos „Guernica“?",a:["Museo Reina Sofía, Madrid","Louvre, Paris","MoMA, New York","Prado, Madrid"]},
+{k:"Kunst & Literatur",d:3,q:"Wer schrieb „Die Göttliche Komödie“?",a:["Dante Alighieri","Francesco Petrarca","Giovanni Boccaccio","Niccolò Machiavelli"]},
+{k:"Kunst & Literatur",d:3,q:"Wer begründete die Psychoanalyse?",a:["Sigmund Freud","Carl Gustav Jung","Alfred Adler","Wilhelm Wundt"]},
+
+/* ===== Musik & Film ===== */
+{k:"Musik & Film",d:1,q:"Aus wie vielen Mitgliedern bestanden die Beatles?",a:["4","3","5","6"]},
+{k:"Musik & Film",d:1,q:"Wer komponierte die 9. Sinfonie mit der „Ode an die Freude“?",a:["Ludwig van Beethoven","Wolfgang Amadeus Mozart","Johann Sebastian Bach","Franz Schubert"]},
+{k:"Musik & Film",d:1,q:"Wie viele Saiten hat eine gewöhnliche Gitarre?",a:["6","4","8","12"]},
+{k:"Musik & Film",d:1,q:"Welche Band veröffentlichte „Bohemian Rhapsody“?",a:["Queen","The Rolling Stones","Led Zeppelin","Pink Floyd"]},
+{k:"Musik & Film",d:1,q:"In welcher fiktiven Stadt lebt Batman?",a:["Gotham City","Metropolis","Star City","Central City"]},
+{k:"Musik & Film",d:1,q:"Welches Instrument hat 88 Tasten?",a:["Klavier","Orgel","Akkordeon","Cembalo"]},
+{k:"Musik & Film",d:2,q:"Wer führte Regie bei „Der weiße Hai“?",a:["Steven Spielberg","George Lucas","Ridley Scott","Francis Ford Coppola"]},
+{k:"Musik & Film",d:2,q:"Welches Instrument spielte Miles Davis?",a:["Trompete","Saxofon","Klavier","Kontrabass"]},
+{k:"Musik & Film",d:2,q:"Wer komponierte die Oper „Die Zauberflöte“?",a:["Wolfgang Amadeus Mozart","Richard Wagner","Giuseppe Verdi","Giacomo Puccini"]},
+{k:"Musik & Film",d:2,q:"Welcher Film gewann 1998 den Oscar als bester Film?",a:["Titanic","Good Will Hunting","L.A. Confidential","Forrest Gump"]},
+{k:"Musik & Film",d:2,q:"Wer komponierte den Opernzyklus „Der Ring des Nibelungen“?",a:["Richard Wagner","Richard Strauss","Gustav Mahler","Anton Bruckner"]},
+{k:"Musik & Film",d:3,q:"Wie viele vollendete Sinfonien komponierte Ludwig van Beethoven?",a:["9","7","12","5"]},
+{k:"Musik & Film",d:3,q:"Wer komponierte die Filmmusik zu „Star Wars“?",a:["John Williams","Hans Zimmer","Ennio Morricone","Howard Shore"]},
+{k:"Musik & Film",d:3,q:"Wer führte Regie bei „Der Pate“?",a:["Francis Ford Coppola","Martin Scorsese","Sergio Leone","Brian De Palma"]},
+
+/* ===== Sport ===== */
+{k:"Sport",d:1,q:"Wie viele Spieler einer Mannschaft stehen beim Fußball gleichzeitig auf dem Feld?",a:["11","10","9","12"]},
+{k:"Sport",d:1,q:"Alle wie viele Jahre finden die Olympischen Sommerspiele statt?",a:["4","2","3","5"]},
+{k:"Sport",d:1,q:"Wie lang ist eine Marathonstrecke?",a:["42,195 km","40 km","45 km","21,1 km"]},
+{k:"Sport",d:1,q:"Wie viele Löcher hat ein normaler Golfplatz?",a:["18","9","12","24"]},
+{k:"Sport",d:1,q:"Wie viele Ringe zeigt das olympische Symbol?",a:["5","4","6","3"]},
+{k:"Sport",d:1,q:"Wie viele Spieler einer Basketballmannschaft stehen gleichzeitig auf dem Feld?",a:["5","6","7","4"]},
+{k:"Sport",d:2,q:"Wie oft wurde Deutschland Fußball-Weltmeister?",a:["4-mal","3-mal","5-mal","2-mal"]},
+{k:"Sport",d:2,q:"Welches Land gewann die Fußball-WM 2018?",a:["Frankreich","Kroatien","Deutschland","Brasilien"]},
+{k:"Sport",d:2,q:"In welcher deutschen Stadt fanden 1972 die Olympischen Sommerspiele statt?",a:["München","Berlin","Hamburg","Frankfurt"]},
+{k:"Sport",d:2,q:"Wie viele Punkte zählt ein Wurf von jenseits der Dreipunktelinie im Basketball?",a:["3","2","4","1"]},
+{k:"Sport",d:2,q:"In welchem Land wurden die Olympischen Sommerspiele 2021 ausgetragen?",a:["Japan","China","Brasilien","Südkorea"]},
+{k:"Sport",d:3,q:"Welches Land gewann die erste Fußball-Weltmeisterschaft 1930?",a:["Uruguay","Argentinien","Brasilien","Italien"]},
+{k:"Sport",d:3,q:"Wie viele Spieler stehen bei einem Volleyballteam auf dem Feld?",a:["6","5","7","8"]},
+{k:"Sport",d:3,q:"Welche Farbe hat das Trikot des Führenden der Tour de France?",a:["Gelb","Grün","Rot","Weiß mit roten Punkten"]},
+
+/* ===== Vermischtes ===== */
+{k:"Vermischtes",d:1,q:"Welche Farbe entsteht beim Mischen von Blau und Gelb?",a:["Grün","Orange","Violett","Braun"]},
+{k:"Vermischtes",d:1,q:"Wie viele Felder hat ein Schachbrett?",a:["64","81","100","49"]},
+{k:"Vermischtes",d:1,q:"Welche Währung wird in Japan verwendet?",a:["Yen","Won","Yuan","Baht"]},
+{k:"Vermischtes",d:1,q:"Was ist die Quadratwurzel aus 144?",a:["12","14","16","24"]},
+{k:"Vermischtes",d:1,q:"Wie viele Tage hat ein Schaltjahr?",a:["366","365","364","367"]},
+{k:"Vermischtes",d:1,q:"Aus welchem Land stammt die Pizza ursprünglich?",a:["Italien","Griechenland","Spanien","Türkei"]},
+{k:"Vermischtes",d:1,q:"Wofür steht die Abkürzung „www“?",a:["World Wide Web","Wireless Web World","World Web Wide","Web Wide World"]},
+{k:"Vermischtes",d:1,q:"Welches Tier wird als „Schiff der Wüste“ bezeichnet?",a:["Kamel","Pferd","Esel","Lama"]},
+{k:"Vermischtes",d:2,q:"Wie viele Sekunden hat ein Tag?",a:["86.400","84.600","36.000","144.000"]},
+{k:"Vermischtes",d:2,q:"Wie viele Kammern und Vorhöfe hat das menschliche Herz zusammen?",a:["4","2","3","6"]},
+{k:"Vermischtes",d:2,q:"Wofür steht die Abkürzung „PDF“?",a:["Portable Document Format","Printed Data File","Public Document Form","Personal Data Folder"]},
+{k:"Vermischtes",d:2,q:"Wie viele Bundesländer hat Deutschland?",a:["16","14","17","15"]},
+{k:"Vermischtes",d:2,q:"Wie heißt die Währung Polens?",a:["Złoty","Krone","Forint","Leu"]},
+{k:"Vermischtes",d:2,q:"Welches Land produziert weltweit den meisten Kaffee?",a:["Brasilien","Kolumbien","Vietnam","Äthiopien"]},
+{k:"Vermischtes",d:3,q:"Wie viele Streifen hat die Flagge der USA?",a:["13","12","15","50"]},
+{k:"Vermischtes",d:3,q:"Wie viele Mitgliedstaaten hat die Europäische Union aktuell?",a:["27","28","25","30"]},
+{k:"Vermischtes",d:3,q:"Wie viele Flächen hat ein Oktaeder?",a:["8","6","10","12"]},
+{k:"Vermischtes",d:3,q:"Wie heißt in der griechischen Mythologie der Sohn von Zeus und Alkmene?",a:["Herakles","Perseus","Achilles","Theseus"]},
+{k:"Vermischtes",d:3,q:"Welche Sprache hat weltweit die meisten Muttersprachler?",a:["Mandarin-Chinesisch","Englisch","Spanisch","Hindi"]}
+];
+
+const DIFF = {1:{n:"leicht",p:1},2:{n:"mittel",p:2},3:{n:"schwer",p:3}};
+const KEYS = ["A","B","C","D"];
+const PCOL = ["var(--p1)","var(--p2)","var(--p3)","var(--p4)"];
+const MEDAL = ["🥇","🥈","🥉","4."];
+const $ = id => document.getElementById(id);
+const show = id => $(id).classList.remove("hide");
+const gone = id => $(id).classList.add("hide");
+const PANELS = ["setup","fbsetup","lobby","join","invite","pass","game","share","end","vs","liveEnd"];
+const only = id => { PANELS.forEach(p => gone(p)); show(id); };
+const shuffle = arr => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+
+let cfg = { np: 2, diff: "mix", mode: "alt", len: 10, time: 30 };
+let G = null, tick = null, pending = null, lastLink = null, showCodeOnly = false;
+
+/* ================= Link-Kodierung ================= */
+function b64e(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = ""; bytes.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function b64d(s) {
+  s = s.replace(/-/g, "+").replace(/_/g, "/");
+  while (s.length % 4) s += "=";
+  const bin = atob(s);
+  return new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
+}
+const encode = obj => b64e(JSON.stringify(obj));
+function decode(code) { try { return JSON.parse(b64d(code)); } catch (e) { return null; } }
+
+function makeUrl(kind, payload) {
+  const code = encode(payload);
+  const base = location.protocol === "file:" ? "" : location.origin + location.pathname;
+  return { code, url: base ? base + "#" + kind + "=" + code : "", hash: "#" + kind + "=" + code };
+}
+
+/* ================= Setup-UI ================= */
+const SOLO = () => cfg.mode === "link" || cfg.mode === "live";
+
+function buildNames() {
+  const n = SOLO() ? 1 : cfg.np;
+  const box = $("nameBox");
+  const old = [...box.querySelectorAll("input")].map(i => i.value);
+  box.innerHTML = "";
+  box.style.gridTemplateColumns = n === 1 ? "1fr" : "1fr 1fr";
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement("div");
+    d.className = "nf";
+    d.innerHTML = `<input type="text" id="n${i}" maxlength="18" placeholder="Spieler ${i+1}" value="${old[i] !== undefined ? old[i] : (n === 1 ? "" : "Spieler " + (i+1))}">
+                   <span class="dot" style="background:${PCOL[i]}"></span>`;
+    box.appendChild(d);
+  }
+  $("lblNames").textContent = n === 1 ? "Dein Name" : "Namen";
+  if (n === 1) $("n0").placeholder = "Dein Name";
+}
+
+const pool = () => cfg.diff === "mix" ? BANK : BANK.filter(q => q.d === +cfg.diff);
+const maxPerPlayer = () => cfg.mode === "alt" ? Math.floor(pool().length / cfg.np) : pool().length;
+
+function updateAvail() {
+  $("fPlayers").classList.toggle("hide", SOLO());
+  $("lblLen").textContent = cfg.mode === "alt" ? "Fragen pro Spieler" : "Anzahl Fragen";
+  $("start").textContent = cfg.mode === "link" ? "Challenge spielen"
+    : cfg.mode === "live" ? "Raum erstellen" : "Spiel starten";
+
+  const mp = maxPerPlayer();
+  const chips = [...$("cLen").children];
+  chips.forEach(c => {
+    const over = +c.dataset.v > mp;
+    c.classList.toggle("off", over);
+    if (over) c.classList.remove("on");
+  });
+  if (!chips.some(c => c.classList.contains("on"))) {
+    const fit = chips.filter(c => !c.classList.contains("off"));
+    const pick = fit[fit.length - 1];
+    if (pick) { pick.classList.add("on"); cfg.len = +pick.dataset.v; }
+  } else cfg.len = +chips.find(c => c.classList.contains("on")).dataset.v;
+
+  const dn = cfg.diff === "mix" ? "gemischt" : DIFF[cfg.diff].n;
+  $("availHint").innerHTML =
+    cfg.mode === "alt" ? `${pool().length} Fragen (${dn}) im Pool, jeder bekommt eigene – max. <b>${mp}</b> pro Spieler bei ${cfg.np} Spielern.`
+    : cfg.mode === "seq" ? `Alle spielen dieselben Fragen – max. <b>${mp}</b> möglich (${dn}).`
+    : `Du spielst diese Fragen zuerst, dein Gegner bekommt exakt dieselben – max. <b>${mp}</b> (${dn}).`;
+}
+
+function wireChips(boxId, key, after) {
+  $(boxId).addEventListener("click", e => {
+    const c = e.target.closest(".chip");
+    if (!c || c.classList.contains("off")) return;
+    [...$(boxId).children].forEach(x => x.classList.remove("on"));
+    c.classList.add("on");
+    cfg[key] = isNaN(+c.dataset.v) ? c.dataset.v : +c.dataset.v;
+    if (after) after();
+  });
+}
+wireChips("cPlayers", "np", () => { buildNames(); updateAvail(); });
+wireChips("cDiff", "diff", updateAvail);
+wireChips("cLen", "len");
+wireChips("cTime", "time");
+
+document.querySelectorAll(".mode").forEach(m => {
+  m.onclick = () => {
+    document.querySelectorAll(".mode").forEach(x => x.classList.toggle("on", x === m));
+    cfg.mode = m.dataset.mode;
+    buildNames(); updateAvail();
+  };
+});
+
+buildNames();
+updateAvail();
+
+/* ================= Fragen ziehen ================= */
+function drawIdx(n) {
+  const src = pool().map(q => BANK.indexOf(q));
+  if (cfg.diff !== "mix") return shuffle(src).slice(0, n);
+  const byDiff = {1:[],2:[],3:[]};
+  src.forEach(i => byDiff[BANK[i].d].push(i));
+  [1,2,3].forEach(d => byDiff[d] = shuffle(byDiff[d]));
+  let want = {1: Math.round(n*.45), 2: Math.round(n*.40), 3: 0};
+  want[3] = n - want[1] - want[2];
+  const out = [];
+  [1,2,3].forEach(d => { for (let i = 0; i < want[d] && byDiff[d].length; i++) out.push(byDiff[d].pop()); });
+  const rest = shuffle([...byDiff[1], ...byDiff[2], ...byDiff[3]]);
+  while (out.length < n && rest.length) out.push(rest.pop());
+  return shuffle(out).slice(0, n);
+}
+
+const scoreOf = (idxs, res) => idxs.reduce((s, qi, j) => s + (res[j] ? DIFF[BANK[qi].d].p : 0), 0);
+const rightOf = res => res.reduce((s, v) => s + (v ? 1 : 0), 0);
+
+/* ================= Spielstart ================= */
+$("start").onclick = () => {
+  if (cfg.mode === "live") return liveCreate();
+  LV = null;
+  const np = SOLO() ? 1 : cfg.np;
+  const names = [];
+  for (let i = 0; i < np; i++) names.push(($("n" + i).value || "").trim() || (np === 1 ? "Du" : "Spieler " + (i+1)));
+
+  const order = [];
+  let qIdx;
+  if (cfg.mode === "alt") {
+    qIdx = drawIdx(cfg.len * np);
+    qIdx.forEach((qi, i) => order.push({ p: i % np, qi, nr: Math.floor(i / np) + 1, pass: false }));
+  } else {
+    qIdx = drawIdx(cfg.len);
+    for (let p = 0; p < np; p++)
+      qIdx.forEach((qi, j) => order.push({ p, qi, nr: j + 1, pass: cfg.mode === "seq" && j === 0 }));
+  }
+
+  G = {
+    names, np, mode: cfg.mode, perPlayer: cfg.len, time: cfg.time,
+    qIdx, score: Array(np).fill(0), right: Array(np).fill(0),
+    res: Array.from({length: np}, () => []),
+    cat: {}, order, i: 0, answered: false, foe: null
+  };
+  buildScore();
+  step();
+};
+
+/* ================= Challenge annehmen ================= */
+function openInvite(pl) {
+  pending = pl;
+  const qs = pl.q.map(i => BANK[i]);
+  const ds = [...new Set(qs.map(q => q.d))];
+  const dn = ds.length === 1 ? DIFF[ds[0]].n : "gemischt";
+  $("invTitle").innerHTML = `<span style="color:var(--p2)">${esc(pl.n)}</span> fordert dich heraus`;
+  $("invText").innerHTML = `${pl.q.length} Fragen · Schwierigkeit ${dn} · ${pl.t ? pl.t + " Sek. pro Frage" : "ohne Zeitlimit"}<br>
+    Du bekommst exakt dieselben Fragen. Am Ende siehst du den direkten Vergleich.`;
+  only("invite");
+  $("invName").focus();
+}
+
+$("invGo").onclick = () => {
+  const pl = pending;
+  const me = ($("invName").value || "").trim() || "Du";
+  G = {
+    names: [me], np: 1, mode: "link", perPlayer: pl.q.length, time: pl.t,
+    qIdx: pl.q, score: [0], right: [0], res: [[]], cat: {},
+    order: pl.q.map((qi, j) => ({ p: 0, qi, nr: j + 1, pass: false })),
+    i: 0, answered: false,
+    foe: { n: pl.n, res: pl.r.split("").map(Number) }
+  };
+  buildScore();
+  step();
+};
+$("invBack").onclick = () => { pending = null; location.hash = ""; only("setup"); };
+
+/* ================= Scoreboard ================= */
+function buildScore() {
+  const cards = G.names.map((n, i) => ({ n, c: PCOL[i], id: "pt" + i, pid: "pc" + i }));
+  if (G.foe) cards.push({ n: G.foe.n, c: PCOL[1], id: "ptFoe", pid: "pcFoe", ghost: true });
+  $("score").innerHTML = cards.map(c =>
+    `<div class="pcard" id="${c.pid}">
+       <div class="nm">${esc(c.n)}</div>
+       <div class="pt" id="${c.id}" style="color:${c.ghost ? 'var(--dim)' : c.c}">${c.ghost ? '?' : '0'}</div>
+     </div>`).join("");
+}
+
+/* ================= Ablauf ================= */
+function step() {
+  const e = G.order[G.i];
+  if (G.mode === "seq" && e.pass) {
+    only("pass");
+    $("passName").innerHTML = `<span style="color:${PCOL[e.p]}">${esc(G.names[e.p])}</span> ist dran`;
+    $("passText").textContent = e.p === 0
+      ? `Du beantwortest jetzt ${G.perPlayer} Fragen allein. Danach bekommen die anderen genau dieselben Fragen.`
+      : `Gerät bitte an ${G.names[e.p]} weitergeben – und dabei nicht mitschauen. Es kommen dieselben ${G.perPlayer} Fragen wie für die anderen.`;
+    return;
+  }
+  render();
+}
+$("passGo").onclick = () => render();
+
+function render() {
+  clearInterval(tick);
+  only("game");
+  const g = G, e = g.order[g.i], q = BANK[e.qi], p = e.p;
+  g.answered = false;
+
+  g.names.forEach((_, i) => {
+    const secret = g.mode === "seq" && i !== p;
+    $("pt" + i).textContent = secret ? "–" : g.score[i];
+    $("pt" + i).style.color = secret ? "var(--dim)" : PCOL[i];
+    const c = $("pc" + i);
+    c.classList.toggle("active", i === p);
+    c.style.borderColor = i === p ? PCOL[i] : "transparent";
+  });
+  $("prog").style.width = (g.i / g.order.length * 100) + "%";
+
+  $("tagCat").textContent = q.k;
+  const d = DIFF[q.d];
+  $("tagDiff").textContent = d.n + " · " + d.p + (d.p === 1 ? " Punkt" : " Punkte");
+  $("tagDiff").className = "tag d" + q.d;
+
+  $("turn").innerHTML = `Frage ${e.nr} von ${g.perPlayer} · <b style="color:${PCOL[p]}">${esc(g.names[p])}</b>`
+    + (g.mode === "seq" ? ` · Durchgang ${p + 1} von ${g.np}` : "");
+  $("qtext").textContent = q.q;
+
+  const box = $("opts");
+  box.innerHTML = "";
+  shuffle(q.a).forEach((txt, idx) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = `<span class="k">${KEYS[idx]}</span><span class="tx">${esc(txt)}</span>`;
+    b.onclick = () => answer(txt, b);
+    box.appendChild(b);
+  });
+
+  gone("fb"); gone("next");
+
+  if (g.time > 0) {
+    let left = g.time;
+    $("timer").textContent = left + "s";
+    $("timer").className = "timer";
+    tick = setInterval(() => {
+      left--;
+      $("timer").textContent = left + "s";
+      if (left <= 5) $("timer").className = "timer warn";
+      if (left <= 0) { clearInterval(tick); answer(null, null); }
+    }, 1000);
+  } else $("timer").textContent = "";
+}
+
+function answer(chosen, btn) {
+  if (!G || G.answered) return;
+  G.answered = true;
+  clearInterval(tick);
+
+  const g = G, e = g.order[g.i], q = BANK[e.qi], p = e.p, correct = q.a[0];
+  const ok = chosen === correct;
+
+  [...$("opts").children].forEach(b => {
+    b.disabled = true;
+    if (b.querySelector(".tx").textContent === correct) b.classList.add("correct");
+  });
+  if (!ok && btn) btn.classList.add("wrong");
+
+  if (!g.cat[q.k]) g.cat[q.k] = Array(g.np).fill(0);
+  g.res[p].push(ok ? 1 : 0);
+  if (ok) {
+    g.score[p] += DIFF[q.d].p;
+    g.right[p]++;
+    g.cat[q.k][p]++;
+    $("pt" + p).textContent = g.score[p];
+  }
+
+  const fb = $("fb");
+  fb.className = "fb " + (ok ? "ok" : "no");
+  fb.innerHTML = ok
+    ? `<b>Richtig! +${DIFF[q.d].p} ${DIFF[q.d].p === 1 ? "Punkt" : "Punkte"}</b>Gut gemacht, ${esc(g.names[p])}.`
+    : `<b>${chosen === null ? "Zeit abgelaufen" : "Leider falsch"}</b>Richtig wäre: <strong>${esc(correct)}</strong>`;
+  show("fb");
+
+  const last = g.i + 1 >= g.order.length;
+  const handover = !last && g.mode === "seq" && g.order[g.i + 1].pass;
+  $("next").textContent = last ? "Ergebnis anzeigen" : (handover ? "Runde beenden & weitergeben" : "Weiter");
+  show("next");
+}
+
+$("next").onclick = () => {
+  G.i++;
+  if (G.i < G.order.length) step();
+  else finish();
+};
+
+/* ================= Auswertung ================= */
+function finish() {
+  clearInterval(tick);
+  if (G.mode === "link") return G.foe ? showVs() : showShare();
+  showEnd();
+}
+
+function showEnd() {
+  const g = G;
+  only("end");
+  const idx = g.names.map((_, i) => i).sort((a, b) => g.score[b] - g.score[a]);
+  const top = g.score[idx[0]];
+  const winners = idx.filter(i => g.score[i] === top);
+
+  if (winners.length === g.np) {
+    $("trophy").textContent = "🤝";
+    $("wtext").textContent = "Unentschieden!";
+    $("wsub").textContent = `Alle mit ${top} Punkten – das nennt man Augenhöhe.`;
+  } else if (winners.length > 1) {
+    $("trophy").textContent = "🤝";
+    $("wtext").textContent = "Geteilter Sieg!";
+    $("wsub").textContent = `${winners.map(i => g.names[i]).join(" und ")} liegen mit je ${top} Punkten vorn.`;
+  } else {
+    const w = winners[0];
+    $("trophy").textContent = "🏆";
+    $("wtext").innerHTML = `<span style="color:${PCOL[w]}">${esc(g.names[w])}</span> gewinnt!`;
+    $("wsub").textContent = `${top} Punkte – ${top - g.score[idx[1]]} mehr als der Zweitplatzierte.`;
+  }
+
+  $("rank").innerHTML = idx.map((i, pos) => `
+    <div class="rrow" style="border-left-color:${PCOL[i]}">
+      <span class="pos">${MEDAL[pos]}</span>
+      <span class="rn" style="color:${PCOL[i]}">${esc(g.names[i])}</span>
+      <span class="rq">${g.right[i]}/${g.perPlayer} richtig · ${Math.round(g.right[i] / g.perPlayer * 100)} %</span>
+      <span class="rp" style="color:${PCOL[i]}">${g.score[i]}</span>
+    </div>`).join("");
+
+  $("cats").innerHTML = `<div style="font-size:.78rem;text-transform:uppercase;letter-spacing:.09em;color:var(--dim);margin-bottom:8px">
+      Richtige Antworten nach Kategorie (${g.names.map((n, i) => `<span style="color:${PCOL[i]}">${esc(n)}</span>`).join(" · ")})
+    </div>` + Object.keys(g.cat).sort().map(k =>
+    `<div class="catrow"><span class="cn">${k}</span>` +
+    g.cat[k].map((v, i) => `<span class="cs" style="color:${PCOL[i]}">${v}</span>`).join("") + `</div>`).join("");
+}
+
+/* ---- Challenge erstellt: Link anzeigen ---- */
+function showShare() {
+  const g = G;
+  lastLink = makeUrl("c", { v: 1, b: BANK.length, n: g.names[0], t: g.time, q: g.qIdx, r: g.res[0].join("") });
+  only("share");
+  $("shTitle").innerHTML = `Du hast <span style="color:var(--p1)">${g.score[0]} Punkte</span>`;
+  $("shSub").textContent = `${g.right[0]} von ${g.perPlayer} richtig. Jetzt bist du dran, jemanden herauszufordern.`;
+  $("shSteps").innerHTML = `<b>So geht's weiter:</b><br>
+    1. Link (oder Code) kopieren und per WhatsApp, Mail o.ä. verschicken.<br>
+    2. Der andere öffnet ihn, gibt seinen Namen ein und spielt dieselben Fragen.<br>
+    3. Er sieht am Ende den Vergleich und kann dir sein Ergebnis zurückschicken.`;
+  showCodeOnly = !lastLink.url;
+  paintShare();
+}
+function paintShare() {
+  const useCode = showCodeOnly || !lastLink.url;
+  $("shLbl").textContent = useCode ? "Dein Challenge-Code" : "Dein Challenge-Link";
+  $("shOut").value = useCode ? lastLink.code : lastLink.url;
+  $("shToggle").textContent = !lastLink.url ? ""
+    : useCode ? "Stattdessen den Link anzeigen" : "Stattdessen nur den Code anzeigen";
+  $("shToggle").parentElement.style.display = lastLink.url ? "" : "none";
+  $("shCopy").textContent = useCode ? "Code kopieren" : "Link kopieren";
+  if (!lastLink.url) {
+    $("shSteps").innerHTML = `<b>So geht's weiter:</b><br>
+      1. Diesen Code kopieren und verschicken – zusammen mit der Datei <b>quiz-duell.html</b>, falls der andere sie noch nicht hat.<br>
+      2. Der andere öffnet die Datei, klickt unten auf „Challenge erhalten?“ und fügt den Code ein.<br>
+      3. Er spielt dieselben Fragen und kann dir sein Ergebnis als Code zurückschicken.<br><br>
+      <b>Tipp:</b> Liegt die Datei online (z.B. GitHub Pages), erzeugt das Quiz automatisch einen anklickbaren Link statt eines Codes.`;
+  }
+}
+$("shToggle").onclick = () => { showCodeOnly = !showCodeOnly; paintShare(); };
+$("shCopy").onclick = () => copyOut("shOut", "shCopy");
+$("shHome").onclick = () => { location.hash = ""; only("setup"); };
+
+function copyOut(taId, btnId) {
+  const ta = $(taId), b = $(btnId), old = b.textContent;
+  ta.select(); ta.setSelectionRange(0, 999999);
+  const done = () => { b.textContent = "✓ Kopiert"; setTimeout(() => b.textContent = old, 1800); };
+  if (navigator.clipboard) navigator.clipboard.writeText(ta.value).then(done, () => { document.execCommand("copy"); done(); });
+  else { document.execCommand("copy"); done(); }
+}
+
+/* ---- Direktvergleich ---- */
+function showVs(data) {
+  let A, B, qIdx, myTurn = false;
+  if (data) { // fertiges Ergebnis aus Link
+    qIdx = data.q;
+    A = { n: data.n, res: data.r.split("").map(Number) };
+    B = { n: data.n2, res: data.r2.split("").map(Number) };
+  } else {    // gerade selbst gespielt
+    qIdx = G.qIdx;
+    A = { n: G.foe.n, res: G.foe.res };
+    B = { n: G.names[0], res: G.res[0] };
+    myTurn = true;
+  }
+  A.s = scoreOf(qIdx, A.res); B.s = scoreOf(qIdx, B.res);
+  A.r = rightOf(A.res);       B.r = rightOf(B.res);
+
+  only("vs");
+  if (A.s === B.s) {
+    $("vsTrophy").textContent = "🤝";
+    $("vsText").textContent = "Unentschieden!";
+    $("vsSub").textContent = `Beide ${A.s} Punkte bei denselben Fragen.`;
+  } else {
+    const w = A.s > B.s ? A : B, l = A.s > B.s ? B : A;
+    $("vsTrophy").textContent = "🏆";
+    $("vsText").innerHTML = `<span style="color:${w === A ? 'var(--p2)' : 'var(--p1)'}">${esc(w.n)}</span> gewinnt!`;
+    $("vsSub").textContent = `${w.s} zu ${l.s} Punkte – Vorsprung: ${w.s - l.s}.`;
+  }
+
+  $("vsCards").innerHTML = `
+    <div class="side"><div class="n" style="color:var(--p2)">${esc(A.n)}</div>
+      <div class="p" style="color:var(--p2)">${A.s}</div>
+      <div class="r">${A.r}/${qIdx.length} richtig</div></div>
+    <div class="vs">vs.</div>
+    <div class="side"><div class="n" style="color:var(--p1)">${esc(B.n)}</div>
+      <div class="p" style="color:var(--p1)">${B.s}</div>
+      <div class="r">${B.r}/${qIdx.length} richtig</div></div>`;
+
+  $("vsQs").innerHTML = `<div style="font-size:.78rem;text-transform:uppercase;letter-spacing:.09em;color:var(--dim);margin-bottom:8px">
+      Frage für Frage · <span style="color:var(--p2)">${esc(A.n)}</span> / <span style="color:var(--p1)">${esc(B.n)}</span>
+    </div>` + qIdx.map((qi, j) => `
+      <div class="qrow">
+        <span class="qt">${j+1}. ${esc(BANK[qi].q)}</span>
+        <span class="m ${A.res[j] ? 'y' : 'n'}">${A.res[j] ? '✓' : '✗'}</span>
+        <span class="m ${B.res[j] ? 'y' : 'n'}">${B.res[j] ? '✓' : '✗'}</span>
+      </div>`).join("");
+
+  $("vsShare").classList.toggle("hide", !myTurn);
+  $("vsRevenge").classList.toggle("hide", myTurn);
+  $("vsHome").classList.toggle("hide", myTurn);
+  if (myTurn) {
+    $("vsShare").onclick = () => {
+      lastLink = makeUrl("r", { v: 2, b: BANK.length, n: A.n, t: G.time, q: qIdx, r: A.res.join(""), n2: B.n, r2: B.res.join("") });
+      only("share");
+      $("shTitle").textContent = "Ergebnis zurückschicken";
+      $("shSub").innerHTML = `Schick das ${lastLink.url ? "diesen Link" : "diesen Code"} an ${esc(A.n)} – dann sieht er den Vergleich, ohne nochmal spielen zu müssen.`;
+      $("shSteps").innerHTML = `<b>Hinweis:</b> Darin stecken beide Ergebnisse. ${esc(A.n)} sieht sofort die Auswertung.`;
+      showCodeOnly = !lastLink.url;
+      paintShare();
+    };
+  }
+}
+$("vsRevenge").onclick = () => {
+  location.hash = "";
+  document.querySelector('.mode[data-mode="link"]').click();
+  only("setup");
+};
+$("vsHome").onclick = () => { location.hash = ""; only("setup"); };
+
+$("again").onclick = () => $("start").click();
+$("menu").onclick = () => only("setup");
+
+/* ================= Code einlösen ================= */
+$("showRedeem").onclick = () => {
+  const b = $("redeemBox");
+  b.classList.toggle("hide");
+  if (!b.classList.contains("hide")) $("redeemIn").focus();
+};
+$("redeemGo").onclick = () => {
+  const raw = ($("redeemIn").value || "").trim();
+  const lm = raw.match(/#live=([A-Za-z0-9]+)(?:\.([A-Za-z0-9_-]+))?/);
+  if (lm) {
+    if (lm[2]) { const c = decode(lm[2]); if (c && c.databaseURL) lsSet(c); }
+    return showJoin(lm[1].toUpperCase());
+  }
+  if (/^[A-Za-z0-9]{4}$/.test(raw)) return showJoin(raw.toUpperCase());
+  const m = raw.match(/#?([cr])=([A-Za-z0-9_-]+)/);
+  const kind = m ? m[1] : (raw.match(/^[A-Za-z0-9_-]+$/) ? "?" : null);
+  const code = m ? m[2] : raw;
+  if (!kind) return err("Das sieht nicht nach einem gültigen Code aus.");
+  const pl = decode(code);
+  if (!pl || !pl.q) return err("Code konnte nicht gelesen werden – bitte vollständig kopieren.");
+  if (!handle(pl)) return err("Dieser Code stammt aus einer anderen Version des Quiz. Beide brauchen dieselbe Datei.");
+  $("redeemErr").textContent = "";
+};
+function err(t) { $("redeemErr").innerHTML = `<b>${t}</b>`; }
+
+function handle(pl) {
+  if (pl.b && pl.b !== BANK.length) return false;
+  if (pl.q.some(i => i < 0 || i >= BANK.length)) return false;
+  if (pl.v === 2) showVs(pl); else openInvite(pl);
+  return true;
+}
+
+/* ==================================================================
+   LIVE-MODUS  (gleichzeitig spielen über Firebase Realtime Database)
+   ==================================================================
+   Wer die Zugangsdaten lieber fest eintragen möchte, füllt diesen
+   Block aus. Sonst fragt das Quiz sie beim ersten Mal ab.          */
+const FIREBASE_CONFIG = {
+  apiKey: "",
+  authDomain: "",
+  databaseURL: "",
+  projectId: "",
+  appId: ""
+};
+
+const SDK = "https://www.gstatic.com/firebasejs/12.15.0/";
+const LS_KEY = "quizduell.firebase";
+let db = null, fbApp = null, LV = null, srvOff = 0, liveTick = null;
+
+const lsGet = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || "null"); } catch (e) { return null; } };
+const lsSet = c => { try { localStorage.setItem(LS_KEY, JSON.stringify(c)); } catch (e) {} };
+function liveCfg() {
+  const c = FIREBASE_CONFIG.databaseURL ? FIREBASE_CONFIG : lsGet();
+  return c && c.databaseURL ? c : null;
+}
+const rnd = n => { let s = "", A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  for (let i = 0; i < n; i++) s += A[Math.floor(Math.random() * A.length)]; return s; };
+
+function loadSdk() {
+  if (window.firebase && window.firebase.database) return Promise.resolve();
+  return ["firebase-app-compat.js", "firebase-database-compat.js"].reduce((p, f) =>
+    p.then(() => new Promise((res, rej) => {
+      const s = document.createElement("script");
+      s.src = SDK + f; s.onload = res;
+      s.onerror = () => rej(new Error("Die Firebase-Bibliothek konnte nicht geladen werden. Bist du online?"));
+      document.head.appendChild(s);
+    })), Promise.resolve());
+}
+
+async function connect() {
+  const c = liveCfg();
+  if (!c) throw new Error("nocfg");
+  await loadSdk();
+  if (!fbApp) {
+    fbApp = firebase.initializeApp(c);
+    db = firebase.database();
+    db.ref(".info/serverTimeOffset").on("value", s => srvOff = s.val() || 0);
+  }
+  return db;
+}
+const now = () => Date.now() + srvOff;
+
+/* ---- Einrichtung ---- */
+function showFbSetup(msg) {
+  only("fbsetup");
+  const e = $("fbErr");
+  if (msg) { e.innerHTML = "<b>" + esc(msg) + "</b>"; e.style.display = ""; } else e.style.display = "none";
+  const c = liveCfg();
+  if (c) $("fbIn").value = JSON.stringify(c, null, 2);
+}
+$("fbBack").onclick = () => only("setup");
+$("fbSave").onclick = () => {
+  const raw = ($("fbIn").value || "").trim();
+  const m = raw.match(/\{[\s\S]*\}/);
+  let obj = null;
+  if (m) { try { obj = JSON.parse(m[0]); } catch (e) { try { obj = new Function("return (" + m[0] + ")")(); } catch (e2) {} } }
+  if (!obj || typeof obj !== "object")
+    return showFbSetup("Der Block konnte nicht gelesen werden. Kopiere alles ab { bis } aus der Firebase-Konsole.");
+  if (!obj.databaseURL)
+    return showFbSetup("Es fehlt die databaseURL. Die erscheint erst, wenn du in Schritt 3 die Realtime Database wirklich angelegt hast – danach den Block erneut kopieren.");
+  lsSet(obj);
+  liveCreate();
+};
+
+/* ---- Raum erstellen ---- */
+async function liveCreate() {
+  if (!liveCfg()) return showFbSetup();
+  const name = ($("n0") ? $("n0").value : "").trim() || "Host";
+  let d;
+  try { d = await connect(); }
+  catch (e) { return showFbSetup(e.message === "nocfg" ? null : e.message); }
+  const code = rnd(4), me = rnd(9), q = drawIdx(cfg.len);
+  try {
+    await d.ref("rooms/" + code).set({
+      host: me, state: "lobby", time: cfg.time, q, cur: -1,
+      created: firebase.database.ServerValue.TIMESTAMP,
+      players: { [me]: { name, ts: firebase.database.ServerValue.TIMESTAMP } }
+    });
+  } catch (e) {
+    return showFbSetup("Schreiben in die Datenbank nicht erlaubt. Prüfe in der Firebase-Konsole unter Realtime Database → Regeln, ob der Testmodus aktiv ist.");
+  }
+  enterRoom(code, me, name, true);
+}
+
+/* ---- Raum beitreten ---- */
+function showJoin(code, msg) {
+  only("join");
+  $("joinCode").value = code || "";
+  $("joinSub").textContent = code ? "Du wurdest in Raum " + code + " eingeladen." : "Gib den Code ein, den dir dein Mitspieler geschickt hat.";
+  const e = $("joinErr");
+  if (msg) { e.innerHTML = "<b>" + esc(msg) + "</b>"; e.style.display = ""; } else e.style.display = "none";
+  ($("joinName").value ? $("joinGo") : $("joinName")).focus();
+}
+$("joinBack").onclick = () => { location.hash = ""; only("setup"); };
+$("joinGo").onclick = async () => {
+  const code = ($("joinCode").value || "").trim().toUpperCase();
+  const name = ($("joinName").value || "").trim() || "Gast";
+  if (code.length < 3) return showJoin(code, "Bitte den Raum-Code eingeben.");
+  if (!liveCfg()) return showFbSetup("Für diesen Raum fehlen die Verbindungsdaten. Nutze den Einladungs-Link deines Mitspielers – darin sind sie enthalten.");
+  let d;
+  try { d = await connect(); } catch (e) { return showJoin(code, e.message); }
+  let snap;
+  try { snap = await d.ref("rooms/" + code).once("value"); }
+  catch (e) { return showJoin(code, "Kein Zugriff auf die Datenbank. Sind die Regeln im Testmodus?"); }
+  const v = snap.val();
+  if (!v) return showJoin(code, "Diesen Raum gibt es nicht. Tippfehler im Code?");
+  if (v.state === "done") return showJoin(code, "Diese Runde ist schon vorbei. Lass dir einen neuen Raum öffnen.");
+  const me = rnd(9);
+  await d.ref("rooms/" + code + "/players/" + me).set({ name, ts: firebase.database.ServerValue.TIMESTAMP });
+  enterRoom(code, me, name, false);
+};
+
+/* ---- Raum betreten & synchronisieren ---- */
+function enterRoom(code, me, name, isHost) {
+  LV = { code, me, name, isHost, cur: null, timerFor: null, answered: false, revealed: false, room: null };
+  LV.ref = db.ref("rooms/" + code);
+  LV.ref.child("players/" + me).onDisconnect().remove();
+  LV.ref.on("value", snap => {
+    const v = snap.val();
+    if (!v) return;
+    LV.room = v;
+    if (v.state === "lobby") renderLobby();
+    else if (v.state === "play") liveSync();
+    else if (v.state === "done") liveEnd();
+  });
+}
+
+function leaveRoom() {
+  clearInterval(liveTick);
+  if (LV && LV.ref) {
+    LV.ref.off();
+    LV.ref.child("players/" + LV.me).remove().catch(() => {});
+  }
+  LV = null;
+  location.hash = "";
+  only("setup");
+}
+$("lobLeave").onclick = leaveRoom;
+$("leHome").onclick = leaveRoom;
+$("leAgain").onclick = () => { leaveRoom(); liveCreate(); };
+
+/* ---- Lobby ---- */
+function inviteLink() {
+  if (location.protocol === "file:") return "";
+  let h = "#live=" + LV.code;
+  if (!FIREBASE_CONFIG.databaseURL) h += "." + b64e(JSON.stringify(liveCfg()));
+  return location.origin + location.pathname + h;
+}
+function renderLobby() {
+  only("lobby");
+  const v = LV.room, ids = Object.keys(v.players || {});
+  $("lobCode").textContent = LV.code;
+  const link = inviteLink();
+  $("lobLinkBox").style.display = link ? "" : "none";
+  $("lobCopy").style.display = link ? "" : "none";
+  $("lobLink").value = link;
+  $("lobSub").textContent = link
+    ? "Schick den Link oder nenne den Code – ihr spielt dann gleichzeitig."
+    : "Die Datei liegt lokal, deshalb gibt es keinen Link. Dein Mitspieler öffnet dieselbe Adresse und tippt den Code ein.";
+
+  $("lobPlayers").innerHTML = ids.map((id, i) => `
+    <div class="prow">
+      <span class="av" style="background:${PCOL[i % 4]}"></span>
+      <span class="pn">${esc(v.players[id].name)}</span>
+      ${id === LV.me ? '<span class="tagme">du</span>' : ""}
+      ${id === v.host ? '<span class="tagme">Gastgeber</span>' : ""}
+    </div>`).join("");
+
+  const enough = ids.length >= 2;
+  $("lobStart").style.display = LV.isHost ? "" : "none";
+  $("lobStart").disabled = !enough;
+  $("lobStart").style.opacity = enough ? "1" : ".45";
+  $("lobHint").textContent = LV.isHost
+    ? (enough ? `${v.q.length} Fragen · ${v.time ? v.time + " Sek. pro Frage" : "ohne Zeitlimit"}`
+              : "Warte, bis mindestens ein Mitspieler da ist.")
+    : "Warte auf den Gastgeber …";
+}
+$("lobCopy").onclick = () => copyOut("lobLink", "lobCopy");
+$("lobStart").onclick = () => {
+  if (!LV || !LV.isHost) return;
+  LV.ref.update({ state: "play", cur: 0, qstart: firebase.database.ServerValue.TIMESTAMP });
+};
+
+/* ---- Punkte aus den gespeicherten Antworten ---- */
+function liveScores(v) {
+  const s = {};
+  Object.keys(v.players || {}).forEach(p => s[p] = { pts: 0, right: 0 });
+  Object.entries(v.ans || {}).forEach(([qi, byP]) => {
+    const q = BANK[v.q[+qi]];
+    if (!q) return;
+    Object.entries(byP).forEach(([p, a]) => {
+      if (s[p] && a && a.ok) { s[p].pts += DIFF[q.d].p; s[p].right++; }
+    });
+  });
+  return s;
+}
+
+/* ---- Synchronisierung während des Spiels ---- */
+function liveSync() {
+  const v = LV.room;
+  if (v.cur !== LV.cur) {
+    LV.cur = v.cur; LV.answered = false; LV.revealed = false; LV.timerFor = null;
+    liveRenderQ();
+  }
+  liveScoreboard();
+
+  if (typeof v.qstart === "number" && v.time > 0 && LV.timerFor !== v.cur) {
+    LV.timerFor = v.cur;
+    startLiveTimer(v);
+  }
+  const ans = (v.ans && v.ans[v.cur]) || {};
+  const ids = Object.keys(v.players || {});
+  const done = ids.filter(p => ans[p] !== undefined);
+  if (done.length >= ids.length && ids.length) liveReveal(ans);
+  else if (LV.answered) waitBox(done.length, ids.length);
+}
+
+function liveRenderQ() {
+  only("game");
+  const v = LV.room, q = BANK[v.q[v.cur]];
+  $("tagCat").textContent = q.k;
+  $("tagDiff").textContent = DIFF[q.d].n + " · " + DIFF[q.d].p + (DIFF[q.d].p === 1 ? " Punkt" : " Punkte");
+  $("tagDiff").className = "tag d" + q.d;
+  $("prog").style.width = (v.cur / v.q.length * 100) + "%";
+  $("turn").innerHTML = `Frage ${v.cur + 1} von ${v.q.length} · <b>alle gleichzeitig</b>`;
+  $("qtext").textContent = q.q;
+  $("timer").textContent = v.time ? v.time + "s" : "";
+  $("timer").className = "timer";
+
+  const box = $("opts");
+  box.innerHTML = "";
+  shuffle(q.a).forEach((txt, i) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = `<span class="k">${KEYS[i]}</span><span class="tx">${esc(txt)}</span>`;
+    b.onclick = () => liveAnswer(txt, b);
+    box.appendChild(b);
+  });
+  gone("fb"); gone("next"); gone("wait"); gone("force");
+  clearTimeout(LV.forceT);
+}
+
+function liveScoreboard() {
+  const v = LV.room, sc = liveScores(v), ids = Object.keys(v.players || {});
+  $("score").innerHTML = ids.map((id, i) => `
+    <div class="pcard" style="border-color:${id === LV.me ? PCOL[i % 4] : "transparent"}">
+      <div class="nm">${esc(v.players[id].name)}${id === LV.me ? " (du)" : ""}</div>
+      <div class="pt" style="color:${PCOL[i % 4]}">${sc[id] ? sc[id].pts : 0}</div>
+    </div>`).join("");
+}
+
+function startLiveTimer(v) {
+  clearInterval(liveTick);
+  const tickFn = () => {
+    const left = Math.max(0, Math.ceil((v.qstart + v.time * 1000 - now()) / 1000));
+    $("timer").textContent = left + "s";
+    $("timer").className = left <= 5 ? "timer warn" : "timer";
+    if (left <= 0) {
+      clearInterval(liveTick);
+      if (!LV.answered) liveAnswer(null, null);
+    }
+  };
+  tickFn();
+  liveTick = setInterval(tickFn, 250);
+}
+
+function liveAnswer(txt, btn) {
+  if (!LV || LV.answered) return;
+  LV.answered = true;
+  const v = LV.room, q = BANK[v.q[v.cur]], ok = txt === q.a[0];
+  [...$("opts").children].forEach(b => b.disabled = true);
+  if (btn) btn.classList.add("chosen");
+  LV.ref.child("ans/" + v.cur + "/" + LV.me).set({ ok: ok ? 1 : 0, t: firebase.database.ServerValue.TIMESTAMP });
+  waitBox(0, 0);
+}
+
+function waitBox(done, total) {
+  const w = $("wait");
+  w.innerHTML = `<span class="dots"><i></i><i></i><i></i></span>
+    <span>${total ? `Warte auf die anderen … ${done} von ${total} haben geantwortet.` : "Antwort abgeschickt – warte auf die anderen …"}</span>`;
+  show("wait");
+  if (LV.isHost) {
+    clearTimeout(LV.forceT);
+    LV.forceT = setTimeout(() => { if (!LV.revealed) show("force"); }, 12000);
+  }
+}
+$("force").onclick = () => { if (LV && LV.isHost) liveReveal((LV.room.ans && LV.room.ans[LV.room.cur]) || {}, true); };
+
+function liveReveal(ans, forced) {
+  if (!LV || LV.revealed) return;
+  LV.revealed = true;
+  clearInterval(liveTick); clearTimeout(LV.forceT);
+  gone("wait"); gone("force");
+  const v = LV.room, q = BANK[v.q[v.cur]];
+
+  [...$("opts").children].forEach(b => {
+    b.disabled = true;
+    if (b.querySelector(".tx").textContent === q.a[0]) b.classList.add("correct");
+    else if (b.classList.contains("chosen")) b.classList.add("wrong");
+  });
+
+  const mine = ans[LV.me];
+  const winners = Object.keys(ans).filter(p => ans[p] && ans[p].ok).map(p => v.players[p] && v.players[p].name).filter(Boolean);
+  const f = $("fb");
+  f.className = "fb " + (mine && mine.ok ? "ok" : "no");
+  f.innerHTML = (mine && mine.ok
+      ? `<b>Richtig! +${DIFF[q.d].p} ${DIFF[q.d].p === 1 ? "Punkt" : "Punkte"}</b>`
+      : `<b>${mine ? "Leider falsch" : "Keine Antwort"}</b>Richtig wäre: <strong>${esc(q.a[0])}</strong><br>`)
+    + (winners.length ? `Richtig lagen: ${winners.map(esc).join(", ")}` : "Niemand hatte es richtig.");
+  show("fb");
+  liveScoreboard();
+
+  if (LV.isHost) setTimeout(liveAdvance, forced ? 800 : 3500);
+}
+
+function liveAdvance() {
+  if (!LV || !LV.isHost || !LV.room) return;
+  const v = LV.room;
+  if (v.cur + 1 >= v.q.length) LV.ref.update({ state: "done" });
+  else LV.ref.update({ cur: v.cur + 1, qstart: firebase.database.ServerValue.TIMESTAMP });
+}
+
+/* ---- Live-Ergebnis ---- */
+function liveEnd() {
+  clearInterval(liveTick);
+  only("liveEnd");
+  const v = LV.room, sc = liveScores(v);
+  const ids = Object.keys(v.players || {}).sort((a, b) => sc[b].pts - sc[a].pts);
+  if (!ids.length) return;
+  const top = sc[ids[0]].pts, winners = ids.filter(i => sc[i].pts === top);
+
+  if (winners.length === ids.length) {
+    $("leTrophy").textContent = "🤝";
+    $("leText").textContent = "Unentschieden!";
+    $("leSub").textContent = `Alle mit ${top} Punkten.`;
+  } else if (winners.length > 1) {
+    $("leTrophy").textContent = "🤝";
+    $("leText").textContent = "Geteilter Sieg!";
+    $("leSub").textContent = `${winners.map(i => v.players[i].name).join(" und ")} mit je ${top} Punkten.`;
+  } else {
+    const w = winners[0];
+    $("leTrophy").textContent = w === LV.me ? "🏆" : "🎉";
+    $("leText").innerHTML = `<span style="color:${PCOL[ids.indexOf(w) % 4]}">${esc(v.players[w].name)}</span> gewinnt!`;
+    $("leSub").textContent = `${top} Punkte – ${top - sc[ids[1]].pts} mehr als Platz 2.`;
+  }
+  $("leRank").innerHTML = ids.map((id, pos) => `
+    <div class="rrow" style="border-left-color:${PCOL[pos % 4]}">
+      <span class="pos">${MEDAL[pos] || (pos + 1) + "."}</span>
+      <span class="rn">${esc(v.players[id].name)}${id === LV.me ? " (du)" : ""}</span>
+      <span class="rq">${sc[id].right}/${v.q.length} richtig</span>
+      <span class="rp" style="color:${PCOL[pos % 4]}">${sc[id].pts}</span>
+    </div>`).join("");
+}
+
+/* ================= Start: Hash prüfen ================= */
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+
+(function boot() {
+  const lm = location.hash.match(/^#live=([A-Za-z0-9]+)(?:\.(.+))?$/);
+  if (lm) {
+    if (lm[2]) { const c = decode(lm[2]); if (c && c.databaseURL) lsSet(c); }
+    return showJoin(lm[1].toUpperCase());
+  }
+  const m = location.hash.match(/^#([cr])=(.+)$/);
+  if (!m) return;
+  const pl = decode(m[2]);
+  if (!pl || !pl.q || !handle(pl)) {
+    only("setup");
+    $("redeemBox").classList.remove("hide");
+    err("Der Link konnte nicht gelesen werden. Möglicherweise habt ihr unterschiedliche Versionen der Datei.");
+  }
+})();
+
+/* Tastatur */
+document.addEventListener("keydown", ev => {
+  const vis = id => !$(id).classList.contains("hide");
+  if (vis("pass") && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); $("passGo").click(); return; }
+  if (vis("invite") && ev.key === "Enter") { ev.preventDefault(); $("invGo").click(); return; }
+  if (vis("join") && ev.key === "Enter") { ev.preventDefault(); $("joinGo").click(); return; }
+  if (!vis("game")) return;
+  if (LV) {
+    if (!LV.answered && ["1","2","3","4"].includes(ev.key)) {
+      const b = $("opts").children[+ev.key - 1];
+      if (b) b.click();
+    }
+    return;
+  }
+  if (!G) return;
+  if (!G.answered && ["1","2","3","4"].includes(ev.key)) {
+    const b = $("opts").children[+ev.key - 1];
+    if (b) b.click();
+  } else if (G.answered && (ev.key === "Enter" || ev.key === " ")) {
+    ev.preventDefault(); $("next").click();
+  }
+});
+</script>
+</body>
+</html>

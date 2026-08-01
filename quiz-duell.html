@@ -1564,10 +1564,15 @@ const SDK = "https://www.gstatic.com/firebasejs/12.15.0/";
 const LS_KEY = "quizduell.firebase";
 let db = null, fbApp = null, LV = null, srvOff = 0, liveTick = null;
 
+/* Rückfalllösung im Arbeitsspeicher: In privaten Fenstern und in den
+   In-App-Browsern von WhatsApp & Co. lässt sich localStorage teils nicht
+   beschreiben. Ohne diesen Fallback ginge die Konfiguration aus dem
+   Einladungs-Link zwischen dem Öffnen und dem Beitreten verloren. */
+let memCfg = null;
 const lsGet = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || "null"); } catch (e) { return null; } };
-const lsSet = c => { try { localStorage.setItem(LS_KEY, JSON.stringify(c)); } catch (e) {} };
+const lsSet = c => { memCfg = c; try { localStorage.setItem(LS_KEY, JSON.stringify(c)); } catch (e) {} };
 function liveCfg() {
-  const c = FIREBASE_CONFIG.databaseURL ? FIREBASE_CONFIG : lsGet();
+  const c = FIREBASE_CONFIG.databaseURL ? FIREBASE_CONFIG : (lsGet() || memCfg);
   return c && c.databaseURL ? c : null;
 }
 const rnd = n => { let s = "", A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -1957,8 +1962,15 @@ function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"
 (function boot() {
   const lm = location.hash.match(/^#live=([A-Za-z0-9]+)(?:\.(.+))?$/);
   if (lm) {
-    if (lm[2]) { const c = decode(lm[2]); if (c && c.databaseURL) lsSet(c); }
-    return showJoin(lm[1].toUpperCase());
+    let warn = "";
+    if (lm[2]) {
+      const c = decode(lm[2]);
+      if (c && c.databaseURL) lsSet(c);
+      else warn = "Der Einladungs-Link ist unvollständig angekommen. Lass ihn dir noch einmal schicken – am besten als reinen Text, ohne dass der Messenger ihn kürzt.";
+    } else if (!liveCfg()) {
+      warn = "In diesem Link fehlt der hintere Teil mit den Verbindungsdaten. Lass ihn dir noch einmal komplett schicken.";
+    }
+    return showJoin(lm[1].toUpperCase(), warn);
   }
   const m = location.hash.match(/^#([cr])=(.+)$/);
   if (!m) return;

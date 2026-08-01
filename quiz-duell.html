@@ -194,6 +194,7 @@
   .rrow .rp { font-size: 1.2rem; font-weight: 700; }
   .tag.streak { background: rgba(255,176,32,.16); color: var(--gold); border-color: rgba(255,176,32,.35); }
   .jokerbtn { width: 100%; margin: 4px 0 14px; font-size: .9rem; padding: 11px; }
+  .linkbtn.danger { color: var(--no); font-weight: 600; }
   .hall { margin-bottom: 22px; }
   .hall .hlbl {
     font-size: .78rem; text-transform: uppercase; letter-spacing: .09em;
@@ -444,6 +445,7 @@
     <div class="wait hide" id="wait"></div>
     <button class="big hide" id="next">Weiter</button>
     <button class="ghost hide" style="width:100%;margin-top:12px" id="force">Ohne die Fehlenden weitermachen</button>
+    <div style="text-align:center;margin-top:16px"><button class="linkbtn" id="quit">Spiel abbrechen</button></div>
   </div>
 
   <!-- ============ LIVE-ERGEBNIS ============ -->
@@ -1422,6 +1424,7 @@ function tbRender() {
     box.appendChild(b);
   });
   gone("fb"); gone("next");
+  resetQuit();
   $("joker").style.display = "none";
   paintStreak(0);
 
@@ -1507,6 +1510,7 @@ function render() {
   });
 
   gone("fb"); gone("next");
+  resetQuit();
   g.qStart = Date.now();
   showJoker(g.joker[p], () => useJoker(q.a[0], p));
   paintStreak(g.streak[p]);
@@ -1614,6 +1618,37 @@ function nextMain() {
   else finish();
 }
 $("next").onclick = nextMain;
+
+/* ---- Laufendes Spiel verlassen ----
+   Zweistufig statt Systemdialog: ein Fehlgriff soll die Runde
+   nicht sofort beenden, ein Dialog nervt auf dem Handy.      */
+let quitArmed = null;
+function resetQuit() {
+  clearTimeout(quitArmed);
+  quitArmed = null;
+  const b = $("quit");
+  b.textContent = "Spiel abbrechen";
+  b.classList.remove("danger");
+}
+$("quit").onclick = () => {
+  const b = $("quit");
+  if (!quitArmed) {
+    b.textContent = "Wirklich abbrechen? Noch einmal tippen.";
+    b.classList.add("danger");
+    quitArmed = setTimeout(resetQuit, 5000);
+    return;
+  }
+  resetQuit();
+  quitGame();
+};
+function quitGame() {
+  clearInterval(tick); clearInterval(liveTick);
+  TB = null;
+  if (LV) return leaveRoom();   /* meldet im Live-Raum sauber ab */
+  G = null;
+  location.hash = "";
+  only("setup");
+}
 
 /* ================= Auswertung ================= */
 function finish() {
@@ -2030,9 +2065,28 @@ $("leAgain").onclick = () => { leaveRoom(); liveCreate(); };
    neue Fragen und setzt den Raum zurück auf "play".          */
 function rematchState(v) {
   const ids = Object.keys(v.players || {});
+  const roster = (v.roster && typeof v.roster === "object") ? v.roster : null;
+  const rosterIds = roster ? Object.keys(roster) : ids;
   /* Nur Zusagen mitzählen, deren Spieler noch im Raum ist. */
   const want = Object.keys(v.rematch || {}).filter(p => ids.includes(p));
-  return { ids, want, alleBereit: ids.length > 0 && want.length >= ids.length };
+  /* Wer aus der letzten Runde gerade nicht erreichbar ist. */
+  const fehlend = rosterIds.filter(p => !ids.includes(p));
+  /* Zwei Bedingungen, damit niemand allein in einer Runde landet:
+     alle Anwesenden haben zugesagt UND es sind mindestens so viele,
+     wie die letzte Runde hatte (höchstens zwei verlangt).          */
+  const mindestens = Math.min(2, rosterIds.length || 1);
+  const alleBereit = ids.length > 0 && want.length >= ids.length && want.length >= mindestens;
+  return { ids, want, roster, rosterIds, fehlend, alleBereit };
+}
+/* Nach einem kurzen Verbindungsabriss löscht Firebase den Spieler aus
+   dem Raum. Solange die Seite offen ist, tragen wir uns wieder ein. */
+function ensureRegistered(v) {
+  if (!LV || !LV.ref || !v.players || v.players[LV.me] || LV.reRegistering) return;
+  LV.reRegistering = true;
+  LV.ref.child("players/" + LV.me)
+    .set({ name: LV.name, ts: firebase.database.ServerValue.TIMESTAMP })
+    .then(() => { LV.reRegistering = false; }, () => { LV.reRegistering = false; });
+  LV.ref.child("players/" + LV.me).onDisconnect().remove();
 }
 /* Fragen für die neue Runde – mit den Einstellungen des Raums,
    nicht mit dem, was der Gastgeber inzwischen im Menü stehen hat. */
@@ -2045,18 +2099,24 @@ function rematchDraw(v) {
   return q;
 }
 function paintRematch(v) {
-  const { ids, want, alleBereit } = rematchState(v);
+  const { ids, want, roster, rosterIds, fehlend, alleBereit } = rematchState(v);
   const btn = $("leRematch"), note = $("leRematchNote");
   const ichBereit = want.includes(LV.me);
   btn.textContent = ichBereit ? "Bereit – warte auf die anderen …" : "🔁 Nochmal spielen";
   btn.disabled = ichBereit;
 
-  const gastgeberDa = ids.includes(v.host);
+  const nameVon = p => (roster && roster[p]) || (v.players[p] && v.players[p].name) || "Mitspieler";
+  const offen = ids.filter(p => !want.includes(p)).map(nameVon);
   let txt = "";
-  if (alleBereit && !gastgeberDa)
+  if (fehlend.length)
+    txt = `${fehlend.map(nameVon).join(" und ")} ${fehlend.length > 1 ? "sind" : "ist"} gerade nicht im Raum – `
+        + `die Verbindung kann kurz abreißen. Sobald ${fehlend.length > 1 ? "sie" : "er oder sie"} wieder da `
+        + `${fehlend.length > 1 ? "sind" : "ist"}, geht es weiter.`;
+  else if (alleBereit && !ids.includes(v.host))
     txt = "Alle sind bereit, aber der Gastgeber hat den Raum verlassen. Öffnet bitte einen neuen Raum.";
   else if (want.length)
-    txt = `${want.length} von ${ids.length} wollen nochmal – neue Fragen, gleicher Raum.`;
+    txt = `${want.length} von ${rosterIds.length} wollen nochmal` +
+          (offen.length ? ` – es fehlt noch: ${offen.join(", ")}.` : " – neue Fragen, gleicher Raum.");
   note.textContent = txt;
   note.style.display = txt ? "" : "none";
 }
@@ -2072,7 +2132,7 @@ function maybeRestart(v) {
   LV.restarting = true;
   const q = rematchDraw(v);
   LV.ref.update({
-    q, ans: null, rematch: null, cur: 0, state: "play",
+    q, ans: null, rematch: null, roster: null, cur: 0, state: "play",
     round: (v.round || 1) + 1,
     qstart: firebase.database.ServerValue.TIMESTAMP
   }).then(() => { LV.restarting = false; }, () => { LV.restarting = false; });
@@ -2195,6 +2255,7 @@ function liveRenderQ() {
     box.appendChild(b);
   });
   gone("fb"); gone("next"); gone("wait"); gone("force");
+  resetQuit();
   if (LV.joker === undefined) LV.joker = true;
   showJoker(LV.joker, () => { LV.joker = false; LV.jokerUsedNow = true; applyFifty(q.a[0]); });
   paintStreak(LV.streak || 0);
@@ -2291,7 +2352,12 @@ function liveReveal(ans, forced) {
 function liveAdvance() {
   if (!LV || !LV.isHost || !LV.room) return;
   const v = LV.room;
-  if (v.cur + 1 >= v.q.length) LV.ref.update({ state: "done" });
+  if (v.cur + 1 >= v.q.length) LV.ref.update({
+    state: "done",
+    /* Wer die Runde zu Ende gespielt hat – Grundlage für den Rückkampf,
+       damit ein kurzer Verbindungsabriss niemanden aus der Wertung wirft. */
+    roster: Object.fromEntries(Object.keys(v.players || {}).map(id => [id, v.players[id].name]))
+  });
   else LV.ref.update({ cur: v.cur + 1, qstart: firebase.database.ServerValue.TIMESTAMP });
 }
 
@@ -2308,6 +2374,7 @@ function liveEnd() {
     LV.counted = true;
     hallAdd(ids.map(id => ({ n: v.players[id].name, s: sc[id].pts, r: sc[id].right, q: (v.q || []).length })));
   }
+  ensureRegistered(v);
   paintRematch(v);
   maybeRestart(v);
   const top = sc[ids[0]].pts, winners = ids.filter(i => sc[i].pts === top);

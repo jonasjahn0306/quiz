@@ -192,6 +192,14 @@
   .rrow .rn { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .rrow .rq { font-size: .84rem; color: var(--dim); margin-right: 10px; white-space: nowrap; }
   .rrow .rp { font-size: 1.2rem; font-weight: 700; }
+  .hall { margin-bottom: 22px; }
+  .hall .hlbl {
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .09em;
+    color: var(--dim); margin-bottom: 10px; display: flex; align-items: baseline; gap: 8px;
+  }
+  .hall .hlbl .clr { margin-left: auto; text-transform: none; letter-spacing: 0; }
+  .hall .rrow .rn small { font-weight: 400; color: var(--dim); }
+  .hall .empty { font-size: .84rem; color: var(--dim); line-height: 1.45; }
   .catlist { margin-bottom: 22px; }
   .catrow { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: .9rem; }
   .catrow .cn { flex: 1; color: var(--dim); }
@@ -301,6 +309,9 @@
     </div>
 
     <button class="big" id="start">Spiel starten</button>
+
+    <div class="divider"></div>
+    <div class="hall" id="hallSetup"></div>
 
     <div class="divider"></div>
     <button class="linkbtn" id="showRedeem">Challenge erhalten? Code oder Link hier einfügen →</button>
@@ -432,6 +443,7 @@
       <p id="leSub"></p>
     </div>
     <div class="rank" id="leRank"></div>
+    <div class="hall" id="hallLive"></div>
     <div style="display:flex;gap:12px;flex-wrap:wrap">
       <button class="ghost" style="flex:1" id="leAgain">Neuen Raum öffnen</button>
       <button class="ghost" style="flex:1" id="leHome">Zurück zum Start</button>
@@ -461,6 +473,7 @@
       <p id="wsub"></p>
     </div>
     <div class="rank" id="rank"></div>
+    <div class="hall" id="hallEnd"></div>
     <div class="catlist" id="cats"></div>
     <div style="display:flex;gap:12px;flex-wrap:wrap">
       <button class="ghost" style="flex:1" id="again">Nochmal spielen</button>
@@ -477,6 +490,7 @@
     </div>
     <div class="h2h" id="vsCards"></div>
     <div class="qlist" id="vsQs"></div>
+    <div class="hall" id="hallVs"></div>
     <button class="big hide" id="vsShare">Ergebnis zurückschicken</button>
     <button class="ghost hide" style="width:100%;margin-top:12px" id="vsRevenge">Rückrunde starten</button>
     <button class="ghost hide" style="width:100%;margin-top:12px" id="vsHome">Zurück zum Start</button>
@@ -640,7 +654,273 @@ const BANK = [
 {k:"Vermischtes",d:3,q:"Wie viele Mitgliedstaaten hat die Europäische Union aktuell?",a:["27","28","25","30"]},
 {k:"Vermischtes",d:3,q:"Wie viele Flächen hat ein Oktaeder?",a:["8","6","10","12"]},
 {k:"Vermischtes",d:3,q:"Wie heißt in der griechischen Mythologie der Sohn von Zeus und Alkmene?",a:["Herakles","Perseus","Achilles","Theseus"]},
-{k:"Vermischtes",d:3,q:"Welche Sprache hat weltweit die meisten Muttersprachler?",a:["Mandarin-Chinesisch","Englisch","Spanisch","Hindi"]}
+{k:"Vermischtes",d:3,q:"Welche Sprache hat weltweit die meisten Muttersprachler?",a:["Mandarin-Chinesisch","Englisch","Spanisch","Hindi"]},
+
+/* ===== Erweiterung: Geografie ===== */
+{k:"Geografie",d:1,q:"Wie heißt die Hauptstadt Italiens?",a:["Rom","Mailand","Neapel","Turin"]},
+{k:"Geografie",d:1,q:"Wie heißt die Hauptstadt Spaniens?",a:["Madrid","Barcelona","Sevilla","Valencia"]},
+{k:"Geografie",d:1,q:"Wie heißt die Hauptstadt Griechenlands?",a:["Athen","Thessaloniki","Patras","Sparta"]},
+{k:"Geografie",d:1,q:"Wie heißt die Hauptstadt Portugals?",a:["Lissabon","Porto","Faro","Braga"]},
+{k:"Geografie",d:1,q:"Wie heißt die Hauptstadt Schwedens?",a:["Stockholm","Göteborg","Malmö","Uppsala"]},
+{k:"Geografie",d:1,q:"Wie heißt die Hauptstadt Norwegens?",a:["Oslo","Bergen","Trondheim","Stavanger"]},
+{k:"Geografie",d:1,q:"Wie heißt die Hauptstadt der Niederlande?",a:["Amsterdam","Den Haag","Rotterdam","Utrecht"]},
+{k:"Geografie",d:1,q:"Wie heißt die Hauptstadt Ägyptens?",a:["Kairo","Alexandria","Luxor","Assuan"]},
+{k:"Geografie",d:1,q:"Wie heißt die Hauptstadt Argentiniens?",a:["Buenos Aires","Córdoba","Rosario","Mendoza"]},
+{k:"Geografie",d:1,q:"Welcher Fluss fließt durch Paris?",a:["Seine","Loire","Rhone","Garonne"]},
+{k:"Geografie",d:1,q:"An welchem Fluss liegt Köln?",a:["Rhein","Elbe","Weser","Main"]},
+{k:"Geografie",d:1,q:"Welcher ist der längste Fluss Südamerikas?",a:["Amazonas","Orinoco","Paraná","Rio Negro"]},
+{k:"Geografie",d:1,q:"Welcher ist der höchste Berg Afrikas?",a:["Kilimandscharo","Mount Kenya","Mount Stanley","Toubkal"]},
+{k:"Geografie",d:1,q:"In welchem Gebirge liegt der Mont Blanc?",a:["Alpen","Pyrenäen","Apennin","Karpaten"]},
+{k:"Geografie",d:1,q:"Welches Meer liegt zwischen Europa und Afrika?",a:["Mittelmeer","Schwarzes Meer","Rotes Meer","Nordsee"]},
+{k:"Geografie",d:1,q:"Auf welchem Kontinent liegt Ägypten?",a:["Afrika","Asien","Europa","Südamerika"]},
+{k:"Geografie",d:1,q:"In welchem Land liegt die Stadt Kyoto?",a:["Japan","China","Südkorea","Vietnam"]},
+{k:"Geografie",d:1,q:"Welche ist die größte Wüste Afrikas?",a:["Sahara","Kalahari","Namib","Danakil"]},
+{k:"Geografie",d:1,q:"Welches Land ist für seine Fjorde bekannt?",a:["Norwegen","Dänemark","Irland","Polen"]},
+{k:"Geografie",d:1,q:"Welcher Ozean trennt Europa von Nordamerika?",a:["Atlantik","Pazifik","Indischer Ozean","Südpolarmeer"]},
+{k:"Geografie",d:2,q:"Wie viele Nachbarländer hat Deutschland?",a:["9","7","8","10"]},
+{k:"Geografie",d:2,q:"Wie heißt die Hauptstadt Ungarns?",a:["Budapest","Debrecen","Szeged","Bratislava"]},
+{k:"Geografie",d:2,q:"Welcher ist der längste Fluss Europas?",a:["Wolga","Donau","Rhein","Dnepr"]},
+{k:"Geografie",d:2,q:"Wie heißt die Hauptstadt Irlands?",a:["Dublin","Cork","Belfast","Galway"]},
+{k:"Geografie",d:2,q:"In welchem Land liegt die Stadt Marrakesch?",a:["Marokko","Tunesien","Algerien","Libyen"]},
+{k:"Geografie",d:2,q:"Wie heißt die Hauptstadt Finnlands?",a:["Helsinki","Turku","Tampere","Espoo"]},
+{k:"Geografie",d:2,q:"Welches Land hat die längste Küstenlinie der Welt?",a:["Kanada","Russland","Indonesien","Australien"]},
+{k:"Geografie",d:2,q:"Wie heißt die Hauptstadt Chiles?",a:["Santiago","Valparaíso","Concepción","Antofagasta"]},
+{k:"Geografie",d:2,q:"Welches ist das flächenmäßig größte Land Afrikas?",a:["Algerien","Sudan","DR Kongo","Libyen"]},
+{k:"Geografie",d:2,q:"Welcher Kanal verbindet Mittelmeer und Rotes Meer?",a:["Sueskanal","Panamakanal","Nord-Ostsee-Kanal","Bosporus"]},
+{k:"Geografie",d:2,q:"Wie heißt die Hauptstadt Perus?",a:["Lima","Cusco","Arequipa","Quito"]},
+{k:"Geografie",d:2,q:"Welches Land umschließt Lesotho vollständig?",a:["Südafrika","Namibia","Simbabwe","Botswana"]},
+{k:"Geografie",d:2,q:"Wie heißt die Hauptstadt Vietnams?",a:["Hanoi","Ho-Chi-Minh-Stadt","Da Nang","Hue"]},
+{k:"Geografie",d:2,q:"Welcher ist der flächengrößte See Afrikas?",a:["Victoriasee","Tanganjikasee","Malawisee","Tschadsee"]},
+{k:"Geografie",d:2,q:"Welches ist das flächenmäßig größte Bundesland Deutschlands?",a:["Bayern","Niedersachsen","Baden-Württemberg","Nordrhein-Westfalen"]},
+{k:"Geografie",d:2,q:"Welche Meerenge trennt Europa von Afrika?",a:["Straße von Gibraltar","Bosporus","Ärmelkanal","Dardanellen"]},
+{k:"Geografie",d:2,q:"Welches Land hieß früher Siam?",a:["Thailand","Myanmar","Kambodscha","Laos"]},
+{k:"Geografie",d:2,q:"Wie heißt die Hauptstadt Uruguays?",a:["Montevideo","Asunción","Santiago","La Paz"]},
+{k:"Geografie",d:2,q:"In welchem Land liegt die Atacama-Wüste?",a:["Chile","Peru","Bolivien","Argentinien"]},
+{k:"Geografie",d:2,q:"Wie heißt die Hauptstadt des US-Bundesstaats Kalifornien?",a:["Sacramento","Los Angeles","San Francisco","San Diego"]},
+{k:"Geografie",d:3,q:"Wie heißt die Hauptstadt Bhutans?",a:["Thimphu","Paro","Kathmandu","Punakha"]},
+{k:"Geografie",d:3,q:"Welches Land hat die meisten Inseln der Welt?",a:["Schweden","Indonesien","Norwegen","Kanada"]},
+{k:"Geografie",d:3,q:"Wie heißt der zweithöchste Berg der Erde?",a:["K2","Kangchendzönga","Lhotse","Makalu"]},
+{k:"Geografie",d:3,q:"Wie heißt die Hauptstadt Myanmars?",a:["Naypyidaw","Rangun","Mandalay","Bago"]},
+{k:"Geografie",d:3,q:"Welcher Staat außer dem Vatikan liegt vollständig in Italien?",a:["San Marino","Monaco","Andorra","Liechtenstein"]},
+{k:"Geografie",d:3,q:"Wie heißt der höchste Wasserfall der Erde?",a:["Salto Ángel","Niagarafälle","Viktoriafälle","Iguazú-Wasserfälle"]},
+{k:"Geografie",d:3,q:"Welches ist das kleinste Land Afrikas auf dem Festland?",a:["Gambia","Dschibuti","Ruanda","Eswatini"]},
+{k:"Geografie",d:3,q:"Welcher Fluss bildet einen großen Teil der Grenze zwischen den USA und Mexiko?",a:["Rio Grande","Colorado","Missouri","Ohio"]},
+{k:"Geografie",d:3,q:"Wie heißt die Hauptstadt Aserbaidschans?",a:["Baku","Tiflis","Eriwan","Astana"]},
+{k:"Geografie",d:3,q:"Wo liegt die tiefstgelegene Landstelle der Erde?",a:["Am Ufer des Toten Meeres","Im Death Valley","Im Turfanbecken","An der Kaspischen Senke"]},
+
+/* ===== Erweiterung: Geschichte ===== */
+{k:"Geschichte",d:1,q:"In welchem Jahr endete der Zweite Weltkrieg in Europa?",a:["1945","1944","1946","1943"]},
+{k:"Geschichte",d:1,q:"Wer war der erste Präsident der USA?",a:["George Washington","Thomas Jefferson","Abraham Lincoln","John Adams"]},
+{k:"Geschichte",d:1,q:"Welches Volk erbaute die Pyramiden von Gizeh?",a:["Die Ägypter","Die Römer","Die Griechen","Die Perser"]},
+{k:"Geschichte",d:1,q:"In welcher Stadt steht das Kolosseum?",a:["Rom","Athen","Karthago","Alexandria"]},
+{k:"Geschichte",d:1,q:"Wer verlor 1815 die Schlacht bei Waterloo?",a:["Napoleon Bonaparte","Ludwig XVI.","Karl der Große","Maximilien de Robespierre"]},
+{k:"Geschichte",d:1,q:"In welchem Jahr wurde Deutschland wiedervereinigt?",a:["1990","1989","1991","1992"]},
+{k:"Geschichte",d:1,q:"Welches Land schenkte den USA die Freiheitsstatue?",a:["Frankreich","Großbritannien","Spanien","Italien"]},
+{k:"Geschichte",d:1,q:"Wie hieß die letzte Herrscherin des ptolemäischen Ägypten?",a:["Kleopatra","Nofretete","Hatschepsut","Livia"]},
+{k:"Geschichte",d:1,q:"Wie hieß der erste künstliche Erdsatellit?",a:["Sputnik 1","Apollo 1","Explorer 1","Wostok 1"]},
+{k:"Geschichte",d:1,q:"Welches Reich eroberte Hernán Cortés?",a:["Das Aztekenreich","Das Inkareich","Das Mayareich","Das Olmekenreich"]},
+{k:"Geschichte",d:1,q:"Wer schrieb zusammen mit Friedrich Engels das Kommunistische Manifest?",a:["Karl Marx","Wladimir Lenin","Georg Hegel","Michail Bakunin"]},
+{k:"Geschichte",d:1,q:"In welchem Land begann die Industrielle Revolution?",a:["Großbritannien","Deutschland","Frankreich","USA"]},
+{k:"Geschichte",d:2,q:"In welchem Jahr wurde die Berliner Mauer gebaut?",a:["1961","1953","1949","1968"]},
+{k:"Geschichte",d:2,q:"Wer war der erste Mensch im Weltall?",a:["Juri Gagarin","Alan Shepard","Neil Armstrong","German Titow"]},
+{k:"Geschichte",d:2,q:"Welche Dynastie regierte China zuletzt?",a:["Qing","Ming","Han","Tang"]},
+{k:"Geschichte",d:2,q:"In welchem Jahr wurde die Unabhängigkeitserklärung der USA unterzeichnet?",a:["1776","1789","1765","1783"]},
+{k:"Geschichte",d:2,q:"Wer war im 5. Jahrhundert der Anführer der Hunnen?",a:["Attila","Dschingis Khan","Alarich","Odoaker"]},
+{k:"Geschichte",d:2,q:"In welchem Jahr fand die Schlacht bei Hastings statt?",a:["1066","1215","955","1099"]},
+{k:"Geschichte",d:2,q:"Welcher Feldherr überquerte mit Kriegselefanten die Alpen?",a:["Hannibal","Julius Caesar","Alexander der Große","Scipio"]},
+{k:"Geschichte",d:2,q:"In welchem Jahr wurde John F. Kennedy ermordet?",a:["1963","1961","1965","1968"]},
+{k:"Geschichte",d:2,q:"Wie hieß das Militärbündnis der Ostblockstaaten?",a:["Warschauer Pakt","NATO","Komintern","Europarat"]},
+{k:"Geschichte",d:2,q:"Welcher Politiker wurde „Eiserner Kanzler“ genannt?",a:["Otto von Bismarck","Konrad Adenauer","Gustav Stresemann","Friedrich Ebert"]},
+{k:"Geschichte",d:2,q:"In welchem Jahrhundert lebte Martin Luther?",a:["16. Jahrhundert","15. Jahrhundert","17. Jahrhundert","14. Jahrhundert"]},
+{k:"Geschichte",d:2,q:"Welche Stadt wurde 79 n. Chr. vom Vesuv verschüttet?",a:["Pompeji","Ostia","Neapel","Ravenna"]},
+{k:"Geschichte",d:2,q:"In welchem Jahr löste sich die Sowjetunion auf?",a:["1991","1989","1990","1993"]},
+{k:"Geschichte",d:2,q:"Wer war die erste Bundeskanzlerin Deutschlands?",a:["Angela Merkel","Ursula von der Leyen","Annegret Kramp-Karrenbauer","Andrea Nahles"]},
+{k:"Geschichte",d:3,q:"In welchem Jahr eroberten die Osmanen Konstantinopel?",a:["1453","1492","1204","1071"]},
+{k:"Geschichte",d:3,q:"Welcher Vertrag beendete 1919 den Ersten Weltkrieg für Deutschland?",a:["Vertrag von Versailles","Vertrag von Trianon","Frieden von Brest-Litowsk","Vertrag von Saint-Germain"]},
+{k:"Geschichte",d:3,q:"Für welchen Pharao wurde die größte Pyramide von Gizeh errichtet?",a:["Cheops","Chephren","Mykerinos","Ramses II."]},
+{k:"Geschichte",d:3,q:"In welchem Jahr wurde die Magna Carta besiegelt?",a:["1215","1066","1348","1302"]},
+{k:"Geschichte",d:3,q:"Wer war die erste Frau, die einen Nobelpreis erhielt?",a:["Marie Curie","Bertha von Suttner","Selma Lagerlöf","Irène Joliot-Curie"]},
+{k:"Geschichte",d:3,q:"Welches Ereignis löste 1914 unmittelbar den Ersten Weltkrieg aus?",a:["Das Attentat von Sarajevo","Der Überfall auf Polen","Der Boxeraufstand","Die Marokkokrise"]},
+{k:"Geschichte",d:3,q:"In welchem Jahr wurde die Französische Republik erstmals ausgerufen?",a:["1792","1789","1799","1804"]},
+{k:"Geschichte",d:3,q:"Wer war der letzte deutsche Kaiser?",a:["Wilhelm II.","Friedrich III.","Wilhelm I.","Franz Joseph I."]},
+
+/* ===== Erweiterung: Wissenschaft & Natur ===== */
+{k:"Wissenschaft",d:1,q:"Wie viele Planeten hat unser Sonnensystem?",a:["8","9","7","10"]},
+{k:"Wissenschaft",d:1,q:"Welches Gas benötigt der Mensch zum Atmen?",a:["Sauerstoff","Kohlendioxid","Stickstoff","Helium"]},
+{k:"Wissenschaft",d:1,q:"Bei wie viel Grad Celsius gefriert Wasser auf Meereshöhe?",a:["0","32","-10","4"]},
+{k:"Wissenschaft",d:1,q:"Bei wie viel Grad Celsius siedet Wasser auf Meereshöhe?",a:["100","90","120","80"]},
+{k:"Wissenschaft",d:1,q:"Welches ist das größte Landtier der Erde?",a:["Afrikanischer Elefant","Nashorn","Giraffe","Flusspferd"]},
+{k:"Wissenschaft",d:1,q:"Wie lautet die chemische Formel von Wasser?",a:["H₂O","CO₂","O₂","NaCl"]},
+{k:"Wissenschaft",d:1,q:"In welchem Sinnesorgan liegt die Netzhaut?",a:["Im Auge","Im Ohr","In der Nase","Auf der Zunge"]},
+{k:"Wissenschaft",d:1,q:"Welches ist das schnellste Landtier?",a:["Gepard","Löwe","Gabelbock","Rennpferd"]},
+{k:"Wissenschaft",d:1,q:"Welches Tier legt die größten Eier?",a:["Strauß","Emu","Kaiserpinguin","Steinadler"]},
+{k:"Wissenschaft",d:1,q:"Wie nennt man die Verwandlung von der Raupe zum Schmetterling?",a:["Metamorphose","Mutation","Symbiose","Osmose"]},
+{k:"Wissenschaft",d:1,q:"Welcher Planet ist für sein auffälliges Ringsystem bekannt?",a:["Saturn","Jupiter","Mars","Merkur"]},
+{k:"Wissenschaft",d:1,q:"Welches Organ baut im Körper die meisten Giftstoffe ab?",a:["Die Leber","Die Milz","Die Lunge","Der Magen"]},
+{k:"Wissenschaft",d:1,q:"Aus wie vielen Grundfarben besteht das RGB-Farbmodell?",a:["3","4","2","5"]},
+{k:"Wissenschaft",d:1,q:"Welcher Stern ist der Erde am nächsten?",a:["Die Sonne","Proxima Centauri","Sirius","Der Polarstern"]},
+{k:"Wissenschaft",d:1,q:"Welches Säugetier kann aktiv fliegen?",a:["Die Fledermaus","Der Pinguin","Der Kolibri","Das Flughörnchen"]},
+{k:"Wissenschaft",d:1,q:"Aus welchem chemischen Element besteht die Mine eines Bleistifts?",a:["Kohlenstoff","Blei","Silizium","Zink"]},
+{k:"Wissenschaft",d:1,q:"Wie viele Beine hat ein Insekt?",a:["6","8","4","10"]},
+{k:"Wissenschaft",d:1,q:"Welche Blutzellen transportieren den Sauerstoff?",a:["Rote Blutkörperchen","Weiße Blutkörperchen","Blutplättchen","Lymphozyten"]},
+{k:"Wissenschaft",d:1,q:"Was misst die Richterskala?",a:["Die Stärke von Erdbeben","Die Windgeschwindigkeit","Die Lautstärke","Den Luftdruck"]},
+{k:"Wissenschaft",d:1,q:"Wie viele Herzkammern hat der Mensch?",a:["2","1","3","4"]},
+{k:"Wissenschaft",d:2,q:"Welches Element hat das chemische Symbol „Na“?",a:["Natrium","Stickstoff","Nickel","Neon"]},
+{k:"Wissenschaft",d:2,q:"Wie heißt der größte Mond im Sonnensystem?",a:["Ganymed","Titan","Der Erdmond","Kallisto"]},
+{k:"Wissenschaft",d:2,q:"Wie lange braucht das Licht der Sonne bis zur Erde?",a:["Etwa 8 Minuten","Etwa 8 Sekunden","Etwa 1 Stunde","Etwa 1 Sekunde"]},
+{k:"Wissenschaft",d:2,q:"Wer begründete die Evolutionstheorie durch natürliche Selektion?",a:["Charles Darwin","Gregor Mendel","Jean-Baptiste Lamarck","Carl von Linné"]},
+{k:"Wissenschaft",d:2,q:"In welchem Organ sitzen die Alveolen?",a:["In der Lunge","In der Niere","In der Leber","Im Darm"]},
+{k:"Wissenschaft",d:2,q:"Wie nennt man Tiere, die sich ausschließlich von Pflanzen ernähren?",a:["Herbivoren","Karnivoren","Omnivoren","Detritivoren"]},
+{k:"Wissenschaft",d:2,q:"Welche Einheit misst die elektrische Spannung?",a:["Volt","Ampere","Watt","Ohm"]},
+{k:"Wissenschaft",d:2,q:"Welches Element hat das chemische Symbol „Fe“?",a:["Eisen","Fluor","Francium","Blei"]},
+{k:"Wissenschaft",d:2,q:"Wie heißt der Vorgang, bei dem Pflanzen mit Licht Zucker aufbauen?",a:["Fotosynthese","Zellatmung","Gärung","Transpiration"]},
+{k:"Wissenschaft",d:2,q:"Welcher Planet ist der heißeste im Sonnensystem?",a:["Venus","Merkur","Mars","Jupiter"]},
+{k:"Wissenschaft",d:2,q:"Wie viele Elemente umfasst das Periodensystem derzeit?",a:["118","108","128","92"]},
+{k:"Wissenschaft",d:2,q:"Welche Krankheit entsteht durch Vitamin-C-Mangel?",a:["Skorbut","Rachitis","Beriberi","Pellagra"]},
+{k:"Wissenschaft",d:2,q:"Welches Blutgefäß führt das Blut vom Herzen weg?",a:["Die Arterie","Die Vene","Die Kapillare","Das Lymphgefäß"]},
+{k:"Wissenschaft",d:2,q:"Wie heißt die äußerste Gesteinsschicht der Erde?",a:["Die Erdkruste","Der Erdmantel","Der Erdkern","Die Asthenosphäre"]},
+{k:"Wissenschaft",d:2,q:"Welches Metall leitet elektrischen Strom am besten?",a:["Silber","Kupfer","Gold","Aluminium"]},
+{k:"Wissenschaft",d:2,q:"Wie viele Chromosomen hat eine menschliche Körperzelle?",a:["46","23","48","44"]},
+{k:"Wissenschaft",d:2,q:"Welche Wolkenart bringt typischerweise Gewitter?",a:["Cumulonimbus","Cirrus","Stratus","Altocumulus"]},
+{k:"Wissenschaft",d:2,q:"Wie heißt der größte Knochen des menschlichen Körpers?",a:["Der Oberschenkelknochen","Das Schienbein","Der Oberarmknochen","Das Wadenbein"]},
+{k:"Wissenschaft",d:3,q:"Welches ist das schwerste natürlich vorkommende Element?",a:["Uran","Plutonium","Blei","Thorium"]},
+{k:"Wissenschaft",d:3,q:"Welche Einheit misst die Aktivität einer radioaktiven Substanz?",a:["Becquerel","Sievert","Gray","Rem"]},
+{k:"Wissenschaft",d:3,q:"Wer entdeckte die Vererbungsregeln an Erbsenpflanzen?",a:["Gregor Mendel","Charles Darwin","Louis Pasteur","Robert Koch"]},
+{k:"Wissenschaft",d:3,q:"Wie heißt der Vorgang, bei dem ein schwerer Atomkern zerlegt wird?",a:["Kernspaltung","Kernfusion","Ionisation","Sublimation"]},
+{k:"Wissenschaft",d:3,q:"Welches Teilchen vermittelt die elektromagnetische Wechselwirkung?",a:["Das Photon","Das Gluon","Das Neutrino","Das Higgs-Boson"]},
+{k:"Wissenschaft",d:3,q:"Welche Zuckerart zirkuliert im menschlichen Blut?",a:["Glukose","Fruktose","Saccharose","Laktose"]},
+{k:"Wissenschaft",d:3,q:"Wer entdeckte das Penicillin?",a:["Alexander Fleming","Louis Pasteur","Robert Koch","Paul Ehrlich"]},
+{k:"Wissenschaft",d:3,q:"Wie viele verschiedene Basen kommen in der DNA vor?",a:["4","3","5","20"]},
+{k:"Wissenschaft",d:3,q:"Wie heißt die Grenze, ab der Licht ein Schwarzes Loch nicht mehr verlassen kann?",a:["Ereignishorizont","Photonensphäre","Singularität","Roche-Grenze"]},
+{k:"Wissenschaft",d:3,q:"Welche Einheit misst die Stoffmenge?",a:["Mol","Gramm","Kelvin","Candela"]},
+
+/* ===== Erweiterung: Kunst & Literatur ===== */
+{k:"Kunst & Literatur",d:1,q:"Wer schrieb das Drama „Die Räuber“?",a:["Friedrich Schiller","Johann Wolfgang von Goethe","Gotthold Ephraim Lessing","Heinrich von Kleist"]},
+{k:"Kunst & Literatur",d:1,q:"Wer malte die Deckenfresken der Sixtinischen Kapelle?",a:["Michelangelo","Raffael","Leonardo da Vinci","Sandro Botticelli"]},
+{k:"Kunst & Literatur",d:1,q:"Wer sammelte „Hänsel und Gretel“ und „Rotkäppchen“?",a:["Die Brüder Grimm","Hans Christian Andersen","Charles Perrault","Wilhelm Hauff"]},
+{k:"Kunst & Literatur",d:1,q:"Wer schrieb die Harry-Potter-Romane?",a:["J. K. Rowling","J. R. R. Tolkien","Stephenie Meyer","C. S. Lewis"]},
+{k:"Kunst & Literatur",d:1,q:"Wer schrieb „Der Herr der Ringe“?",a:["J. R. R. Tolkien","C. S. Lewis","George R. R. Martin","Michael Ende"]},
+{k:"Kunst & Literatur",d:1,q:"Wer schrieb „Die unendliche Geschichte“?",a:["Michael Ende","Otfried Preußler","Erich Kästner","Cornelia Funke"]},
+{k:"Kunst & Literatur",d:1,q:"Wer schrieb „Emil und die Detektive“?",a:["Erich Kästner","Michael Ende","James Krüss","Otfried Preußler"]},
+{k:"Kunst & Literatur",d:1,q:"Welche Autorin erfand Pippi Langstrumpf?",a:["Astrid Lindgren","Selma Lagerlöf","Tove Jansson","Enid Blyton"]},
+{k:"Kunst & Literatur",d:1,q:"Wer schrieb „Robinson Crusoe“?",a:["Daniel Defoe","Jonathan Swift","Jules Verne","Robert Louis Stevenson"]},
+{k:"Kunst & Literatur",d:1,q:"Wer schrieb „Die Schatzinsel“?",a:["Robert Louis Stevenson","Mark Twain","Jack London","Daniel Defoe"]},
+{k:"Kunst & Literatur",d:1,q:"Wer schrieb „Die Abenteuer des Tom Sawyer“?",a:["Mark Twain","Jack London","Charles Dickens","Herman Melville"]},
+{k:"Kunst & Literatur",d:2,q:"Wer schrieb den Roman „Der Prozess“?",a:["Franz Kafka","Thomas Mann","Hermann Hesse","Robert Musil"]},
+{k:"Kunst & Literatur",d:2,q:"Wer schrieb „Der Steppenwolf“?",a:["Hermann Hesse","Thomas Mann","Franz Kafka","Alfred Döblin"]},
+{k:"Kunst & Literatur",d:2,q:"Wer schrieb „Buddenbrooks“?",a:["Thomas Mann","Heinrich Mann","Theodor Fontane","Hermann Hesse"]},
+{k:"Kunst & Literatur",d:2,q:"Wer malte „Der Schrei“?",a:["Edvard Munch","Vincent van Gogh","Egon Schiele","Gustav Klimt"]},
+{k:"Kunst & Literatur",d:2,q:"Wer malte das goldglänzende Gemälde „Der Kuss“?",a:["Gustav Klimt","Egon Schiele","Franz Marc","Paul Klee"]},
+{k:"Kunst & Literatur",d:2,q:"Wer schuf die Skulptur „Der Denker“?",a:["Auguste Rodin","Michelangelo","Alberto Giacometti","Camille Claudel"]},
+{k:"Kunst & Literatur",d:2,q:"Wem wird das Epos „Die Odyssee“ zugeschrieben?",a:["Homer","Vergil","Ovid","Sophokles"]},
+{k:"Kunst & Literatur",d:2,q:"Wer schrieb „Don Quijote“?",a:["Miguel de Cervantes","Lope de Vega","Federico García Lorca","Gabriel García Márquez"]},
+{k:"Kunst & Literatur",d:2,q:"Wer schrieb „Hundert Jahre Einsamkeit“?",a:["Gabriel García Márquez","Mario Vargas Llosa","Jorge Luis Borges","Isabel Allende"]},
+{k:"Kunst & Literatur",d:2,q:"Welcher Kunstrichtung wird Claude Monet zugerechnet?",a:["Impressionismus","Expressionismus","Kubismus","Surrealismus"]},
+{k:"Kunst & Literatur",d:2,q:"Wer schrieb den Roman „Effi Briest“?",a:["Theodor Fontane","Theodor Storm","Gottfried Keller","Thomas Mann"]},
+{k:"Kunst & Literatur",d:3,q:"Wer schrieb den Roman „Ulysses“?",a:["James Joyce","Virginia Woolf","Samuel Beckett","T. S. Eliot"]},
+{k:"Kunst & Literatur",d:3,q:"Wer schrieb „Auf der Suche nach der verlorenen Zeit“?",a:["Marcel Proust","André Gide","Albert Camus","Gustave Flaubert"]},
+{k:"Kunst & Literatur",d:3,q:"Welcher deutsche Autor erhielt 1999 den Literaturnobelpreis?",a:["Günter Grass","Heinrich Böll","Herta Müller","Thomas Mann"]},
+{k:"Kunst & Literatur",d:3,q:"Wer malte das Wandbild „Das Abendmahl“ in Mailand?",a:["Leonardo da Vinci","Michelangelo","Raffael","Tizian"]},
+{k:"Kunst & Literatur",d:3,q:"Wer schrieb den Roman „Der Zauberberg“?",a:["Thomas Mann","Hermann Hesse","Robert Musil","Franz Werfel"]},
+{k:"Kunst & Literatur",d:3,q:"Welche mexikanische Malerin ist für ihre Selbstporträts berühmt?",a:["Frida Kahlo","Georgia O’Keeffe","Tamara de Lempicka","Remedios Varo"]},
+{k:"Kunst & Literatur",d:3,q:"Wer schrieb das Versepos „Die Aeneis“?",a:["Vergil","Homer","Ovid","Horaz"]},
+
+/* ===== Erweiterung: Musik & Film ===== */
+{k:"Musik & Film",d:1,q:"Welches Instrument wird mit einem Bogen gestrichen?",a:["Die Geige","Die Trompete","Das Klavier","Die Flöte"]},
+{k:"Musik & Film",d:1,q:"Wie viele verschiedene Töne hat eine Dur-Tonleiter ohne die Oktave?",a:["7","5","8","12"]},
+{k:"Musik & Film",d:1,q:"Wer führte Regie bei „E.T. – Der Außerirdische“?",a:["Steven Spielberg","George Lucas","James Cameron","Ridley Scott"]},
+{k:"Musik & Film",d:1,q:"Welches Studio produzierte „Der König der Löwen“?",a:["Disney","Pixar","DreamWorks","Warner Bros."]},
+{k:"Musik & Film",d:1,q:"Wie heißt die Zauberschule in den Harry-Potter-Filmen?",a:["Hogwarts","Beauxbatons","Durmstrang","Winterfell"]},
+{k:"Musik & Film",d:1,q:"Welcher Sänger wird „King of Pop“ genannt?",a:["Michael Jackson","Elvis Presley","Prince","Freddie Mercury"]},
+{k:"Musik & Film",d:1,q:"Welcher Sänger gilt als „King of Rock ’n’ Roll“?",a:["Elvis Presley","Chuck Berry","Little Richard","Buddy Holly"]},
+{k:"Musik & Film",d:1,q:"Welches dieser Instrumente wird gezupft?",a:["Die Harfe","Die Posaune","Die Klarinette","Die Oboe"]},
+{k:"Musik & Film",d:1,q:"Wie heißt der bekannteste Filmpreis Hollywoods?",a:["Oscar","Grammy","Emmy","Tony"]},
+{k:"Musik & Film",d:1,q:"In welcher Filmreihe fällt der Satz „Ich bin dein Vater“?",a:["Star Wars","Der Pate","Matrix","Titanic"]},
+{k:"Musik & Film",d:1,q:"In welchem Land finden die Filmfestspiele von Cannes statt?",a:["Frankreich","Italien","Spanien","Belgien"]},
+{k:"Musik & Film",d:2,q:"Wer komponierte „Die vier Jahreszeiten“?",a:["Antonio Vivaldi","Johann Sebastian Bach","Georg Friedrich Händel","Joseph Haydn"]},
+{k:"Musik & Film",d:2,q:"Wer komponierte „Eine kleine Nachtmusik“?",a:["Wolfgang Amadeus Mozart","Ludwig van Beethoven","Franz Schubert","Joseph Haydn"]},
+{k:"Musik & Film",d:2,q:"Welches Instrument spielte Louis Armstrong?",a:["Trompete","Saxofon","Klavier","Klarinette"]},
+{k:"Musik & Film",d:2,q:"Welche Band veröffentlichte das Album „The Dark Side of the Moon“?",a:["Pink Floyd","Led Zeppelin","The Who","Genesis"]},
+{k:"Musik & Film",d:2,q:"Wer führte Regie bei „Titanic“?",a:["James Cameron","Steven Spielberg","Ridley Scott","Peter Jackson"]},
+{k:"Musik & Film",d:2,q:"Welcher Film gewann 2004 elf Oscars?",a:["Der Herr der Ringe: Die Rückkehr des Königs","Titanic","Gladiator","Chicago"]},
+{k:"Musik & Film",d:2,q:"Wer komponierte den „Boléro“?",a:["Maurice Ravel","Claude Debussy","Igor Strawinsky","Erik Satie"]},
+{k:"Musik & Film",d:2,q:"Welches dieser Instrumente ist kein Blechblasinstrument?",a:["Klarinette","Trompete","Posaune","Tuba"]},
+{k:"Musik & Film",d:2,q:"Wer führte Regie bei „Pulp Fiction“?",a:["Quentin Tarantino","Martin Scorsese","David Lynch","Brian De Palma"]},
+{k:"Musik & Film",d:2,q:"Welche Sängerin veröffentlichte „Like a Prayer“?",a:["Madonna","Whitney Houston","Cher","Tina Turner"]},
+{k:"Musik & Film",d:2,q:"Wer komponierte die Oper „Carmen“?",a:["Georges Bizet","Giuseppe Verdi","Giacomo Puccini","Gioachino Rossini"]},
+{k:"Musik & Film",d:3,q:"Wer komponierte die Oper „Aida“?",a:["Giuseppe Verdi","Giacomo Puccini","Richard Wagner","Gaetano Donizetti"]},
+{k:"Musik & Film",d:3,q:"Wer führte Regie bei „2001: Odyssee im Weltraum“?",a:["Stanley Kubrick","Ridley Scott","Andrei Tarkowski","George Lucas"]},
+{k:"Musik & Film",d:3,q:"Wie hieß der erste abendfüllende Zeichentrickfilm von Disney?",a:["Schneewittchen und die sieben Zwerge","Bambi","Pinocchio","Fantasia"]},
+{k:"Musik & Film",d:3,q:"Wer komponierte „Das Wohltemperierte Klavier“?",a:["Johann Sebastian Bach","Georg Friedrich Händel","Joseph Haydn","Domenico Scarlatti"]},
+{k:"Musik & Film",d:3,q:"Welcher nicht englischsprachige Film gewann 2020 als erster den Oscar als bester Film?",a:["Parasite","Roma","Amour","Das Leben der Anderen"]},
+{k:"Musik & Film",d:3,q:"Was bedeutet die Tempobezeichnung „Largo“?",a:["Sehr langsam","Sehr schnell","Mäßig bewegt","Lebhaft"]},
+
+/* ===== Erweiterung: Sport ===== */
+{k:"Sport",d:1,q:"Wie viele Spieler einer Handballmannschaft stehen auf dem Feld?",a:["7","6","5","11"]},
+{k:"Sport",d:1,q:"In welcher Sportart gibt es einen Homerun?",a:["Baseball","Cricket","American Football","Golf"]},
+{k:"Sport",d:1,q:"Welche Sportart wird in Wimbledon gespielt?",a:["Tennis","Golf","Cricket","Rugby"]},
+{k:"Sport",d:1,q:"Wie lange dauert ein Fußballspiel ohne Nachspielzeit?",a:["90 Minuten","60 Minuten","80 Minuten","120 Minuten"]},
+{k:"Sport",d:1,q:"In welcher Sportart spricht man von einem „Strike“?",a:["Bowling","Fußball","Schwimmen","Turnen"]},
+{k:"Sport",d:1,q:"In welcher Sportart ist Lewis Hamilton erfolgreich?",a:["Formel 1","MotoGP","Rallye","Radsport"]},
+{k:"Sport",d:1,q:"Wie viele Spieler einer Eishockeymannschaft stehen auf dem Eis?",a:["6","5","7","11"]},
+{k:"Sport",d:1,q:"Aus welchem Land stammt die Kampfsportart Judo?",a:["Japan","China","Korea","Thailand"]},
+{k:"Sport",d:1,q:"Wie viele Gewinnsätze braucht man bei einem Grand-Slam-Turnier der Herren?",a:["3","2","4","5"]},
+{k:"Sport",d:1,q:"Welche Disziplin wird beim Biathlon mit dem Skilanglauf kombiniert?",a:["Schießen","Skispringen","Rodeln","Eisschnelllauf"]},
+{k:"Sport",d:2,q:"In welcher Höhe hängt ein Basketballkorb?",a:["3,05 Meter","2,80 Meter","3,50 Meter","2,50 Meter"]},
+{k:"Sport",d:2,q:"Welches Land gewann die Fußball-WM 2014?",a:["Deutschland","Argentinien","Brasilien","Spanien"]},
+{k:"Sport",d:2,q:"Wie viele Spieler hat eine Rugby-Union-Mannschaft auf dem Feld?",a:["15","13","11","12"]},
+{k:"Sport",d:2,q:"In welcher Stadt fanden 2016 die Olympischen Sommerspiele statt?",a:["Rio de Janeiro","London","Tokio","Peking"]},
+{k:"Sport",d:2,q:"Wie lang ist ein olympisches Schwimmbecken?",a:["50 Meter","25 Meter","100 Meter","33 Meter"]},
+{k:"Sport",d:2,q:"Aus welchem Land stammt der Sprinter Usain Bolt?",a:["Jamaika","Trinidad und Tobago","Bahamas","Barbados"]},
+{k:"Sport",d:2,q:"Wie viele Punkte zählt ein Touchdown im American Football?",a:["6","7","3","5"]},
+{k:"Sport",d:2,q:"Bis wie viel Punkte wird ein Tischtennissatz gespielt?",a:["11","21","15","25"]},
+{k:"Sport",d:2,q:"In welchem Land entstand die Sportart Cricket?",a:["England","Indien","Australien","Südafrika"]},
+{k:"Sport",d:2,q:"Wie viele Punkte bringt das Bullseye beim Darts?",a:["50","25","100","60"]},
+{k:"Sport",d:2,q:"Welcher Verein gewann die meisten Titel im Europapokal der Landesmeister und der Champions League?",a:["Real Madrid","AC Mailand","FC Bayern München","FC Liverpool"]},
+{k:"Sport",d:3,q:"In welchem Jahr fanden die ersten neuzeitlichen Olympischen Spiele statt?",a:["1896","1900","1888","1912"]},
+{k:"Sport",d:3,q:"Wie viele Spieler einer Wasserballmannschaft sind gleichzeitig im Wasser?",a:["7","6","5","8"]},
+{k:"Sport",d:3,q:"Welches Land gewann 1987 die erste Rugby-Weltmeisterschaft?",a:["Neuseeland","Australien","Südafrika","England"]},
+{k:"Sport",d:3,q:"Wie schwer ist die Kugel beim Kugelstoßen der Männer?",a:["7,26 Kilogramm","5 Kilogramm","4 Kilogramm","10 Kilogramm"]},
+{k:"Sport",d:3,q:"Wie viele Schläge unter Par ist ein Eagle beim Golf?",a:["2","1","3","4"]},
+{k:"Sport",d:3,q:"Wie viele Etappen hat die Tour de France üblicherweise?",a:["21","18","24","15"]},
+
+/* ===== Erweiterung: Vermischtes ===== */
+{k:"Vermischtes",d:1,q:"Wie viele Buchstaben hat das deutsche Alphabet ohne Umlaute und ß?",a:["26","24","28","30"]},
+{k:"Vermischtes",d:1,q:"Welche Farbe entsteht beim Mischen von Rot und Gelb?",a:["Orange","Grün","Violett","Braun"]},
+{k:"Vermischtes",d:1,q:"Wie viele Karten hat ein Skatblatt?",a:["32","52","36","24"]},
+{k:"Vermischtes",d:1,q:"Wie viele Augen hat ein Spielwürfel insgesamt?",a:["21","18","24","20"]},
+{k:"Vermischtes",d:1,q:"Welche Währung wird im Vereinigten Königreich verwendet?",a:["Pfund Sterling","Euro","Krone","Franken"]},
+{k:"Vermischtes",d:1,q:"Wie viele Wochen hat ein Jahr ungefähr?",a:["52","48","56","50"]},
+{k:"Vermischtes",d:1,q:"Welche Farbe hat ein Smaragd?",a:["Grün","Rot","Blau","Gelb"]},
+{k:"Vermischtes",d:1,q:"Wie viele Zacken hat ein Davidstern?",a:["6","5","7","8"]},
+{k:"Vermischtes",d:1,q:"Aus welchen Zutaten wird Bier vor allem gebraut?",a:["Gerstenmalz und Hopfen","Trauben und Hefe","Roggen und Kümmel","Mais und Zucker"]},
+{k:"Vermischtes",d:1,q:"Wie viele Spielfiguren hat jede Farbe bei „Mensch ärgere dich nicht“?",a:["4","3","5","6"]},
+{k:"Vermischtes",d:1,q:"Wie viele Grad hat ein rechter Winkel?",a:["90","45","180","60"]},
+{k:"Vermischtes",d:1,q:"Wie viele Bundesstaaten haben die USA?",a:["50","48","52","51"]},
+{k:"Vermischtes",d:1,q:"Wie heißt die Währung der Schweiz?",a:["Schweizer Franken","Euro","Krone","Lira"]},
+{k:"Vermischtes",d:1,q:"Wie viele Farben nennt man klassischerweise beim Regenbogen?",a:["7","5","6","8"]},
+{k:"Vermischtes",d:1,q:"Welches Tier ist neben dem Emu Wappentier Australiens?",a:["Das Känguru","Der Koala","Der Wombat","Der Dingo"]},
+{k:"Vermischtes",d:2,q:"Wie viele Nullen hat eine Milliarde?",a:["9","6","12","8"]},
+{k:"Vermischtes",d:2,q:"Wofür steht die Abkürzung „HTML“?",a:["Hypertext Markup Language","High Tech Modern Language","Hyperlink Text Mode Layout","Home Tool Markup Logic"]},
+{k:"Vermischtes",d:2,q:"In welchem Land wurde das Papier erfunden?",a:["China","Ägypten","Indien","Griechenland"]},
+{k:"Vermischtes",d:2,q:"Wie viele Zeilen hat ein Sonett?",a:["14","12","16","10"]},
+{k:"Vermischtes",d:2,q:"Wie heißt die Währung Dänemarks?",a:["Dänische Krone","Euro","Gulden","Mark"]},
+{k:"Vermischtes",d:2,q:"Wie viele Steine hat ein Domino-Satz „Doppel-Sechs“?",a:["28","24","32","36"]},
+{k:"Vermischtes",d:2,q:"Wofür steht die Abkürzung „CPU“?",a:["Central Processing Unit","Computer Power Unit","Central Program Utility","Core Processing Unifier"]},
+{k:"Vermischtes",d:2,q:"Wie viele Sekunden hat eine Stunde?",a:["3600","360","6000","1800"]},
+{k:"Vermischtes",d:2,q:"Welches Metall steckt neben Kupfer im Messing?",a:["Zink","Zinn","Blei","Nickel"]},
+{k:"Vermischtes",d:2,q:"Welches ist die kleinste Primzahl?",a:["2","1","3","0"]},
+{k:"Vermischtes",d:2,q:"Wie viele Karten hat ein französisches Blatt ohne Joker?",a:["52","32","54","48"]},
+{k:"Vermischtes",d:2,q:"Welche Zahl steht im römischen Zahlensystem für „M“?",a:["1000","100","500","50"]},
+{k:"Vermischtes",d:2,q:"Wie viele Felder hat ein klassisches Sudoku-Gitter?",a:["81","64","100","72"]},
+{k:"Vermischtes",d:2,q:"Wie viele Kanten hat ein Würfel?",a:["12","8","6","16"]},
+{k:"Vermischtes",d:2,q:"Wofür steht die Abkürzung „GPS“?",a:["Global Positioning System","General Position Service","Global Path Simulation","Geo Positioning Standard"]},
+{k:"Vermischtes",d:3,q:"Welcher Buchstabe kommt in deutschen Texten am häufigsten vor?",a:["E","N","I","S"]},
+{k:"Vermischtes",d:3,q:"Wie viele Buchstaben hat das griechische Alphabet?",a:["24","26","22","28"]},
+{k:"Vermischtes",d:3,q:"Wie heißt die Zahl 10 hoch 100?",a:["Googol","Googolplex","Myriade","Zentillion"]},
+{k:"Vermischtes",d:3,q:"Wofür steht die Abkürzung „ISBN“?",a:["Internationale Standardbuchnummer","Interne Sortier- und Bestellnummer","Internationale Standardbibliotheksnorm","Index für Sachbücher und Belletristik"]},
+{k:"Vermischtes",d:3,q:"Wofür steht die Abkürzung „NASA“?",a:["National Aeronautics and Space Administration","National Air and Space Agency","New Aerospace Science Association","National Astronomy and Space Authority"]},
+{k:"Vermischtes",d:3,q:"In welcher Einheit wird die Datenübertragungsrate angegeben?",a:["Bit pro Sekunde","Hertz","Watt","Byte"]}
 ];
 
 const DIFF = {1:{n:"leicht",p:1},2:{n:"mittel",p:2},3:{n:"schwer",p:3}};
@@ -736,6 +1016,67 @@ function freshCount() {
   return pool().map(q => BANK.indexOf(q)).filter(i => !(i in rank)).length;
 }
 
+/* ================= Winner-Board =================
+   Bestenliste über alle Spiele auf diesem Gerät.
+   Pro Name zählt nur das beste Ergebnis, sonst
+   belegt ein Vielspieler alle fünf Plätze.        */
+const HALL_KEY = "quizduell.hall";
+const HALL_MAX = 60;   /* Rohdaten, aus denen die Top 5 berechnet werden */
+
+function hallList() {
+  try { const a = JSON.parse(localStorage.getItem(HALL_KEY) || "[]");
+        return Array.isArray(a) ? a.filter(e => e && typeof e.n === "string" && typeof e.s === "number") : []; }
+  catch (e) { return []; }
+}
+/* Ein abgeschlossenes Ergebnis ablegen. s = Punkte, r = richtig, q = Fragenzahl. */
+function hallAdd(entries) {
+  const clean = entries
+    .filter(e => e && e.q > 0)
+    .map(e => ({ n: String(e.n).trim().slice(0, 18) || "Unbekannt",
+                 s: +e.s || 0, r: +e.r || 0, q: +e.q, t: Date.now() }));
+  if (!clean.length) return;
+  const all = hallList().concat(clean).sort((a, b) => b.s - a.s || b.r - a.r || a.t - b.t);
+  try { localStorage.setItem(HALL_KEY, JSON.stringify(all.slice(0, HALL_MAX))); } catch (e) {}
+  paintHalls();
+}
+function hallReset() {
+  try { localStorage.removeItem(HALL_KEY); } catch (e) {}
+  paintHalls();
+}
+/* Top 5: bestes Ergebnis je Name, Groß-/Kleinschreibung egal. */
+function hallTop(n) {
+  const best = new Map();
+  hallList().forEach(e => {
+    const key = e.n.toLowerCase();
+    const cur = best.get(key);
+    if (!cur || e.s > cur.s || (e.s === cur.s && e.r > cur.r)) best.set(key, e);
+  });
+  return [...best.values()].sort((a, b) => b.s - a.s || b.r - a.r || a.t - b.t).slice(0, n);
+}
+
+const HALL_IDS = ["hallSetup", "hallEnd", "hallLive", "hallVs"];
+function paintHalls() { HALL_IDS.forEach(paintHall); }
+function paintHall(id) {
+  const box = $(id);
+  if (!box) return;
+  const top = hallTop(5);
+  const head = `<div class="hlbl">🏆 Winner-Board · Top 5` +
+    (top.length ? `<button class="linkbtn clr" data-hallreset="1">zurücksetzen</button>` : ``) + `</div>`;
+  if (!top.length) {
+    box.innerHTML = head + `<div class="empty">Noch keine Ergebnisse. Das erste abgeschlossene Spiel landet hier.</div>`;
+    return;
+  }
+  box.innerHTML = head + top.map((e, pos) => `
+    <div class="rrow" style="border-left-color:${PCOL[pos % 4]}">
+      <span class="pos">${MEDAL[pos] || (pos + 1) + "."}</span>
+      <span class="rn">${esc(e.n)} <small>· ${new Date(e.t).toLocaleDateString("de-DE")}</small></span>
+      <span class="rq">${e.r}/${e.q} richtig</span>
+      <span class="rp" style="color:${PCOL[pos % 4]}">${e.s}</span>
+    </div>`).join("");
+  const btn = box.querySelector("[data-hallreset]");
+  if (btn) btn.onclick = () => hallReset();
+}
+
 function updateAvail() {
   $("fPlayers").classList.toggle("hide", SOLO());
   $("lblLen").textContent = cfg.mode === "alt" ? "Fragen pro Spieler" : "Anzahl Fragen";
@@ -799,6 +1140,7 @@ document.querySelectorAll(".mode").forEach(m => {
 
 buildNames();
 updateAvail();
+paintHalls();
 
 /* ================= Fragen ziehen ================= */
 function drawIdx(n) {
@@ -1023,6 +1365,7 @@ function finish() {
 function showEnd() {
   const g = G;
   only("end");
+  hallAdd(g.names.map((n, i) => ({ n, s: g.score[i], r: g.right[i], q: g.perPlayer })));
   const idx = g.names.map((_, i) => i).sort((a, b) => g.score[b] - g.score[a]);
   const top = g.score[idx[0]];
   const winners = idx.filter(i => g.score[i] === top);
@@ -1060,6 +1403,7 @@ function showEnd() {
 /* ---- Challenge erstellt: Link anzeigen ---- */
 function showShare() {
   const g = G;
+  hallAdd([{ n: g.names[0], s: g.score[0], r: g.right[0], q: g.perPlayer }]);
   lastLink = makeUrl("c", { v: 1, b: BANK.length, n: g.names[0], t: g.time, q: g.qIdx, r: g.res[0].join("") });
   only("share");
   $("shTitle").innerHTML = `Du hast <span style="color:var(--p1)">${g.score[0]} Punkte</span>`;
@@ -1116,6 +1460,7 @@ function showVs(data) {
   A.r = rightOf(A.res);       B.r = rightOf(B.res);
 
   only("vs");
+  hallAdd([A, B].map(p => ({ n: p.n, s: p.s, r: p.r, q: qIdx.length })));
   if (A.s === B.s) {
     $("vsTrophy").textContent = "🤝";
     $("vsText").textContent = "Unentschieden!";
@@ -1580,6 +1925,7 @@ function liveEnd() {
   const v = LV.room, sc = liveScores(v);
   const ids = Object.keys(v.players || {}).sort((a, b) => sc[b].pts - sc[a].pts);
   if (!ids.length) return;
+  hallAdd(ids.map(id => ({ n: v.players[id].name, s: sc[id].pts, r: sc[id].right, q: (v.q || []).length })));
   const top = sc[ids[0]].pts, winners = ids.filter(i => sc[i].pts === top);
 
   if (winners.length === ids.length) {

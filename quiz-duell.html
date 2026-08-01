@@ -192,6 +192,8 @@
   .rrow .rn { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .rrow .rq { font-size: .84rem; color: var(--dim); margin-right: 10px; white-space: nowrap; }
   .rrow .rp { font-size: 1.2rem; font-weight: 700; }
+  .tag.streak { background: rgba(255,176,32,.16); color: var(--gold); border-color: rgba(255,176,32,.35); }
+  .jokerbtn { width: 100%; margin: 4px 0 14px; font-size: .9rem; padding: 11px; }
   .hall { margin-bottom: 22px; }
   .hall .hlbl {
     font-size: .78rem; text-transform: uppercase; letter-spacing: .09em;
@@ -200,6 +202,8 @@
   .hall .hlbl .clr { margin-left: auto; text-transform: none; letter-spacing: 0; }
   .hall .rrow .rn small { font-weight: 400; color: var(--dim); }
   .hall .empty { font-size: .84rem; color: var(--dim); line-height: 1.45; }
+  .hswitch { display: flex; gap: 8px; margin-bottom: 12px; }
+  .hswitch .chip { font-size: .78rem; padding: 7px 12px; }
   .catlist { margin-bottom: 22px; }
   .catrow { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: .9rem; }
   .catrow .cn { flex: 1; color: var(--dim); }
@@ -284,6 +288,11 @@
         <div class="chip" data-v="2">Mittel</div>
         <div class="chip" data-v="3">Schwer</div>
       </div>
+    </div>
+
+    <div class="field">
+      <label>Kategorien</label>
+      <div class="chips" id="cCats"></div>
     </div>
 
     <div class="field">
@@ -423,12 +432,14 @@
     <div class="meta">
       <span class="tag" id="tagCat"></span>
       <span class="tag d1" id="tagDiff"></span>
+      <span class="tag streak" id="streak" style="display:none"></span>
       <span class="timer" id="timer"></span>
     </div>
 
     <div class="turn" id="turn"></div>
     <div class="q" id="qtext"></div>
     <div class="opts" id="opts"></div>
+    <button class="ghost jokerbtn" id="joker" style="display:none"></button>
     <div class="fb hide" id="fb"></div>
     <div class="wait hide" id="wait"></div>
     <button class="big hide" id="next">Weiter</button>
@@ -472,6 +483,7 @@
       <h2 id="wtext"></h2>
       <p id="wsub"></p>
     </div>
+    <button class="big" id="tbStart" style="display:none;margin-bottom:18px">⚔️ Stichfrage spielen</button>
     <div class="rank" id="rank"></div>
     <div class="hall" id="hallEnd"></div>
     <div class="catlist" id="cats"></div>
@@ -924,6 +936,26 @@ const BANK = [
 ];
 
 const DIFF = {1:{n:"leicht",p:1},2:{n:"mittel",p:2},3:{n:"schwer",p:3}};
+
+/* ================= Bonuspunkte =================
+   Grundpunkte kommen aus der Schwierigkeit (1–3). Dazu:
+   Tempo 0–2 (nur mit Bedenkzeit) und Serie 0–2.
+   Maximum also 7 – wichtig, weil Challenge-Links die
+   Punkte je Frage als EINE Ziffer übertragen.        */
+function speedBonus(fracLeft) {
+  if (!(fracLeft > 0)) return 0;
+  return fracLeft >= .66 ? 2 : fracLeft >= .33 ? 1 : 0;
+}
+function streakBonus(streak) { return streak >= 5 ? 2 : streak >= 3 ? 1 : 0; }
+/* streak = Anzahl richtiger Antworten in Folge INKLUSIVE der aktuellen. */
+function pointsFor(d, fracLeft, streak) {
+  return DIFF[d].p + speedBonus(fracLeft) + streakBonus(streak);
+}
+/* Wie viel der Bedenkzeit war beim Antworten noch übrig (0…1)? */
+function fracLeftOf(startMs, limitSec) {
+  if (!limitSec || !startMs) return 0;
+  return Math.max(0, Math.min(1, (limitSec * 1000 - (Date.now() - startMs)) / (limitSec * 1000)));
+}
 const KEYS = ["A","B","C","D"];
 const PCOL = ["var(--p1)","var(--p2)","var(--p3)","var(--p4)"];
 const MEDAL = ["🥇","🥈","🥉","4."];
@@ -978,8 +1010,38 @@ function buildNames() {
   if (n === 1) $("n0").placeholder = "Dein Name";
 }
 
-const pool = () => cfg.diff === "mix" ? BANK : BANK.filter(q => q.d === +cfg.diff);
+const CATS = [...new Set(BANK.map(q => q.k))];
+cfg.cats = CATS.slice();
+
+/* Fragenpool nach Schwierigkeit UND Kategorie. Eine leere Kategorienauswahl
+   wird als „alle“ gewertet, sonst bliebe gar nichts übrig.               */
+function catsOn() { return cfg.cats && cfg.cats.length ? cfg.cats : CATS; }
+const pool = () => {
+  const on = catsOn();
+  return BANK.filter(q => (cfg.diff === "mix" || q.d === +cfg.diff) && on.includes(q.k));
+};
 const maxPerPlayer = () => cfg.mode === "alt" ? Math.floor(pool().length / cfg.np) : pool().length;
+
+function buildCatChips() {
+  const box = $("cCats");
+  const alle = cfg.cats.length === CATS.length;
+  box.innerHTML = `<div class="chip${alle ? " on" : ""}" data-cat="*">Alle</div>` +
+    CATS.map(k => `<div class="chip${!alle && cfg.cats.includes(k) ? " on" : ""}" data-cat="${esc(k)}">${esc(k)}</div>`).join("");
+}
+$("cCats").addEventListener("click", e => {
+  const c = e.target.closest(".chip");
+  if (!c) return;
+  const k = c.dataset.cat;
+  if (k === "*") cfg.cats = CATS.slice();
+  else {
+    /* Aus „Alle“ heraus startet ein Klick eine frische Einzelauswahl. */
+    if (cfg.cats.length === CATS.length) cfg.cats = [k];
+    else if (cfg.cats.includes(k)) cfg.cats = cfg.cats.filter(x => x !== k);
+    else cfg.cats.push(k);
+    if (!cfg.cats.length) cfg.cats = CATS.slice();
+  }
+  buildCatChips(); updateAvail();
+});
 
 /* ================= Fragen-Gedächtnis =================
    Merkt sich die zuletzt gestellten Fragen, damit sie sich
@@ -1043,15 +1105,29 @@ function hallReset() {
   try { localStorage.removeItem(HALL_KEY); } catch (e) {}
   paintHalls();
 }
-/* Top 5: bestes Ergebnis je Name, Groß-/Kleinschreibung egal. */
+/* Zwei Wertungen:
+   "avg"  – Punkte je Frage. Fair über verschiedene Spiellängen hinweg,
+            deshalb die Voreinstellung. Kurze Spiele zählen erst ab
+            HALL_MIN Fragen mit, sonst gewinnt ein Glückstreffer.
+   "sum"  – Punkte gesamt, die frühere Rangfolge.                     */
+const HALL_MIN = 5;
+let hallMode = "avg";
+const perQ = e => e.q > 0 ? e.s / e.q : 0;
+function hallRankable(e) { return hallMode === "sum" || e.q >= HALL_MIN; }
+function hallCmp(a, b) {
+  return hallMode === "avg"
+    ? perQ(b) - perQ(a) || b.s - a.s || a.t - b.t
+    : b.s - a.s || b.r - a.r || a.t - b.t;
+}
+/* Top n: bestes Ergebnis je Name, Groß-/Kleinschreibung egal. */
 function hallTop(n) {
   const best = new Map();
-  hallList().forEach(e => {
+  hallList().filter(hallRankable).forEach(e => {
     const key = e.n.toLowerCase();
     const cur = best.get(key);
-    if (!cur || e.s > cur.s || (e.s === cur.s && e.r > cur.r)) best.set(key, e);
+    if (!cur || hallCmp(e, cur) < 0) best.set(key, e);
   });
-  return [...best.values()].sort((a, b) => b.s - a.s || b.r - a.r || a.t - b.t).slice(0, n);
+  return [...best.values()].sort(hallCmp).slice(0, n);
 }
 
 const HALL_IDS = ["hallSetup", "hallEnd", "hallLive", "hallVs"];
@@ -1061,20 +1137,32 @@ function paintHall(id) {
   if (!box) return;
   const top = hallTop(5);
   const head = `<div class="hlbl">🏆 Winner-Board · Top 5` +
-    (top.length ? `<button class="linkbtn clr" data-hallreset="1">zurücksetzen</button>` : ``) + `</div>`;
+    (hallList().length ? `<button class="linkbtn clr" data-hallreset="1">zurücksetzen</button>` : ``) + `</div>` +
+    `<div class="hswitch">
+       <button class="chip${hallMode === "avg" ? " on" : ""}" data-hallmode="avg">Punkte pro Frage</button>
+       <button class="chip${hallMode === "sum" ? " on" : ""}" data-hallmode="sum">Punkte gesamt</button>
+     </div>`;
+  const wire = () => {
+    const r = box.querySelector("[data-hallreset]");
+    if (r) r.onclick = () => hallReset();
+    box.querySelectorAll("[data-hallmode]").forEach(b =>
+      b.onclick = () => { hallMode = b.dataset.hallmode; paintHalls(); });
+  };
   if (!top.length) {
-    box.innerHTML = head + `<div class="empty">Noch keine Ergebnisse. Das erste abgeschlossene Spiel landet hier.</div>`;
-    return;
+    box.innerHTML = head + `<div class="empty">` + (hallList().length
+      ? `Noch kein Ergebnis mit mindestens ${HALL_MIN} Fragen. Kürzere Spiele zählen für diese Wertung nicht mit.`
+      : `Noch keine Ergebnisse. Das erste abgeschlossene Spiel landet hier.`) + `</div>`;
+    return wire();
   }
   box.innerHTML = head + top.map((e, pos) => `
     <div class="rrow" style="border-left-color:${PCOL[pos % 4]}">
       <span class="pos">${MEDAL[pos] || (pos + 1) + "."}</span>
       <span class="rn">${esc(e.n)} <small>· ${new Date(e.t).toLocaleDateString("de-DE")}</small></span>
-      <span class="rq">${e.r}/${e.q} richtig</span>
-      <span class="rp" style="color:${PCOL[pos % 4]}">${e.s}</span>
+      <span class="rq">${e.r}/${e.q} richtig · ${e.s} Pkt.</span>
+      <span class="rp" style="color:${PCOL[pos % 4]}">${
+        hallMode === "avg" ? perQ(e).toFixed(1).replace(".", ",") : e.s}</span>
     </div>`).join("");
-  const btn = box.querySelector("[data-hallreset]");
-  if (btn) btn.onclick = () => hallReset();
+  wire();
 }
 
 function updateAvail() {
@@ -1110,7 +1198,9 @@ function renderHint(mp) {
   const memo = fresh
     ? `Davon <b>${fresh}</b> noch nie gestellt – die kommen zuerst.`
     : `Alle Fragen waren schon dran – es kommen jetzt die am längsten zurückliegenden. <a href="#" id="resetSeen">Gedächtnis leeren</a>`;
-  $("availHint").innerHTML = base + "<br>" + memo;
+  const catNote = cfg.cats.length === CATS.length ? ""
+    : `<br>Eingeschränkt auf: <b>${esc(cfg.cats.join(", "))}</b>.`;
+  $("availHint").innerHTML = base + catNote + "<br>" + memo;
   const rs = $("resetSeen");
   if (rs) rs.onclick = e => { e.preventDefault(); resetSeen(); };
 }
@@ -1139,6 +1229,7 @@ document.querySelectorAll(".mode").forEach(m => {
 });
 
 buildNames();
+buildCatChips();
 updateAvail();
 paintHalls();
 
@@ -1176,13 +1267,19 @@ function drawIdx(n) {
   return markSeen(shuffle(out).slice(0, n));
 }
 
-const scoreOf = (idxs, res) => idxs.reduce((s, qi, j) => s + (res[j] ? DIFF[BANK[qi].d].p : 0), 0);
+/* pts = Ziffernfolge mit den tatsächlich erzielten Punkten je Frage.
+   Fehlt sie – etwa bei Links aus einer älteren Fassung –, wird wie
+   früher allein aus der Schwierigkeit gerechnet.                  */
+const scoreOf = (idxs, res, pts) =>
+  (pts && pts.length === idxs.length)
+    ? [...pts].reduce((s, c) => s + (+c || 0), 0)
+    : idxs.reduce((s, qi, j) => s + (res[j] ? DIFF[BANK[qi].d].p : 0), 0);
 const rightOf = res => res.reduce((s, v) => s + (v ? 1 : 0), 0);
 
 /* ================= Spielstart ================= */
 $("start").onclick = () => {
   if (cfg.mode === "live") return liveCreate();
-  LV = null;
+  LV = null; TB = null;
   const np = SOLO() ? 1 : cfg.np;
   const names = [];
   for (let i = 0; i < np; i++) names.push(($("n" + i).value || "").trim() || (np === 1 ? "Du" : "Spieler " + (i+1)));
@@ -1202,6 +1299,8 @@ $("start").onclick = () => {
     names, np, mode: cfg.mode, perPlayer: cfg.len, time: cfg.time,
     qIdx, score: Array(np).fill(0), right: Array(np).fill(0),
     res: Array.from({length: np}, () => []),
+    pts: Array.from({length: np}, () => []),
+    streak: Array(np).fill(0), best: Array(np).fill(0), joker: Array(np).fill(true),
     cat: {}, order, i: 0, answered: false, foe: null
   };
   buildScore();
@@ -1224,13 +1323,15 @@ function openInvite(pl) {
 $("invGo").onclick = () => {
   const pl = pending;
   const me = ($("invName").value || "").trim() || "Du";
+  TB = null;
   markSeen(pl.q);
   G = {
     names: [me], np: 1, mode: "link", perPlayer: pl.q.length, time: pl.t,
-    qIdx: pl.q, score: [0], right: [0], res: [[]], cat: {},
+    qIdx: pl.q, score: [0], right: [0], res: [[]], pts: [[]],
+    streak: [0], best: [0], joker: [true], cat: {},
     order: pl.q.map((qi, j) => ({ p: 0, qi, nr: j + 1, pass: false })),
     i: 0, answered: false,
-    foe: { n: pl.n, res: pl.r.split("").map(Number) }
+    foe: { n: pl.n, res: pl.r.split("").map(Number), pts: pl.p || null }
   };
   buildScore();
   step();
@@ -1261,7 +1362,112 @@ function step() {
   }
   render();
 }
-$("passGo").onclick = () => render();
+$("passGo").onclick = () => TB ? tbRender() : render();
+
+/* ================= Stichfrage bei Gleichstand =================
+   Nur in den lokalen Modi, wo alle an einem Gerät sitzen. Alle
+   Gleichstand-Spieler bekommen nacheinander dieselbe Frage; wer
+   sie als Einziger richtig hat, gewinnt. Sonst neue Runde.     */
+let TB = null;
+
+function startTiebreak(tied) {
+  TB = { players: tied, round: 0, winner: null, log: [] };
+  tbNextRound();
+}
+function tbNextRound() {
+  TB.round++;
+  const drawn = drawIdx(1);
+  if (TB.round > 5 || !drawn.length) { TB.winner = null; return showEnd(); }
+  TB.qi = drawn[0];
+  TB.res = {};
+  TB.i = 0;
+  tbStep();
+}
+function tbStep() {
+  if (TB.i >= TB.players.length) return tbEvaluate();
+  const p = TB.players[TB.i];
+  only("pass");
+  $("passName").innerHTML = `<span style="color:${PCOL[p]}">${esc(G.names[p])}</span> ist dran`;
+  $("passText").textContent = `Stichfrage ${TB.round} von höchstens 5. Gerät weitergeben – die anderen bitte nicht mitschauen.`;
+}
+function tbRender() {
+  clearInterval(tick);
+  only("game");
+  const p = TB.players[TB.i], q = BANK[TB.qi];
+  G.answered = false;
+
+  G.names.forEach((_, i) => {
+    $("pt" + i).textContent = G.score[i];
+    $("pt" + i).style.color = PCOL[i];
+    const c = $("pc" + i);
+    c.classList.toggle("active", i === p);
+    c.style.borderColor = i === p ? PCOL[i] : "transparent";
+  });
+  $("prog").style.width = "100%";
+  $("tagCat").textContent = q.k;
+  $("tagDiff").textContent = "Stichfrage";
+  $("tagDiff").className = "tag d" + q.d;
+  $("turn").innerHTML = `Stichfrage ${TB.round} · <b style="color:${PCOL[p]}">${esc(G.names[p])}</b>`;
+  $("qtext").textContent = q.q;
+
+  const box = $("opts");
+  box.innerHTML = "";
+  shuffle(q.a).forEach((txt, idx) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = `<span class="k">${KEYS[idx]}</span><span class="tx">${esc(txt)}</span>`;
+    b.onclick = () => tbAnswer(txt, b);
+    box.appendChild(b);
+  });
+  gone("fb"); gone("next");
+  $("joker").style.display = "none";
+  paintStreak(0);
+
+  if (G.time > 0) {
+    let left = G.time;
+    $("timer").textContent = left + "s";
+    $("timer").className = "timer";
+    tick = setInterval(() => {
+      left--;
+      $("timer").textContent = left + "s";
+      if (left <= 5) $("timer").className = "timer warn";
+      if (left <= 0) { clearInterval(tick); tbAnswer(null, null); }
+    }, 1000);
+  } else $("timer").textContent = "";
+}
+function tbAnswer(chosen, btn) {
+  if (!G || G.answered) return;
+  G.answered = true;
+  clearInterval(tick);
+  const p = TB.players[TB.i], q = BANK[TB.qi], correct = q.a[0], ok = chosen === correct;
+  TB.res[p] = ok;
+
+  [...$("opts").children].forEach(b => {
+    b.disabled = true;
+    if (b.querySelector(".tx").textContent === correct) b.classList.add("correct");
+  });
+  if (!ok && btn) btn.classList.add("wrong");
+
+  const fb = $("fb");
+  fb.className = "fb " + (ok ? "ok" : "no");
+  fb.innerHTML = ok
+    ? `<b>Richtig!</b>In der Stichfrage zählt nur richtig oder falsch – keine Punkte.`
+    : `<b>${chosen === null ? "Zeit abgelaufen" : "Leider falsch"}</b>Richtig wäre: <strong>${esc(correct)}</strong>`;
+  show("fb");
+
+  TB.i++;
+  $("next").textContent = TB.i >= TB.players.length ? "Auflösung" : "Weitergeben";
+  $("next").onclick = () => { $("next").onclick = nextMain; TB.i >= TB.players.length ? tbEvaluate() : tbStep(); };
+  show("next");
+}
+function tbEvaluate() {
+  const richtige = TB.players.filter(p => TB.res[p]);
+  TB.log.push({ round: TB.round, qi: TB.qi, richtige: richtige.slice() });
+  if (richtige.length === 1) { TB.winner = richtige[0]; return showEnd(); }
+  /* Alle richtig oder alle falsch – nur die noch Gleichauf spielen weiter. */
+  if (richtige.length > 1) TB.players = richtige;
+  tbNextRound();
+}
 
 function render() {
   clearInterval(tick);
@@ -1299,6 +1505,9 @@ function render() {
   });
 
   gone("fb"); gone("next");
+  g.qStart = Date.now();
+  showJoker(g.joker[p], () => useJoker(q.a[0], p));
+  paintStreak(g.streak[p]);
 
   if (g.time > 0) {
     let left = g.time;
@@ -1313,6 +1522,40 @@ function render() {
   } else $("timer").textContent = "";
 }
 
+/* ---- Bonus-Anzeige und 50:50-Joker ---- */
+function bonusText(base, sp, st, streak) {
+  const teile = [`${base} für die Schwierigkeit`];
+  if (sp) teile.push(`+${sp} Tempo`);
+  if (st) teile.push(`+${st} Serie · ${streak} richtige in Folge 🔥`);
+  return teile.join(" · ");
+}
+function paintStreak(streak) {
+  const el = $("streak");
+  if (!el) return;
+  if (streak >= 2) { el.textContent = "🔥 " + streak + " in Folge"; el.style.display = ""; }
+  else el.style.display = "none";
+}
+function showJoker(available, onUse) {
+  const b = $("joker");
+  if (!b) return;
+  b.style.display = available ? "" : "none";
+  b.disabled = false;
+  b.textContent = "🃏 50:50 – zwei falsche Antworten streichen";
+  b.onclick = () => { b.disabled = true; b.style.display = "none"; onUse(); };
+}
+/* Blendet zwei falsche Antworten aus. Wirkt auf die gerade sichtbaren Knöpfe. */
+function applyFifty(correct) {
+  const opts = [...$("opts").children].filter(b => !b.disabled);
+  const wrong = shuffle(opts.filter(b => b.querySelector(".tx").textContent !== correct));
+  wrong.slice(0, 2).forEach(b => { b.disabled = true; b.style.opacity = ".25"; });
+}
+function useJoker(correct, p) {
+  if (!G || !G.joker[p]) return;
+  G.joker[p] = false;
+  G.jokerUsedNow = true;
+  applyFifty(correct);
+}
+
 function answer(chosen, btn) {
   if (!G || G.answered) return;
   G.answered = true;
@@ -1321,25 +1564,39 @@ function answer(chosen, btn) {
   const g = G, e = g.order[g.i], q = BANK[e.qi], p = e.p, correct = q.a[0];
   const ok = chosen === correct;
 
+  $("joker").style.display = "none";
   [...$("opts").children].forEach(b => {
     b.disabled = true;
+    b.style.opacity = "";
     if (b.querySelector(".tx").textContent === correct) b.classList.add("correct");
   });
   if (!ok && btn) btn.classList.add("wrong");
 
   if (!g.cat[q.k]) g.cat[q.k] = Array(g.np).fill(0);
   g.res[p].push(ok ? 1 : 0);
+
+  /* Der Joker nimmt die Hälfte der Auswahl weg – dafür entfällt der Tempobonus. */
+  const frac = g.jokerUsedNow ? 0 : fracLeftOf(g.qStart, g.time);
+  g.streak[p] = ok ? g.streak[p] + 1 : 0;
+  if (g.streak[p] > g.best[p]) g.best[p] = g.streak[p];
+  const sp = ok ? speedBonus(frac) : 0;
+  const st = ok ? streakBonus(g.streak[p]) : 0;
+  const got = ok ? DIFF[q.d].p + sp + st : 0;
+  g.pts[p].push(got);
+  g.jokerUsedNow = false;
+
   if (ok) {
-    g.score[p] += DIFF[q.d].p;
+    g.score[p] += got;
     g.right[p]++;
     g.cat[q.k][p]++;
     $("pt" + p).textContent = g.score[p];
   }
+  paintStreak(g.streak[p]);
 
   const fb = $("fb");
   fb.className = "fb " + (ok ? "ok" : "no");
   fb.innerHTML = ok
-    ? `<b>Richtig! +${DIFF[q.d].p} ${DIFF[q.d].p === 1 ? "Punkt" : "Punkte"}</b>Gut gemacht, ${esc(g.names[p])}.`
+    ? `<b>Richtig! +${got} ${got === 1 ? "Punkt" : "Punkte"}</b>${bonusText(DIFF[q.d].p, sp, st, g.streak[p])}`
     : `<b>${chosen === null ? "Zeit abgelaufen" : "Leider falsch"}</b>Richtig wäre: <strong>${esc(correct)}</strong>`;
   show("fb");
 
@@ -1349,11 +1606,12 @@ function answer(chosen, btn) {
   show("next");
 }
 
-$("next").onclick = () => {
+function nextMain() {
   G.i++;
   if (G.i < G.order.length) step();
   else finish();
-};
+}
+$("next").onclick = nextMain;
 
 /* ================= Auswertung ================= */
 function finish() {
@@ -1365,12 +1623,28 @@ function finish() {
 function showEnd() {
   const g = G;
   only("end");
-  hallAdd(g.names.map((n, i) => ({ n, s: g.score[i], r: g.right[i], q: g.perPlayer })));
+  if (!g.counted) { g.counted = true; hallAdd(g.names.map((n, i) => ({ n, s: g.score[i], r: g.right[i], q: g.perPlayer }))); }
   const idx = g.names.map((_, i) => i).sort((a, b) => g.score[b] - g.score[a]);
   const top = g.score[idx[0]];
   const winners = idx.filter(i => g.score[i] === top);
 
-  if (winners.length === g.np) {
+  /* Bei Gleichstand kann eine Stichfrage entscheiden – aber nur dort,
+     wo alle am selben Gerät sitzen.                                  */
+  const tieBreakable = winners.length > 1 && (g.mode === "alt" || g.mode === "seq");
+  const tbBtn = $("tbStart");
+  tbBtn.style.display = tieBreakable && !TB ? "" : "none";
+  tbBtn.onclick = () => startTiebreak(winners);
+
+  if (TB && TB.winner !== null && TB.winner !== undefined) {
+    const w = TB.winner;
+    $("trophy").textContent = "🏆";
+    $("wtext").innerHTML = `<span style="color:${PCOL[w]}">${esc(g.names[w])}</span> gewinnt die Stichfrage!`;
+    $("wsub").textContent = `Nach ${top} zu ${top} Punkten hat ${g.names[w]} in Runde ${TB.round} als Einzige oder Einziger richtig gelegen.`;
+  } else if (TB) {
+    $("trophy").textContent = "🤝";
+    $("wtext").textContent = "Auch die Stichfragen bringen keine Entscheidung!";
+    $("wsub").textContent = `${winners.map(i => g.names[i]).join(" und ")} bleiben mit je ${top} Punkten gleichauf.`;
+  } else if (winners.length === g.np) {
     $("trophy").textContent = "🤝";
     $("wtext").textContent = "Unentschieden!";
     $("wsub").textContent = `Alle mit ${top} Punkten – das nennt man Augenhöhe.`;
@@ -1404,7 +1678,8 @@ function showEnd() {
 function showShare() {
   const g = G;
   hallAdd([{ n: g.names[0], s: g.score[0], r: g.right[0], q: g.perPlayer }]);
-  lastLink = makeUrl("c", { v: 1, b: BANK.length, n: g.names[0], t: g.time, q: g.qIdx, r: g.res[0].join("") });
+  lastLink = makeUrl("c", { v: 1, b: BANK.length, n: g.names[0], t: g.time,
+    q: g.qIdx, r: g.res[0].join(""), p: g.pts[0].join("") });
   only("share");
   $("shTitle").innerHTML = `Du hast <span style="color:var(--p1)">${g.score[0]} Punkte</span>`;
   $("shSub").textContent = `${g.right[0]} von ${g.perPlayer} richtig. Jetzt bist du dran, jemanden herauszufordern.`;
@@ -1448,16 +1723,16 @@ function showVs(data) {
   let A, B, qIdx, myTurn = false;
   if (data) { // fertiges Ergebnis aus Link
     qIdx = data.q;
-    A = { n: data.n, res: data.r.split("").map(Number) };
-    B = { n: data.n2, res: data.r2.split("").map(Number) };
+    A = { n: data.n,  res: data.r.split("").map(Number),  pts: data.p  || null };
+    B = { n: data.n2, res: data.r2.split("").map(Number), pts: data.p2 || null };
   } else {    // gerade selbst gespielt
     qIdx = G.qIdx;
-    A = { n: G.foe.n, res: G.foe.res };
-    B = { n: G.names[0], res: G.res[0] };
+    A = { n: G.foe.n, res: G.foe.res, pts: G.foe.pts || null };
+    B = { n: G.names[0], res: G.res[0], pts: G.pts[0].join("") };
     myTurn = true;
   }
-  A.s = scoreOf(qIdx, A.res); B.s = scoreOf(qIdx, B.res);
-  A.r = rightOf(A.res);       B.r = rightOf(B.res);
+  A.s = scoreOf(qIdx, A.res, A.pts); B.s = scoreOf(qIdx, B.res, B.pts);
+  A.r = rightOf(A.res);              B.r = rightOf(B.res);
 
   only("vs");
   hallAdd([A, B].map(p => ({ n: p.n, s: p.s, r: p.r, q: qIdx.length })));
@@ -1495,7 +1770,8 @@ function showVs(data) {
   $("vsHome").classList.toggle("hide", myTurn);
   if (myTurn) {
     $("vsShare").onclick = () => {
-      lastLink = makeUrl("r", { v: 2, b: BANK.length, n: A.n, t: G.time, q: qIdx, r: A.res.join(""), n2: B.n, r2: B.res.join("") });
+      lastLink = makeUrl("r", { v: 2, b: BANK.length, n: A.n, t: G.time, q: qIdx,
+        r: A.res.join(""), p: A.pts || "", n2: B.n, r2: B.res.join(""), p2: B.pts || "" });
       only("share");
       $("shTitle").textContent = "Ergebnis zurückschicken";
       $("shSub").innerHTML = `Schick das ${lastLink.url ? "diesen Link" : "diesen Code"} an ${esc(A.n)} – dann sieht er den Vergleich, ohne nochmal spielen zu müssen.`;
@@ -1541,7 +1817,10 @@ $("redeemGo").onclick = () => {
 function err(t) { $("redeemErr").innerHTML = `<b>${t}</b>`; }
 
 function handle(pl) {
-  if (pl.b && pl.b !== BANK.length) return false;
+  /* Der Katalog wächst nur hinten an, alte Indizes bleiben gültig.
+     Deshalb ist nur eine GRÖSSERE Bank beim Absender ein Problem –
+     dann kennt er Fragen, die es hier noch nicht gibt.            */
+  if (pl.b && pl.b > BANK.length) return false;
   if (pl.q.some(i => i < 0 || i >= BANK.length)) return false;
   if (pl.v === 2) showVs(pl); else openInvite(pl);
   return true;
@@ -1785,12 +2064,22 @@ $("lobStart").onclick = () => {
 /* ---- Punkte aus den gespeicherten Antworten ---- */
 function liveScores(v) {
   const s = {};
-  Object.keys(v.players || {}).forEach(p => s[p] = { pts: 0, right: 0 });
-  Object.entries(v.ans || {}).forEach(([qi, byP]) => {
-    const q = BANK[v.q[+qi]];
+  Object.keys(v.players || {}).forEach(p => s[p] = { pts: 0, right: 0, streak: 0, best: 0 });
+  /* Fragen in der richtigen Reihenfolge durchgehen – sonst stimmt die Serie nicht. */
+  const nums = Object.keys(v.ans || {}).map(Number).sort((a, b) => a - b);
+  nums.forEach(qi => {
+    const q = BANK[v.q[qi]];
     if (!q) return;
-    Object.entries(byP).forEach(([p, a]) => {
-      if (s[p] && a && a.ok) { s[p].pts += DIFF[q.d].p; s[p].right++; }
+    Object.entries(v.ans[qi] || {}).forEach(([p, a]) => {
+      if (!s[p] || !a) return;
+      if (a.ok) {
+        s[p].streak++;
+        if (s[p].streak > s[p].best) s[p].best = s[p].streak;
+        /* a.pt kommt vom antwortenden Gerät. Fehlt es (ältere Fassung),
+           zählt wie früher nur die Schwierigkeit.                      */
+        s[p].pts += (typeof a.pt === "number" && a.pt > 0) ? a.pt : DIFF[q.d].p;
+        s[p].right++;
+      } else s[p].streak = 0;
     });
   });
   return s;
@@ -1840,6 +2129,9 @@ function liveRenderQ() {
     box.appendChild(b);
   });
   gone("fb"); gone("next"); gone("wait"); gone("force");
+  if (LV.joker === undefined) LV.joker = true;
+  showJoker(LV.joker, () => { LV.joker = false; LV.jokerUsedNow = true; applyFifty(q.a[0]); });
+  paintStreak(LV.streak || 0);
   clearTimeout(LV.forceT);
 }
 
@@ -1871,9 +2163,21 @@ function liveAnswer(txt, btn) {
   if (!LV || LV.answered) return;
   LV.answered = true;
   const v = LV.room, q = BANK[v.q[v.cur]], ok = txt === q.a[0];
-  [...$("opts").children].forEach(b => b.disabled = true);
+  $("joker").style.display = "none";
+  [...$("opts").children].forEach(b => { b.disabled = true; b.style.opacity = ""; });
   if (btn) btn.classList.add("chosen");
-  LV.ref.child("ans/" + v.cur + "/" + LV.me).set({ ok: ok ? 1 : 0, t: firebase.database.ServerValue.TIMESTAMP });
+
+  /* Tempo aus dem Serverzeitstempel des Fragenstarts, damit alle
+     Geräte dieselbe Grundlage haben. Joker streicht den Tempobonus. */
+  const frac = LV.jokerUsedNow || !v.time ? 0
+    : Math.max(0, Math.min(1, (v.qstart + v.time * 1000 - now()) / (v.time * 1000)));
+  LV.streak = ok ? (LV.streak || 0) + 1 : 0;
+  const pt = ok ? DIFF[q.d].p + speedBonus(frac) + streakBonus(LV.streak) : 0;
+  LV.jokerUsedNow = false;
+  paintStreak(LV.streak);
+
+  LV.ref.child("ans/" + v.cur + "/" + LV.me)
+    .set({ ok: ok ? 1 : 0, pt, t: firebase.database.ServerValue.TIMESTAMP });
   waitBox(0, 0);
 }
 
@@ -1906,8 +2210,10 @@ function liveReveal(ans, forced) {
   const winners = Object.keys(ans).filter(p => ans[p] && ans[p].ok).map(p => v.players[p] && v.players[p].name).filter(Boolean);
   const f = $("fb");
   f.className = "fb " + (mine && mine.ok ? "ok" : "no");
+  const mp = mine && mine.ok ? (typeof mine.pt === "number" && mine.pt > 0 ? mine.pt : DIFF[q.d].p) : 0;
   f.innerHTML = (mine && mine.ok
-      ? `<b>Richtig! +${DIFF[q.d].p} ${DIFF[q.d].p === 1 ? "Punkt" : "Punkte"}</b>`
+      ? `<b>Richtig! +${mp} ${mp === 1 ? "Punkt" : "Punkte"}</b>` +
+        (mp > DIFF[q.d].p ? `${DIFF[q.d].p} Grundpunkte, ${mp - DIFF[q.d].p} Bonus für Tempo und Serie.<br>` : "")
       : `<b>${mine ? "Leider falsch" : "Keine Antwort"}</b>Richtig wäre: <strong>${esc(q.a[0])}</strong><br>`)
     + (winners.length ? `Richtig lagen: ${winners.map(esc).join(", ")}` : "Niemand hatte es richtig.");
   show("fb");

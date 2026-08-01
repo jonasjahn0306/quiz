@@ -454,6 +454,8 @@
       <p id="leSub"></p>
     </div>
     <div class="rank" id="leRank"></div>
+    <button class="big" id="leRematch">🔁 Nochmal spielen</button>
+    <div class="hint" id="leRematchNote" style="display:none;margin-bottom:16px"></div>
     <div class="hall" id="hallLive"></div>
     <div style="display:flex;gap:12px;flex-wrap:wrap">
       <button class="ghost" style="flex:1" id="leAgain">Neuen Raum öffnen</button>
@@ -1927,6 +1929,9 @@ async function liveCreate() {
   try {
     await withTimeout(d.ref("rooms/" + code).set({
       host: me, state: "lobby", time: cfg.time, q, cur: -1,
+      /* Für den Rückkampf: damit die Folgerunden dieselben
+         Einstellungen bekommen wie die erste.              */
+      round: 1, diff: cfg.diff, cats: cfg.cats,
       created: firebase.database.ServerValue.TIMESTAMP,
       players: { [me]: { name, ts: firebase.database.ServerValue.TIMESTAMP } }
     }), 9000);
@@ -2019,6 +2024,60 @@ $("lobLeave").onclick = leaveRoom;
 $("leHome").onclick = leaveRoom;
 $("leAgain").onclick = () => { leaveRoom(); liveCreate(); };
 
+/* ================= Rückkampf im selben Raum =================
+   Jeder meldet sich unter rooms/<code>/rematch an. Sobald alle
+   noch anwesenden Spieler bereit sind, würfelt der Gastgeber
+   neue Fragen und setzt den Raum zurück auf "play".          */
+function rematchState(v) {
+  const ids = Object.keys(v.players || {});
+  /* Nur Zusagen mitzählen, deren Spieler noch im Raum ist. */
+  const want = Object.keys(v.rematch || {}).filter(p => ids.includes(p));
+  return { ids, want, alleBereit: ids.length > 0 && want.length >= ids.length };
+}
+/* Fragen für die neue Runde – mit den Einstellungen des Raums,
+   nicht mit dem, was der Gastgeber inzwischen im Menü stehen hat. */
+function rematchDraw(v) {
+  const merkDiff = cfg.diff, merkCats = cfg.cats;
+  if (v.diff) cfg.diff = v.diff;
+  if (Array.isArray(v.cats) && v.cats.length) cfg.cats = v.cats;
+  const q = drawIdx((v.q || []).length || 10);
+  cfg.diff = merkDiff; cfg.cats = merkCats;
+  return q;
+}
+function paintRematch(v) {
+  const { ids, want, alleBereit } = rematchState(v);
+  const btn = $("leRematch"), note = $("leRematchNote");
+  const ichBereit = want.includes(LV.me);
+  btn.textContent = ichBereit ? "Bereit – warte auf die anderen …" : "🔁 Nochmal spielen";
+  btn.disabled = ichBereit;
+
+  const gastgeberDa = ids.includes(v.host);
+  let txt = "";
+  if (alleBereit && !gastgeberDa)
+    txt = "Alle sind bereit, aber der Gastgeber hat den Raum verlassen. Öffnet bitte einen neuen Raum.";
+  else if (want.length)
+    txt = `${want.length} von ${ids.length} wollen nochmal – neue Fragen, gleicher Raum.`;
+  note.textContent = txt;
+  note.style.display = txt ? "" : "none";
+}
+$("leRematch").onclick = () => {
+  if (!LV || !LV.ref) return;
+  $("leRematch").disabled = true;
+  LV.ref.child("rematch/" + LV.me).set(true).catch(() => { $("leRematch").disabled = false; });
+};
+/* Läuft nur beim Gastgeber. */
+function maybeRestart(v) {
+  if (!LV.isHost || LV.restarting) return;
+  if (!rematchState(v).alleBereit) return;
+  LV.restarting = true;
+  const q = rematchDraw(v);
+  LV.ref.update({
+    q, ans: null, rematch: null, cur: 0, state: "play",
+    round: (v.round || 1) + 1,
+    qstart: firebase.database.ServerValue.TIMESTAMP
+  }).then(() => { LV.restarting = false; }, () => { LV.restarting = false; });
+}
+
 /* ---- Lobby ---- */
 function inviteLink() {
   if (location.protocol === "file:") return "";
@@ -2088,6 +2147,13 @@ function liveScores(v) {
 /* ---- Synchronisierung während des Spiels ---- */
 function liveSync() {
   const v = LV.room;
+  /* Neue Runde nach einem Rückkampf: alles Rundenbezogene zurücksetzen. */
+  const runde = v.round || 1;
+  if (LV.round !== runde) {
+    LV.round = runde;
+    LV.streak = 0; LV.joker = true; LV.jokerUsedNow = false;
+    LV.marked = false; LV.counted = false; LV.cur = null;
+  }
   /* Fragen des Raums einmalig ins Gedächtnis – auch beim Gast. */
   if (!LV.marked && Array.isArray(v.q)) { LV.marked = true; markSeen(v.q); }
   if (v.cur !== LV.cur) {
@@ -2236,7 +2302,14 @@ function liveEnd() {
   const v = LV.room, sc = liveScores(v);
   const ids = Object.keys(v.players || {}).sort((a, b) => sc[b].pts - sc[a].pts);
   if (!ids.length) return;
-  hallAdd(ids.map(id => ({ n: v.players[id].name, s: sc[id].pts, r: sc[id].right, q: (v.q || []).length })));
+  /* liveEnd läuft bei jeder Änderung im Raum erneut – etwa wenn sich
+     jemand für den Rückkampf meldet. Nur einmal je Runde werten.    */
+  if (!LV.counted) {
+    LV.counted = true;
+    hallAdd(ids.map(id => ({ n: v.players[id].name, s: sc[id].pts, r: sc[id].right, q: (v.q || []).length })));
+  }
+  paintRematch(v);
+  maybeRestart(v);
   const top = sc[ids[0]].pts, winners = ids.filter(i => sc[i].pts === top);
 
   if (winners.length === ids.length) {

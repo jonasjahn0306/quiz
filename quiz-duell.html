@@ -1869,11 +1869,13 @@ function handle(pl) {
    Wer die Zugangsdaten lieber fest eintragen möchte, füllt diesen
    Block aus. Sonst fragt das Quiz sie beim ersten Mal ab.          */
 const FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  databaseURL: "",
-  projectId: "",
-  appId: ""
+  apiKey: "AIzaSyA5_yW8bRu8EnEtB9Q0ZxDHinOYgN9udMs",
+  authDomain: "quiz-62235.firebaseapp.com",
+  databaseURL: "https://quiz-62235-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "quiz-62235",
+  storageBucket: "quiz-62235.firebasestorage.app",
+  messagingSenderId: "676734307829",
+  appId: "1:676734307829:web:30a931d22a271b9f01a4bc"
 };
 
 const SDK = "https://www.gstatic.com/firebasejs/12.15.0/";
@@ -1940,11 +1942,34 @@ function showFbSetup(msg, rules) {
 }
 $("fbRulesCopy").onclick = () => copyOut("fbRulesTxt", "fbRulesCopy");
 $("fbBack").onclick = () => only("setup");
+/* Liest den Firebase-Block aus beliebig viel Drumherum heraus.
+   Der Ausschnitt der Konsole enthält auch `import { initializeApp }`
+   – ein einzelner gieriger Griff nach { … } fängt sonst das Falsche. */
+function parseFbConfig(raw) {
+  const kandidaten = [];
+  const benannt = raw.match(/firebaseConfig\s*=\s*(\{[\s\S]*?\})\s*;/);
+  if (benannt) kandidaten.push(benannt[1]);
+  const gierig = raw.match(/\{[\s\S]*\}/);
+  if (gierig) kandidaten.push(gierig[0]);
+  /* Jeder geschachtelte-freie Block einzeln, von hinten nach vorn. */
+  (raw.match(/\{[^{}]*\}/g) || []).reverse().forEach(b => kandidaten.push(b));
+
+  let notnagel = null;
+  for (const t of kandidaten) {
+    let o = null;
+    try { o = JSON.parse(t); }
+    catch (e) { try { o = new Function("return (" + t + ")")(); } catch (e2) {} }
+    if (o && typeof o === "object" && !Array.isArray(o)) {
+      if (o.databaseURL) return o;          /* der richtige Block */
+      if (!notnagel) notnagel = o;          /* für die gezielte Fehlermeldung */
+    }
+  }
+  return notnagel;
+}
+
 $("fbSave").onclick = () => {
   const raw = ($("fbIn").value || "").trim();
-  const m = raw.match(/\{[\s\S]*\}/);
-  let obj = null;
-  if (m) { try { obj = JSON.parse(m[0]); } catch (e) { try { obj = new Function("return (" + m[0] + ")")(); } catch (e2) {} } }
+  const obj = parseFbConfig(raw);
   if (!obj || typeof obj !== "object")
     return showFbSetup("Der Block konnte nicht gelesen werden. Kopiere alles ab { bis } aus der Firebase-Konsole.");
   if (!obj.databaseURL)

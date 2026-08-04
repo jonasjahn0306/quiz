@@ -4,6 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quiz-Duell – Allgemeinwissen für 2 bis 4 Spieler</title>
+
+<!-- Installierbar und offline nutzbar. Wirkt nur über https, also
+     auf GitHub Pages – beim direkten Öffnen der Datei nicht. -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f1020">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Quiz-Duell">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -200,8 +210,16 @@
   .rrow .rp { font-size: 1.2rem; font-weight: 700; }
   .tag.streak { background: rgba(255,176,32,.16); color: var(--gold); border-color: rgba(255,176,32,.35); }
   .tag.kidtag { background: rgba(122,162,255,.16); color: var(--p1); border-color: rgba(122,162,255,.4); }
+  .tag.revtag { background: rgba(61,220,132,.14); color: var(--ok); border-color: rgba(61,220,132,.4); }
   .jokerbtn { width: 100%; margin: 4px 0 14px; font-size: .9rem; padding: 11px; }
   .linkbtn.danger { color: var(--no); font-weight: 600; }
+  .statgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }
+  .statcard { background: var(--card2); border-radius: 13px; padding: 14px 15px; }
+  .statcard .sv { font-size: 1.5rem; font-weight: 700; line-height: 1.15; }
+  .statcard .sl { font-size: .78rem; color: var(--dim); margin-top: 3px; line-height: 1.35; }
+  .statcard.wide { grid-column: 1 / -1; }
+  .statbar { height: 7px; border-radius: 99px; background: var(--line); margin-top: 9px; overflow: hidden; }
+  .statbar i { display: block; height: 100%; background: linear-gradient(90deg,var(--p1),var(--p2)); }
   .hall { margin-bottom: 22px; }
   .hall .hlbl {
     font-size: .78rem; text-transform: uppercase; letter-spacing: .09em;
@@ -263,6 +281,10 @@
           <div class="mt">Nacheinander</div>
           <div class="md">Erst spielt einer allein durch, dann die anderen mit denselben Fragen.</div>
         </div>
+        <div class="mode" data-mode="solo">
+          <div class="mt">Solo gegen deinen Rekord 🎯</div>
+          <div class="md">Allein spielen. Dein bisher bester Lauf läuft als Schatten mit.</div>
+        </div>
         <div class="mode" data-mode="link">
           <div class="mt">Online-Challenge</div>
           <div class="md">Du spielst, verschickst einen Link. Der andere spielt dieselben Fragen.</div>
@@ -272,6 +294,15 @@
           <div class="md">Raum öffnen, Code teilen, alle spielen gleichzeitig mit Live-Punktestand.</div>
         </div>
       </div>
+    </div>
+
+    <div class="field" id="fLearn">
+      <label>Fehler wiederholen</label>
+      <div class="chips" id="cLearn">
+        <div class="chip on" data-v="1">An</div>
+        <div class="chip" data-v="0">Aus</div>
+      </div>
+      <div class="hint" id="learnHint"></div>
     </div>
 
     <div class="field" id="fFamily">
@@ -340,11 +371,24 @@
     <div class="hall" id="hallSetup"></div>
 
     <div class="divider"></div>
+    <button class="linkbtn" id="showStats">📊 Deine Statistik ansehen →</button>
+    <div class="divider"></div>
     <button class="linkbtn" id="showRedeem">Challenge erhalten? Code oder Link hier einfügen →</button>
     <div class="hide" id="redeemBox" style="margin-top:12px">
       <textarea id="redeemIn" rows="3" placeholder="Link oder Code einfügen…"></textarea>
       <button class="ghost" style="width:100%;margin-top:10px" id="redeemGo">Challenge öffnen</button>
       <div class="hint" id="redeemErr"></div>
+    </div>
+  </div>
+
+  <!-- ============ STATISTIK ============ -->
+  <div class="panel hide" id="stats">
+    <div class="ctr"><div class="ico">📊</div><h2>Deine Statistik</h2></div>
+    <div class="statgrid" id="statBox"></div>
+    <div class="hall" id="hallStats"></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button class="ghost" style="flex:1" id="statBack">Zurück</button>
+      <button class="ghost" style="flex:1" id="statReset">Alles zurücksetzen</button>
     </div>
   </div>
 
@@ -450,6 +494,7 @@
       <span class="tag" id="tagCat"></span>
       <span class="tag d1" id="tagDiff"></span>
       <span class="tag kidtag" id="tagKid" style="display:none">🧒 Kinderfrage</span>
+      <span class="tag revtag" id="tagRev" style="display:none">🔁 Wiederholung</span>
       <span class="tag streak" id="streak" style="display:none"></span>
       <span class="timer" id="timer"></span>
     </div>
@@ -1524,12 +1569,12 @@ const MEDAL = ["🥇","🥈","🥉","4."];
 const $ = id => document.getElementById(id);
 const show = id => $(id).classList.remove("hide");
 const gone = id => $(id).classList.add("hide");
-const PANELS = ["setup","fbsetup","lobby","join","invite","pass","game","share","end","vs","liveEnd"];
+const PANELS = ["setup","fbsetup","lobby","join","invite","pass","game","share","end","vs","liveEnd","stats"];
 const only = id => { PANELS.forEach(p => gone(p)); show(id); };
 const shuffle = arr => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
 
 let cfg = { np: 2, diff: "mix", mode: "alt", len: 10, time: 30,
-            family: false, kids: [false, false, false, false] };
+            family: false, kids: [false, false, false, false], repeatWrong: true };
 let G = null, tick = null, pending = null, lastLink = null, showCodeOnly = false;
 
 /* ================= Link-Kodierung ================= */
@@ -1554,7 +1599,7 @@ function makeUrl(kind, payload) {
 }
 
 /* ================= Setup-UI ================= */
-const SOLO = () => cfg.mode === "link" || cfg.mode === "live";
+const SOLO = () => cfg.mode === "link" || cfg.mode === "live" || cfg.mode === "solo";
 
 function buildNames() {
   const n = SOLO() ? 1 : cfg.np;
@@ -1670,6 +1715,72 @@ function freshCount(kid) {
   return pool(kid).map(q => BANK.indexOf(q)).filter(i => !(i in rank)).length;
 }
 
+/* ================= Fehlerarchiv (Lernkartei) =================
+   Wer eine Frage falsch hat, bekommt sie wieder – aber nicht
+   sofort und nicht unbegrenzt. Nach dem Fächer-Prinzip:
+   falsch → Fach 1 (kommt schnell wieder), jedes Mal richtig
+   rückt sie ein Fach weiter und pausiert länger. Aus Fach 4
+   richtig beantwortet gilt sie als gelernt und fliegt raus.
+   Höchstens ein Viertel eines Spiels sind Wiederholungen,
+   damit es sich nicht wie ein Fehler anfühlt.                */
+const WRONG_KEY = "quizduell.wrong";
+const GAMES_KEY = "quizduell.games";
+const FACH_PAUSE = { 1: 1, 2: 2, 3: 4, 4: 8 };   /* Pause in Spielen je Fach */
+const WIEDERHOL_ANTEIL = 0.25;
+
+function wrongMap() {
+  try { const o = JSON.parse(localStorage.getItem(WRONG_KEY) || "{}");
+        return (o && typeof o === "object" && !Array.isArray(o)) ? o : {}; }
+  catch (e) { return {}; }
+}
+function wrongSet(o) { try { localStorage.setItem(WRONG_KEY, JSON.stringify(o)); } catch (e) {} }
+function gamesPlayed() { return +localStorage.getItem(GAMES_KEY) || 0; }
+function bumpGames() { try { localStorage.setItem(GAMES_KEY, gamesPlayed() + 1); } catch (e) {} return gamesPlayed(); }
+
+/* Nach jeder beantworteten Frage aufrufen. */
+function noteAnswer(qi, ok) {
+  if (!BANK[qi]) return;
+  const o = wrongMap(), jetzt = gamesPlayed(), e = o[qi];
+  if (!ok) {
+    o[qi] = { b: 1, d: jetzt + FACH_PAUSE[1] };
+  } else if (e) {
+    const b = Math.min(4, (e.b || 1) + 1);
+    if ((e.b || 1) >= 4) { delete o[qi]; statLearned(); }   /* gelernt */
+    else o[qi] = { b, d: jetzt + FACH_PAUSE[b] };
+  } else return;                                 /* richtig und nie falsch – nichts zu tun */
+  wrongSet(o);
+}
+/* Fällige Wiederholungen, die in den aktuellen Pool passen. */
+function dueList(kid) {
+  const o = wrongMap(), jetzt = gamesPlayed();
+  const erlaubt = new Set(pool(kid).map(q => BANK.indexOf(q)));
+  return Object.keys(o).map(Number)
+    .filter(i => erlaubt.has(i) && (o[i].d || 0) <= jetzt)
+    .sort((a, b) => (o[a].d || 0) - (o[b].d || 0));
+}
+function wrongCount(kid) { return dueList(kid).length; }
+function wrongReset() { try { localStorage.removeItem(WRONG_KEY); localStorage.removeItem(GAMES_KEY); } catch (e) {} }
+/* Welche Fragen der letzten Ziehung waren Wiederholungen? */
+let lastReview = new Set();
+
+/* ================= Kennzahlen für die Statistik ================= */
+const STATS_KEY = "quizduell.stats";
+function statsGet() {
+  try { const o = JSON.parse(localStorage.getItem(STATS_KEY) || "{}");
+        return (o && typeof o === "object" && !Array.isArray(o)) ? o : {}; }
+  catch (e) { return {}; }
+}
+function statsSet(o) { try { localStorage.setItem(STATS_KEY, JSON.stringify(o)); } catch (e) {} }
+function statNote(ok, streak) {
+  const o = statsGet();
+  o.n = (o.n || 0) + 1;
+  if (ok) o.r = (o.r || 0) + 1;
+  if (streak > (o.best || 0)) o.best = streak;
+  statsSet(o);
+}
+function statLearned() { const o = statsGet(); o.learned = (o.learned || 0) + 1; statsSet(o); }
+function statsReset() { try { localStorage.removeItem(STATS_KEY); } catch (e) {} }
+
 /* ================= Winner-Board =================
    Bestenliste über alle Spiele auf diesem Gerät.
    Pro Name zählt nur das beste Ergebnis, sonst
@@ -1687,7 +1798,9 @@ function hallAdd(entries) {
   const clean = entries
     .filter(e => e && e.q > 0)
     .map(e => ({ n: String(e.n).trim().slice(0, 18) || "Unbekannt",
-                 s: +e.s || 0, r: +e.r || 0, q: +e.q, t: Date.now() }));
+                 s: +e.s || 0, r: +e.r || 0, q: +e.q, t: Date.now(),
+                 /* Verlauf für den Schattengegner im Solo-Modus */
+                 v: typeof e.v === "string" ? e.v : undefined }));
   if (!clean.length) return;
   const all = hallList().concat(clean).sort((a, b) => b.s - a.s || b.r - a.r || a.t - b.t);
   try { localStorage.setItem(HALL_KEY, JSON.stringify(all.slice(0, HALL_MAX))); } catch (e) {}
@@ -1722,7 +1835,23 @@ function hallTop(n) {
   return [...best.values()].sort(hallCmp).slice(0, n);
 }
 
-const HALL_IDS = ["hallSetup", "hallEnd", "hallLive", "hallVs"];
+/* Bester bisheriger Lauf dieser Person bei genau dieser Fragenzahl.
+   Nur mit Verlauf brauchbar – sonst gäbe es keinen Schatten.      */
+function bestRun(name, q) {
+  const key = String(name || "").trim().toLowerCase();
+  return hallList()
+    .filter(e => e.n.toLowerCase() === key && e.q === q && typeof e.v === "string" && e.v.length === q)
+    .sort((a, b) => b.s - a.s)[0] || null;
+}
+/* Punktestand des Rekordlaufs nach den ersten j Fragen. */
+function runAt(run, j) {
+  if (!run) return 0;
+  let s = 0;
+  for (let i = 0; i < j && i < run.v.length; i++) s += +run.v[i] || 0;
+  return s;
+}
+
+const HALL_IDS = ["hallSetup", "hallEnd", "hallLive", "hallVs", "hallStats"];
 function paintHalls() { HALL_IDS.forEach(paintHall); }
 function paintHall(id) {
   const box = $(id);
@@ -1757,17 +1886,77 @@ function paintHall(id) {
   wire();
 }
 
+/* ================= Statistikseite ================= */
+function paintStats() {
+  const st = statsGet();
+  const beantwortet = st.n || 0, richtig = st.r || 0;
+  const quote = beantwortet ? Math.round(richtig / beantwortet * 100) : 0;
+  const kartei = Object.keys(wrongMap()).length;
+  const gelernt = st.learned || 0;
+  const gesehen = seenList().length, gesamt = BANK.length;
+  const abdeckung = Math.round(gesehen / gesamt * 100);
+
+  const karte = (wert, label, breit) =>
+    `<div class="statcard${breit ? " wide" : ""}"><div class="sv">${wert}</div><div class="sl">${label}</div></div>`;
+
+  $("statBox").innerHTML =
+    karte(gamesPlayed(), "Partien gespielt") +
+    karte(beantwortet, "Fragen beantwortet") +
+    karte(quote + " %", `Trefferquote · ${richtig} von ${beantwortet} richtig`) +
+    karte(st.best || 0, "Längste Serie richtiger Antworten") +
+    `<div class="statcard wide">
+       <div class="sv">${gesehen} <span style="font-size:.9rem;color:var(--dim);font-weight:400">von ${gesamt}</span></div>
+       <div class="sl">Fragen des Katalogs schon gesehen – ${abdeckung} %</div>
+       <div class="statbar"><i style="width:${abdeckung}%"></i></div>
+     </div>` +
+    `<div class="statcard wide">
+       <div class="sv" style="color:var(--ok)">${gelernt} gelernt</div>
+       <div class="sl">Fragen, die du nach mehrfachem Üben sicher konntest.
+         ${kartei ? `<b>${kartei}</b> liegen noch in der Lernkartei.` : `Die Lernkartei ist gerade leer.`}</div>
+     </div>`;
+  paintHall("hallStats");
+}
+$("showStats").onclick = () => { paintStats(); only("stats"); };
+$("statBack").onclick = () => only("setup");
+$("statReset").onclick = () => {
+  const b = $("statReset");
+  if (b.dataset.armed !== "1") {
+    b.dataset.armed = "1";
+    b.textContent = "Wirklich alles löschen?";
+    setTimeout(() => { b.dataset.armed = ""; b.textContent = "Alles zurücksetzen"; }, 5000);
+    return;
+  }
+  b.dataset.armed = ""; b.textContent = "Alles zurücksetzen";
+  statsReset(); wrongReset(); hallReset(); resetSeen();
+  paintStats();
+};
+
 function updateAvail() {
   $("fPlayers").classList.toggle("hide", SOLO());
   $("lblLen").textContent = cfg.mode === "alt" || famOn() ? "Fragen pro Spieler" : "Anzahl Fragen";
   $("start").textContent = cfg.mode === "link" ? "Challenge spielen"
-    : cfg.mode === "live" ? "Raum erstellen" : "Spiel starten";
+    : cfg.mode === "live" ? "Raum erstellen"
+    : cfg.mode === "solo" ? "Solo starten" : "Spiel starten";
 
   /* Familienspiel gibt es nur dort, wo alle am selben Gerät sitzen. */
   const famMoeglich = famModes.includes(cfg.mode);
   $("fFamily").classList.toggle("hide", !famMoeglich);
   [...$("cFamily").children].forEach(c =>
     c.classList.toggle("on", famMoeglich && (c.dataset.v === "1") === !!cfg.family));
+  [...$("cLearn").children].forEach(c =>
+    c.classList.toggle("on", (c.dataset.v === "1") === (cfg.repeatWrong !== false)));
+  const faellig = famOn() ? wrongCount(false) + wrongCount(true) : wrongCount(false);
+  const offen = Object.keys(wrongMap()).length;
+  $("learnHint").innerHTML = cfg.repeatWrong === false
+    ? `Falsch beantwortete Fragen kommen nicht von selbst zurück.`
+    : offen === 0
+      ? `Noch keine Fehler gesammelt. Was du falsch hast, wird hier automatisch gemerkt.`
+      : `<b>${offen}</b> Fragen in der Lernkartei, <b>${faellig}</b> davon jetzt fällig. `
+        + `Höchstens ein Viertel eines Spiels sind Wiederholungen. `
+        + `<a href="#" id="resetWrong">Kartei leeren</a>`;
+  const rw = $("resetWrong");
+  if (rw) rw.onclick = ev => { ev.preventDefault(); wrongReset(); updateAvail(); };
+
   const kinder = kidCount();
   $("famHint").innerHTML = !famOn() ? ""
     : kinder === 0 ? `Tippe unter <b>Namen</b> auf „Erwachsen“, um jemanden zum Kind zu machen.`
@@ -1797,6 +1986,7 @@ function renderHint(mp) {
     ? `Familienspiel: <b>${pool(false).length}</b> Fragen für Erwachsene, <b>${pool(true).length}</b> für Kinder (${dn}). `
       + `Jeder bekommt eigene – max. <b>${mp}</b> pro Spieler.`
     : cfg.mode === "alt" ? `${pool(false).length} Fragen (${dn}) im Pool, jeder bekommt eigene – max. <b>${mp}</b> pro Spieler bei ${cfg.np} Spielern.`
+    : cfg.mode === "solo" ? `Du spielst allein gegen deinen besten Lauf – max. <b>${mp}</b> Fragen (${dn}).`
     : cfg.mode === "seq" ? `Alle spielen dieselben Fragen – max. <b>${mp}</b> möglich (${dn}).`
     : `Du spielst diese Fragen zuerst, dein Gegner bekommt exakt dieselben – max. <b>${mp}</b> (${dn}).`;
   const fresh = famOn() ? freshCount(false) + freshCount(true) : freshCount(false);
@@ -1820,6 +2010,12 @@ function wireChips(boxId, key, after) {
     if (after) after();
   });
 }
+$("cLearn").addEventListener("click", e => {
+  const c = e.target.closest(".chip");
+  if (!c) return;
+  cfg.repeatWrong = c.dataset.v === "1";
+  updateAvail();
+});
 $("cFamily").addEventListener("click", e => {
   const c = e.target.closest(".chip");
   if (!c || c.classList.contains("off")) return;
@@ -1847,16 +2043,30 @@ updateAvail();
 paintHalls();
 
 /* ================= Fragen ziehen ================= */
-function drawIdx(n, kid) {
-  const src = pool(kid).map(q => BANK.indexOf(q));
-  if (cfg.diff !== "mix") return markSeen(freshFirst(src).slice(0, n));
+/* mitWiederholung: false für Live-Räume und Stichfragen – dort haben
+   die Lernkarten eines einzelnen Geräts nichts zu suchen.          */
+function drawIdx(n, kid, mitWiederholung) {
+  /* Fällige Wiederholungen vorab reservieren, höchstens ein Viertel. */
+  let vorab = [];
+  lastReview = new Set();
+  if (cfg.repeatWrong !== false && mitWiederholung !== false && n >= 4) {
+    const platz = Math.min(Math.floor(n * WIEDERHOL_ANTEIL), n - 1);
+    vorab = dueList(kid).slice(0, platz);
+    vorab.forEach(i => lastReview.add(i));
+  }
+  const rest = n - vorab.length;
+  const mische = liste => markSeen(shuffle([...vorab, ...liste]));
+
+  const src = pool(kid).map(q => BANK.indexOf(q)).filter(i => !lastReview.has(i));
+  if (rest <= 0) return mische([]);
+  if (cfg.diff !== "mix") return mische(freshFirst(src).slice(0, rest));
   const rank = seenRank();
   const byDiff = {1:[],2:[],3:[]};
   src.forEach(i => byDiff[BANK[i].d].push(i));
   [1,2,3].forEach(d => byDiff[d] = freshFirst(byDiff[d]));
 
-  const want = {1: Math.round(n*.45), 2: Math.round(n*.40), 3: 0};
-  want[3] = n - want[1] - want[2];
+  const want = {1: Math.round(rest*.45), 2: Math.round(rest*.40), 3: 0};
+  want[3] = rest - want[1] - want[2];
 
   const out = [], used = new Set();
   const take = i => { used.add(i); out.push(i); };
@@ -1868,16 +2078,16 @@ function drawIdx(n, kid) {
   [1,2,3].forEach(d => left(d, true).slice(0, want[d]).forEach(take));
   /* 2. Lücken: lieber die Mischung verletzen als eine Frage wiederholen. */
   const fresh = shuffle([1,2,3].flatMap(d => left(d, true)));
-  while (out.length < n && fresh.length) take(fresh.shift());
+  while (out.length < rest && fresh.length) take(fresh.shift());
   /* 3. Pool erschöpft – Wunschmischung mit den ältesten Fragen auffüllen. */
   [1,2,3].forEach(d => {
-    const m = Math.min(missing(d), n - out.length);
+    const m = Math.min(missing(d), rest - out.length);
     if (m > 0) left(d, false).slice(0, m).forEach(take);
   });
-  const rest = [1,2,3].flatMap(d => left(d, false)).sort((a, b) => rank[a] - rank[b]);
-  while (out.length < n && rest.length) take(rest.shift());
+  const uebrig = [1,2,3].flatMap(d => left(d, false)).sort((a, b) => rank[a] - rank[b]);
+  while (out.length < rest && uebrig.length) take(uebrig.shift());
 
-  return markSeen(shuffle(out).slice(0, n));
+  return mische(out.slice(0, rest));
 }
 
 /* pts = Ziffernfolge mit den tatsächlich erzielten Punkten je Frage.
@@ -1893,6 +2103,7 @@ const rightOf = res => res.reduce((s, v) => s + (v ? 1 : 0), 0);
 $("start").onclick = () => {
   if (cfg.mode === "live") return liveCreate();
   LV = null; TB = null;
+  bumpGames();
   const np = SOLO() ? 1 : cfg.np;
   const names = [];
   for (let i = 0; i < np; i++) names.push(($("n" + i).value || "").trim() || (np === 1 ? "Du" : "Spieler " + (i+1)));
@@ -1903,8 +2114,12 @@ $("start").onclick = () => {
     /* Jeder Spieler bekommt seinen eigenen Satz aus dem passenden Topf. */
     for (let i = 0; i < np; i++) kidFlags[i] = isKid(i);
     const nk = kidFlags.filter(Boolean).length, na = np - nk;
+    const rev = new Set();
     const topfErw = na ? drawIdx(cfg.len * na, false) : [];
+    lastReview.forEach(i => rev.add(i));
     const topfKind = nk ? drawIdx(cfg.len * nk, true) : [];
+    lastReview.forEach(i => rev.add(i));
+    lastReview = rev;
     const je = [];
     let ai = 0, ki = 0;
     for (let p = 0; p < np; p++) {
@@ -1914,19 +2129,22 @@ $("start").onclick = () => {
     }
     if (cfg.mode === "alt") {
       for (let j = 0; j < cfg.len; j++)
-        for (let p = 0; p < np; p++) order.push({ p, qi: je[p][j], nr: j + 1, pass: false });
+        for (let p = 0; p < np; p++) order.push({ p, qi: je[p][j], nr: j + 1, pass: false, rev: lastReview.has(je[p][j]) });
     } else {
       for (let p = 0; p < np; p++)
-        je[p].forEach((qi, j) => order.push({ p, qi, nr: j + 1, pass: j === 0 }));
+        je[p].forEach((qi, j) => order.push({ p, qi, nr: j + 1, pass: j === 0, rev: lastReview.has(qi) }));
     }
     qIdx = je.flat();
+  } else if (cfg.mode === "solo") {
+    qIdx = drawIdx(cfg.len, false);
+    qIdx.forEach((qi, j) => order.push({ p: 0, qi, nr: j + 1, pass: false, rev: lastReview.has(qi) }));
   } else if (cfg.mode === "alt") {
     qIdx = drawIdx(cfg.len * np, false);
-    qIdx.forEach((qi, i) => order.push({ p: i % np, qi, nr: Math.floor(i / np) + 1, pass: false }));
+    qIdx.forEach((qi, i) => order.push({ p: i % np, qi, nr: Math.floor(i / np) + 1, pass: false, rev: lastReview.has(qi) }));
   } else {
     qIdx = drawIdx(cfg.len, false);
     for (let p = 0; p < np; p++)
-      qIdx.forEach((qi, j) => order.push({ p, qi, nr: j + 1, pass: cfg.mode === "seq" && j === 0 }));
+      qIdx.forEach((qi, j) => order.push({ p, qi, nr: j + 1, pass: cfg.mode === "seq" && j === 0, rev: lastReview.has(qi) }));
   }
 
   G = {
@@ -1938,6 +2156,10 @@ $("start").onclick = () => {
     streak: Array(np).fill(0), best: Array(np).fill(0), joker: Array(np).fill(true),
     cat: {}, order, i: 0, answered: false, foe: null
   };
+  if (cfg.mode === "solo") {
+    G.record = bestRun(names[0], cfg.len);
+    if (G.record) G.foe = { n: "Dein Rekord", ghost: true };
+  }
   buildScore();
   step();
 };
@@ -2021,12 +2243,12 @@ function tbNextRound() {
   TB.qs = {};
   if (G.family) {
     for (const p of TB.players) {
-      const d = drawIdx(1, G.kids[p]);
+      const d = drawIdx(1, G.kids[p], false);
       if (!d.length) { TB.winner = null; return showEnd(); }
       TB.qs[p] = d[0];
     }
   } else {
-    const d = drawIdx(1, false);
+    const d = drawIdx(1, false, false);
     if (!d.length) { TB.winner = null; return showEnd(); }
     TB.players.forEach(p => TB.qs[p] = d[0]);
   }
@@ -2059,6 +2281,7 @@ function tbRender() {
   $("tagDiff").textContent = "Stichfrage";
   $("tagDiff").className = "tag d" + q.d;
   $("tagKid").style.display = q.kid ? "" : "none";
+  $("tagRev").style.display = "none";
   $("turn").innerHTML = `Stichfrage ${TB.round} · <b style="color:${PCOL[p]}">${esc(G.names[p])}</b>`;
   $("qtext").textContent = q.q;
 
@@ -2140,12 +2363,14 @@ function render() {
     c.style.borderColor = i === p ? PCOL[i] : "transparent";
   });
   $("prog").style.width = (g.i / g.order.length * 100) + "%";
+  paintRecord(e.nr - 1);
 
   $("tagCat").textContent = q.k;
   const d = DIFF[q.d];
   $("tagDiff").textContent = d.n + " · " + d.p + (d.p === 1 ? " Punkt" : " Punkte");
   $("tagDiff").className = "tag d" + q.d;
   $("tagKid").style.display = q.kid ? "" : "none";
+  $("tagRev").style.display = e.rev ? "" : "none";
 
   $("turn").innerHTML = `Frage ${e.nr} von ${g.perPlayer} · <b style="color:${PCOL[p]}">${esc(g.names[p])}</b>`
     + (g.mode === "seq" ? ` · Durchgang ${p + 1} von ${g.np}` : "");
@@ -2243,6 +2468,17 @@ function useJoker(correct, p) {
   applyFifty(correct);
 }
 
+/* Punktestand des Rekordlaufs nach j gespielten Fragen anzeigen. */
+function paintRecord(j) {
+  if (!G || !G.record || !$("ptFoe")) return;
+  const soll = runAt(G.record, j), ist = G.score[0];
+  const el = $("ptFoe");
+  el.textContent = soll;
+  el.style.color = ist >= soll ? "var(--ok)" : "var(--dim)";
+  const karte = $("pcFoe");
+  if (karte) karte.style.borderColor = "transparent";
+}
+
 function answer(chosen, btn) {
   if (!G || G.answered) return;
   G.answered = true;
@@ -2263,6 +2499,7 @@ function answer(chosen, btn) {
 
   if (!g.cat[q.k]) g.cat[q.k] = Array(g.np).fill(0);
   g.res[p].push(ok ? 1 : 0);
+  noteAnswer(e.qi, ok);
 
   /* Der Joker nimmt die Hälfte der Auswahl weg – dafür entfällt der Tempobonus. */
   const frac = g.jokerUsedNow ? 0 : fracLeftOf(g.qStart, g.time);
@@ -2281,12 +2518,17 @@ function answer(chosen, btn) {
     $("pt" + p).textContent = g.score[p];
   }
   paintStreak(g.streak[p]);
+  paintRecord(e.nr);
+  statNote(ok, g.streak[p]);
 
   const fb = $("fb");
   fb.className = "fb " + (ok ? "ok" : "no");
+  const lernNote = cfg.repeatWrong === false ? ""
+    : ok ? (e.rev ? `<br>🔁 Die hattest du schon mal falsch – jetzt sitzt sie.` : "")
+         : `<br>🔁 Die Frage kommt in einem der nächsten Spiele noch einmal.`;
   fb.innerHTML = ok
-    ? `<b>Richtig! +${got} ${got === 1 ? "Punkt" : "Punkte"}</b>${bonusText(DIFF[q.d].p, sp, st, g.streak[p])}`
-    : `<b>${chosen === null ? "Zeit abgelaufen" : "Leider falsch"}</b>Richtig wäre: <strong>${esc(correct)}</strong>`;
+    ? `<b>Richtig! +${got} ${got === 1 ? "Punkt" : "Punkte"}</b>${bonusText(DIFF[q.d].p, sp, st, g.streak[p])}${lernNote}`
+    : `<b>${chosen === null ? "Zeit abgelaufen" : "Leider falsch"}</b>Richtig wäre: <strong>${esc(correct)}</strong>${lernNote}`;
   show("fb");
 
   const last = g.i + 1 >= g.order.length;
@@ -2343,19 +2585,42 @@ function finish() {
 function showEnd() {
   const g = G;
   only("end");
-  if (!g.counted) { g.counted = true; hallAdd(g.names.map((n, i) => ({ n, s: g.score[i], r: g.right[i], q: g.perPlayer }))); }
+  if (!g.counted) {
+    g.counted = true;
+    hallAdd(g.names.map((n, i) => ({ n, s: g.score[i], r: g.right[i], q: g.perPlayer, v: g.pts[i].join("") })));
+  }
   const idx = g.names.map((_, i) => i).sort((a, b) => g.score[b] - g.score[a]);
   const top = g.score[idx[0]];
   const winners = idx.filter(i => g.score[i] === top);
 
   /* Bei Gleichstand kann eine Stichfrage entscheiden – aber nur dort,
      wo alle am selben Gerät sitzen.                                  */
-  const tieBreakable = winners.length > 1 && (g.mode === "alt" || g.mode === "seq");
+  const tieBreakable = winners.length > 1 && (g.mode === "alt" || g.mode === "seq") && g.np > 1;
   const tbBtn = $("tbStart");
   tbBtn.style.display = tieBreakable && !TB ? "" : "none";
   tbBtn.onclick = () => startTiebreak(winners);
 
-  if (TB && TB.winner !== null && TB.winner !== undefined) {
+  if (g.mode === "solo") {
+    const rek = g.record ? g.record.s : null;
+    const eigen = g.score[0];
+    if (rek === null) {
+      $("trophy").textContent = "🎯";
+      $("wtext").textContent = "Dein erster Lauf!";
+      $("wsub").textContent = `${eigen} Punkte bei ${g.right[0]} von ${g.perPlayer} richtig. Das ist ab jetzt dein Rekord.`;
+    } else if (eigen > rek) {
+      $("trophy").textContent = "🏆";
+      $("wtext").textContent = "Neuer Rekord!";
+      $("wsub").textContent = `${eigen} statt ${rek} Punkte – ${eigen - rek} mehr als dein bisher bester Lauf.`;
+    } else if (eigen === rek) {
+      $("trophy").textContent = "🤝";
+      $("wtext").textContent = "Deinen Rekord eingestellt!";
+      $("wsub").textContent = `${eigen} Punkte – exakt so viel wie beim besten Mal.`;
+    } else {
+      $("trophy").textContent = "🎯";
+      $("wtext").textContent = "Diesmal nicht.";
+      $("wsub").textContent = `${eigen} Punkte, dein Rekord steht bei ${rek}. Es fehlten ${rek - eigen}.`;
+    }
+  } else if (TB && TB.winner !== null && TB.winner !== undefined) {
     const w = TB.winner;
     $("trophy").textContent = "🏆";
     $("wtext").innerHTML = `<span style="color:${PCOL[w]}">${esc(g.names[w])}</span> gewinnt die Stichfrage!`;
@@ -2386,6 +2651,16 @@ function showEnd() {
       <span class="rq">${g.right[i]}/${g.perPlayer} richtig · ${Math.round(g.right[i] / g.perPlayer * 100)} %</span>
       <span class="rp" style="color:${PCOL[i]}">${g.score[i]}</span>
     </div>`).join("");
+
+  if (g.mode === "solo" && g.record) {
+    $("rank").innerHTML += `
+      <div class="rrow" style="border-left-color:var(--dim)">
+        <span class="pos">🎯</span>
+        <span class="rn" style="color:var(--dim)">Dein Rekord <small>· ${new Date(g.record.t).toLocaleDateString("de-DE")}</small></span>
+        <span class="rq">${g.record.r}/${g.record.q} richtig</span>
+        <span class="rp" style="color:var(--dim)">${g.record.s}</span>
+      </div>`;
+  }
 
   $("cats").innerHTML = `<div style="font-size:.78rem;text-transform:uppercase;letter-spacing:.09em;color:var(--dim);margin-bottom:8px">
       Richtige Antworten nach Kategorie (${g.names.map((n, i) => `<span style="color:${PCOL[i]}">${esc(n)}</span>`).join(" · ")})
@@ -2668,7 +2943,7 @@ async function liveCreate() {
   let d;
   try { d = await connect(); }
   catch (e) { return showFbSetup(e.message === "nocfg" ? null : e.message); }
-  const code = rnd(4), me = rnd(9), q = drawIdx(cfg.len, false);
+  const code = rnd(4), me = rnd(9), q = drawIdx(cfg.len, false, false);
   try {
     await withTimeout(d.ref("rooms/" + code).set({
       host: me, state: "lobby", time: cfg.time, q, cur: -1,
@@ -2802,7 +3077,7 @@ function rematchDraw(v) {
   const merkDiff = cfg.diff, merkCats = cfg.cats;
   if (v.diff) cfg.diff = v.diff;
   if (Array.isArray(v.cats) && v.cats.length) cfg.cats = v.cats;
-  const q = drawIdx((v.q || []).length || 10, false);
+  const q = drawIdx((v.q || []).length || 10, false, false);
   cfg.diff = merkDiff; cfg.cats = merkCats;
   return q;
 }
@@ -2948,6 +3223,7 @@ function liveRenderQ() {
   $("tagDiff").textContent = DIFF[q.d].n + " · " + DIFF[q.d].p + (DIFF[q.d].p === 1 ? " Punkt" : " Punkte");
   $("tagDiff").className = "tag d" + q.d;
   $("tagKid").style.display = q.kid ? "" : "none";
+  $("tagRev").style.display = "none";
   $("prog").style.width = (v.cur / v.q.length * 100) + "%";
   $("turn").innerHTML = `Frage ${v.cur + 1} von ${v.q.length} · <b>alle gleichzeitig</b>`;
   $("qtext").textContent = q.q;
@@ -3013,6 +3289,7 @@ function liveAnswer(txt, btn) {
   const pt = ok ? DIFF[q.d].p + speedBonus(frac) + streakBonus(LV.streak) : 0;
   LV.jokerUsedNow = false;
   paintStreak(LV.streak);
+  statNote(ok, LV.streak);
 
   LV.ref.child("ans/" + v.cur + "/" + LV.me)
     .set({ ok: ok ? 1 : 0, pt, t: firebase.database.ServerValue.TIMESTAMP });
@@ -3111,6 +3388,14 @@ function liveEnd() {
       <span class="rq">${sc[id].right}/${v.q.length} richtig</span>
       <span class="rp" style="color:${PCOL[pos % 4]}">${sc[id].pts}</span>
     </div>`).join("");
+}
+
+/* Offline-Betrieb anmelden. Über file:// gibt es keine Service
+   Worker – dort still überspringen, damit nichts bricht.      */
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
 }
 
 /* ================= Start: Hash prüfen ================= */

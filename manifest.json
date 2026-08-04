@@ -1,0 +1,20 @@
+{
+  "name": "Quiz-Duell",
+  "short_name": "Quiz-Duell",
+  "description": "Allgemeinwissen-Quiz für 2 bis 4 Spieler, mit Familienspiel und Lernkartei.",
+  "start_url": "quiz-duell.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f1020",
+  "theme_color": "#0f1020",
+  "lang": "de",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

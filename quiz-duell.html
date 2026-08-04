@@ -55,6 +55,12 @@
   .names { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .names .nf { position: relative; }
   .names .dot { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 9px; height: 9px; border-radius: 99px; }
+  .names .agebtn {
+    width: 100%; margin-top: 6px; padding: 7px 10px; font-size: .78rem; font-weight: 600;
+    border: 1px solid var(--line); background: var(--card2); color: var(--dim);
+    border-radius: 10px; cursor: pointer;
+  }
+  .names .agebtn.kid { border-color: var(--gold); color: var(--gold); }
   .field { margin-bottom: 20px; }
   .chips { display: flex; gap: 9px; flex-wrap: wrap; }
   .chip {
@@ -193,6 +199,7 @@
   .rrow .rq { font-size: .84rem; color: var(--dim); margin-right: 10px; white-space: nowrap; }
   .rrow .rp { font-size: 1.2rem; font-weight: 700; }
   .tag.streak { background: rgba(255,176,32,.16); color: var(--gold); border-color: rgba(255,176,32,.35); }
+  .tag.kidtag { background: rgba(122,162,255,.16); color: var(--p1); border-color: rgba(122,162,255,.4); }
   .jokerbtn { width: 100%; margin: 4px 0 14px; font-size: .9rem; padding: 11px; }
   .linkbtn.danger { color: var(--no); font-weight: 600; }
   .hall { margin-bottom: 22px; }
@@ -265,6 +272,15 @@
           <div class="md">Raum öffnen, Code teilen, alle spielen gleichzeitig mit Live-Punktestand.</div>
         </div>
       </div>
+    </div>
+
+    <div class="field" id="fFamily">
+      <label>Familienspiel</label>
+      <div class="chips" id="cFamily">
+        <div class="chip on" data-v="0">Aus</div>
+        <div class="chip" data-v="1">🧒 Erwachsene gegen Kinder</div>
+      </div>
+      <div class="hint" id="famHint"></div>
     </div>
 
     <div class="field" id="fPlayers">
@@ -433,6 +449,7 @@
     <div class="meta">
       <span class="tag" id="tagCat"></span>
       <span class="tag d1" id="tagDiff"></span>
+      <span class="tag kidtag" id="tagKid" style="display:none">🧒 Kinderfrage</span>
       <span class="tag streak" id="streak" style="display:none"></span>
       <span class="timer" id="timer"></span>
     </div>
@@ -1270,7 +1287,214 @@ const BANK = [
 {k:"Vermischtes",d:3,q:"Wie viele Meter hat eine Landmeile?",a:["1609","1852","1000","1500"]},
 {k:"Vermischtes",d:3,q:"Wofür steht die Abkürzung „ASAP“?",a:["As Soon As Possible","As Simple As Possible","Always Send A Proof","At Some Appointed Point"]},
 {k:"Vermischtes",d:3,q:"In welcher Einheit wird das Gewicht von Diamanten angegeben?",a:["Karat","Gramm","Unze","Zoll"]},
-{k:"Vermischtes",d:3,q:"Wie viele Möglichkeiten gibt es, 6 aus 49 Zahlen zu ziehen?",a:["13.983.816","1.398.381","139.838.160","983.816"]}
+{k:"Vermischtes",d:3,q:"Wie viele Möglichkeiten gibt es, 6 aus 49 Zahlen zu ziehen?",a:["13.983.816","1.398.381","139.838.160","983.816"]},
+
+/* ==================================================================
+   KINDERFRAGEN  (kid:1)  – Niveau etwa 8 Jahre
+   Liegen bewusst in derselben Liste, damit Indizes eindeutig
+   bleiben. Im normalen Spiel tauchen sie nie auf; nur wenn im
+   Familienspiel ein Spieler als Kind markiert ist.
+   ================================================================== */
+
+/* ===== Kinder: Geografie ===== */
+{k:"Geografie",kid:1,d:1,q:"Wie heißt die Hauptstadt von Deutschland?",a:["Berlin","Hamburg","München","Köln"]},
+{k:"Geografie",kid:1,d:1,q:"Auf welchem Planeten leben wir?",a:["Auf der Erde","Auf dem Mars","Auf dem Mond","Auf der Venus"]},
+{k:"Geografie",kid:1,d:1,q:"Wie viele Jahreszeiten gibt es?",a:["4","2","3","5"]},
+{k:"Geografie",kid:1,d:1,q:"In welchem Erdteil liegt Deutschland?",a:["In Europa","In Asien","In Afrika","In Amerika"]},
+{k:"Geografie",kid:1,d:1,q:"Wo leben Pinguine?",a:["Am Südpol","Am Nordpol","In der Wüste","Im Regenwald"]},
+{k:"Geografie",kid:1,d:1,q:"Wo leben Eisbären?",a:["Am Nordpol","Am Südpol","In Afrika","In Australien"]},
+{k:"Geografie",kid:1,d:1,q:"Welches Tier hüpft und lebt in Australien?",a:["Das Känguru","Der Elefant","Der Tiger","Der Panda"]},
+{k:"Geografie",kid:1,d:1,q:"Wie nennt man einen Berg, aus dem heiße Lava kommt?",a:["Vulkan","Gletscher","Hügel","Felsen"]},
+{k:"Geografie",kid:1,d:1,q:"Welche Farbe hat Wasser auf einer Landkarte?",a:["Blau","Grün","Rot","Braun"]},
+{k:"Geografie",kid:1,d:1,q:"In welchem Land steht der Eiffelturm?",a:["In Frankreich","In Italien","In Spanien","In England"]},
+{k:"Geografie",kid:1,d:2,q:"Wie heißt die Hauptstadt von Frankreich?",a:["Paris","Lyon","Marseille","Nizza"]},
+{k:"Geografie",kid:1,d:2,q:"In welchem Land gibt es die großen Pyramiden?",a:["In Ägypten","In Italien","In Norwegen","In Japan"]},
+{k:"Geografie",kid:1,d:2,q:"Welches Land sieht auf der Karte aus wie ein Stiefel?",a:["Italien","Spanien","Griechenland","Portugal"]},
+{k:"Geografie",kid:1,d:2,q:"Was ist die Sahara?",a:["Eine Wüste","Ein Meer","Ein Berg","Ein Wald"]},
+{k:"Geografie",kid:1,d:2,q:"In welchem Land steht die Freiheitsstatue?",a:["In den USA","In England","In Kanada","In Mexiko"]},
+{k:"Geografie",kid:1,d:2,q:"Aus welchem Land kommt der Panda?",a:["Aus China","Aus Indien","Aus Japan","Aus Thailand"]},
+{k:"Geografie",kid:1,d:2,q:"Welche Himmelsrichtung zeigt ein Kompass immer an?",a:["Den Norden","Den Süden","Den Osten","Den Westen"]},
+{k:"Geografie",kid:1,d:2,q:"Wie heißt das kälteste Gebiet der Erde?",a:["Die Antarktis","Die Sahara","Der Regenwald","Die Alpen"]},
+{k:"Geografie",kid:1,d:2,q:"In welchem Land gibt es viele Windmühlen und Tulpen?",a:["In den Niederlanden","In Belgien","In Dänemark","In Polen"]},
+{k:"Geografie",kid:1,d:2,q:"Welches Land ist für Schokolade und hohe Berge bekannt?",a:["Die Schweiz","Norwegen","Griechenland","Portugal"]},
+{k:"Geografie",kid:1,d:3,q:"In welchem Land steht die Chinesische Mauer?",a:["In China","In Japan","In Indien","In Korea"]},
+{k:"Geografie",kid:1,d:3,q:"Wie nennt man einen Wald, in dem es fast jeden Tag regnet?",a:["Regenwald","Nadelwald","Laubwald","Mischwald"]},
+{k:"Geografie",kid:1,d:3,q:"Was ist ein Gletscher?",a:["Eine große Eismasse in den Bergen","Ein tiefer See","Ein hoher Wasserfall","Eine Sandwüste"]},
+{k:"Geografie",kid:1,d:3,q:"Wie nennt man eine Landfläche, die ringsum von Wasser umgeben ist?",a:["Eine Insel","Eine Halbinsel","Ein Kontinent","Eine Bucht"]},
+{k:"Geografie",kid:1,d:3,q:"Wie heißt der größte Ozean der Erde?",a:["Der Pazifik","Der Atlantik","Das Mittelmeer","Die Nordsee"]},
+{k:"Geografie",kid:1,d:3,q:"Was misst man mit einem Thermometer draußen?",a:["Wie warm oder kalt es ist","Wie stark der Wind ist","Wie viel es regnet","Wie hell es ist"]},
+
+/* ===== Kinder: Geschichte ===== */
+{k:"Geschichte",kid:1,d:1,q:"Wer wohnte früher in einer Burg?",a:["Ritter","Astronauten","Piraten","Cowboys"]},
+{k:"Geschichte",kid:1,d:1,q:"Womit haben Ritter gekämpft?",a:["Mit Schwert und Schild","Mit Pfeil und Bogen aus Plastik","Mit Gewehren","Mit Zauberstäben"]},
+{k:"Geschichte",kid:1,d:1,q:"Welche Tiere lebten vor sehr langer Zeit und sind heute ausgestorben?",a:["Dinosaurier","Elefanten","Pferde","Katzen"]},
+{k:"Geschichte",kid:1,d:1,q:"Womit sind die Menschen früher gereist, bevor es Autos gab?",a:["Mit Pferd und Kutsche","Mit dem Flugzeug","Mit dem Zug","Mit dem Fahrrad"]},
+{k:"Geschichte",kid:1,d:1,q:"Wer segelte früher über die Meere und suchte Schätze?",a:["Piraten","Ritter","Bauern","Bäcker"]},
+{k:"Geschichte",kid:1,d:1,q:"Wie heißt das große Boot, in dem Noah alle Tiere gerettet hat?",a:["Die Arche","Das Floß","Das U-Boot","Die Gondel"]},
+{k:"Geschichte",kid:1,d:1,q:"Wo wohnten die Menschen ganz früher, als es noch keine Häuser gab?",a:["In Höhlen","In Hochhäusern","In Zelten aus Plastik","Auf Bäumen aus Beton"]},
+{k:"Geschichte",kid:1,d:2,q:"Wer war der erste Mensch, der auf dem Mond gelaufen ist?",a:["Neil Armstrong","Christoph Kolumbus","Albert Einstein","Leonardo da Vinci"]},
+{k:"Geschichte",kid:1,d:2,q:"Welches Volk baute vor sehr langer Zeit die Pyramiden?",a:["Die Ägypter","Die Wikinger","Die Indianer","Die Römer"]},
+{k:"Geschichte",kid:1,d:2,q:"Wie heißen die Seefahrer aus dem Norden mit den langen Booten?",a:["Wikinger","Römer","Griechen","Ägypter"]},
+{k:"Geschichte",kid:1,d:2,q:"Was benutzten die Menschen, bevor es Handys gab?",a:["Briefe","E-Mails","Sprachnachrichten","Videoanrufe"]},
+{k:"Geschichte",kid:1,d:2,q:"In welchem Land haben die Römer früher regiert?",a:["In Italien","In Schweden","In Australien","In Kanada"]},
+{k:"Geschichte",kid:1,d:2,q:"Wie nannte man die Wohnung eines Königs?",a:["Schloss","Scheune","Zelt","Bunker"]},
+{k:"Geschichte",kid:1,d:2,q:"Wer schrieb früher die Bücher ab, weil es noch keine Druckmaschinen gab?",a:["Mönche","Ritter","Bauern","Kinder"]},
+{k:"Geschichte",kid:1,d:3,q:"Wie hieß die Mauer, die Berlin früher geteilt hat?",a:["Die Berliner Mauer","Die Chinesische Mauer","Die Stadtmauer","Die Klagemauer"]},
+{k:"Geschichte",kid:1,d:3,q:"Welches Fahrzeug brachte Menschen zum ersten Mal zum Mond?",a:["Eine Rakete","Ein Flugzeug","Ein Zeppelin","Ein Hubschrauber"]},
+{k:"Geschichte",kid:1,d:3,q:"Wer entdeckte 1492 einen Seeweg nach Amerika?",a:["Christoph Kolumbus","Marco Polo","James Cook","Vasco da Gama"]},
+{k:"Geschichte",kid:1,d:3,q:"Wie nennt man die Zeit, in der die Ritter lebten?",a:["Das Mittelalter","Die Steinzeit","Die Neuzeit","Die Eiszeit"]},
+{k:"Geschichte",kid:1,d:3,q:"Womit haben Menschen in der Steinzeit Werkzeuge gemacht?",a:["Aus Stein und Knochen","Aus Plastik","Aus Glas","Aus Papier"]},
+{k:"Geschichte",kid:1,d:3,q:"Wie hieß der berühmte Erfinder der Glühbirne?",a:["Thomas Edison","Isaac Newton","Galileo Galilei","Karl Benz"]},
+
+/* ===== Kinder: Wissenschaft & Natur ===== */
+{k:"Wissenschaft",kid:1,d:1,q:"Wie viele Beine hat ein Hund?",a:["4","2","6","8"]},
+{k:"Wissenschaft",kid:1,d:1,q:"Welches Tier gibt uns Milch?",a:["Die Kuh","Das Huhn","Das Schaf","Das Pferd"]},
+{k:"Wissenschaft",kid:1,d:1,q:"Welches Tier legt Eier, die wir essen?",a:["Das Huhn","Die Kuh","Das Schwein","Die Ziege"]},
+{k:"Wissenschaft",kid:1,d:1,q:"Welche Farbe haben Blätter im Sommer?",a:["Grün","Blau","Rot","Weiß"]},
+{k:"Wissenschaft",kid:1,d:1,q:"Was brauchen Pflanzen zum Wachsen?",a:["Wasser und Licht","Milch und Zucker","Sand und Salz","Öl und Mehl"]},
+{k:"Wissenschaft",kid:1,d:1,q:"Welches Tier ist ein Baby-Frosch?",a:["Die Kaulquappe","Das Küken","Das Ferkel","Das Kalb"]},
+{k:"Wissenschaft",kid:1,d:1,q:"Was macht eine Biene aus Blütennektar?",a:["Honig","Milch","Butter","Marmelade"]},
+{k:"Wissenschaft",kid:1,d:1,q:"Welches Tier hat einen langen Hals?",a:["Die Giraffe","Das Schwein","Der Hase","Der Igel"]},
+{k:"Wissenschaft",kid:1,d:1,q:"Wie viele Finger hat ein Mensch an beiden Händen zusammen?",a:["10","8","12","20"]},
+{k:"Wissenschaft",kid:1,d:1,q:"Wo lebt ein Fisch?",a:["Im Wasser","In der Luft","Unter der Erde","Im Feuer"]},
+{k:"Wissenschaft",kid:1,d:1,q:"Welches Tier bellt?",a:["Der Hund","Die Katze","Die Kuh","Das Pferd"]},
+{k:"Wissenschaft",kid:1,d:1,q:"Was leuchtet am Tag am Himmel?",a:["Die Sonne","Der Mond","Die Sterne","Die Wolken"]},
+{k:"Wissenschaft",kid:1,d:2,q:"Wie nennt man ein Baby-Schmetterling, bevor er fliegen kann?",a:["Raupe","Küken","Welpe","Kaulquappe"]},
+{k:"Wissenschaft",kid:1,d:2,q:"Welches Tier trägt sein Haus auf dem Rücken?",a:["Die Schnecke","Der Frosch","Der Marienkäfer","Die Ameise"]},
+{k:"Wissenschaft",kid:1,d:2,q:"Wie viele Punkte hat ein typischer Marienkäfer?",a:["7","3","10","12"]},
+{k:"Wissenschaft",kid:1,d:2,q:"Welcher Körperteil pumpt das Blut?",a:["Das Herz","Der Magen","Die Lunge","Das Ohr"]},
+{k:"Wissenschaft",kid:1,d:2,q:"Womit atmen Fische unter Wasser?",a:["Mit Kiemen","Mit der Lunge","Mit der Nase","Mit den Flossen"]},
+{k:"Wissenschaft",kid:1,d:2,q:"Welches ist das größte Tier im Meer?",a:["Der Blauwal","Der Hai","Der Delfin","Der Tintenfisch"]},
+{k:"Wissenschaft",kid:1,d:2,q:"Was passiert mit Wasser, wenn es sehr kalt wird?",a:["Es wird zu Eis","Es wird zu Dampf","Es wird zu Sand","Es verschwindet"]},
+{k:"Wissenschaft",kid:1,d:2,q:"Welches Tier kann fliegen, ist aber kein Vogel?",a:["Die Fledermaus","Der Pinguin","Der Strauß","Das Huhn"]},
+{k:"Wissenschaft",kid:1,d:2,q:"Welcher Baum trägt Eicheln?",a:["Die Eiche","Die Birke","Die Tanne","Die Weide"]},
+{k:"Wissenschaft",kid:1,d:2,q:"Wie viele Zähne hat ein Erwachsener ungefähr?",a:["32","20","40","16"]},
+{k:"Wissenschaft",kid:1,d:2,q:"Welches Tier wechselt im Winter die Fellfarbe zu Weiß?",a:["Der Schneehase","Der Fuchs","Das Reh","Der Dachs"]},
+{k:"Wissenschaft",kid:1,d:2,q:"Wie nennt man Tiere, die nur Fleisch fressen?",a:["Fleischfresser","Pflanzenfresser","Allesfresser","Körnerfresser"]},
+{k:"Wissenschaft",kid:1,d:3,q:"Welcher Planet ist der größte in unserem Sonnensystem?",a:["Jupiter","Mars","Merkur","Venus"]},
+{k:"Wissenschaft",kid:1,d:3,q:"Wie heißt der Planet, auf dem es rot aussieht?",a:["Mars","Jupiter","Neptun","Saturn"]},
+{k:"Wissenschaft",kid:1,d:3,q:"Wie nennt man einen Stein, der aus dem Weltall auf die Erde fällt?",a:["Meteorit","Komet","Planet","Satellit"]},
+{k:"Wissenschaft",kid:1,d:3,q:"Warum sehen wir einen Regenbogen?",a:["Weil Sonnenlicht durch Regentropfen fällt","Weil der Himmel bunt ist","Weil Wolken sich färben","Weil die Sonne untergeht"]},
+{k:"Wissenschaft",kid:1,d:3,q:"Wie nennt man den Vorgang, wenn Wasser zu Wasserdampf wird?",a:["Verdunsten","Gefrieren","Schmelzen","Tauen"]},
+{k:"Wissenschaft",kid:1,d:3,q:"Welches Tier hat acht Arme?",a:["Der Tintenfisch","Der Seestern","Die Qualle","Der Krebs"]},
+{k:"Wissenschaft",kid:1,d:3,q:"Wie heißt das Skelett aus Knochen im Körper mit Fachwort?",a:["Skelett","Muskel","Organ","Gelenk"]},
+{k:"Wissenschaft",kid:1,d:3,q:"Wie viele Planeten kreisen um unsere Sonne?",a:["8","7","9","10"]},
+{k:"Wissenschaft",kid:1,d:3,q:"Warum fallen Dinge immer nach unten?",a:["Wegen der Schwerkraft","Wegen des Windes","Wegen der Luft","Wegen der Sonne"]},
+{k:"Wissenschaft",kid:1,d:3,q:"Welches Tier baut Dämme aus Holz an Bächen?",a:["Der Biber","Der Otter","Der Dachs","Das Eichhörnchen"]},
+
+/* ===== Kinder: Kunst & Literatur ===== */
+{k:"Kunst & Literatur",kid:1,d:1,q:"Wer beißt in den vergifteten Apfel?",a:["Schneewittchen","Aschenputtel","Dornröschen","Rotkäppchen"]},
+{k:"Kunst & Literatur",kid:1,d:1,q:"Wer verliert auf der Treppe einen Schuh?",a:["Aschenputtel","Schneewittchen","Rapunzel","Die kleine Meerjungfrau"]},
+{k:"Kunst & Literatur",kid:1,d:1,q:"Welches Mädchen besucht ihre Großmutter im Wald?",a:["Rotkäppchen","Hänsel","Gretel","Heidi"]},
+{k:"Kunst & Literatur",kid:1,d:1,q:"Wer hat sehr lange Haare und sitzt in einem Turm?",a:["Rapunzel","Dornröschen","Schneewittchen","Aschenputtel"]},
+{k:"Kunst & Literatur",kid:1,d:1,q:"Wie viele Zwerge leben bei Schneewittchen?",a:["7","5","3","9"]},
+{k:"Kunst & Literatur",kid:1,d:1,q:"Wessen Nase wird länger, wenn er lügt?",a:["Pinocchios","Peter Pans","Aladins","Mowglis"]},
+{k:"Kunst & Literatur",kid:1,d:1,q:"Wer wohnt in der Villa Kunterbunt?",a:["Pippi Langstrumpf","Heidi","Michel aus Lönneberga","Ronja Räubertochter"]},
+{k:"Kunst & Literatur",kid:1,d:1,q:"Welche Tiere legen im Märchen goldene Eier?",a:["Gänse","Hühner","Enten","Tauben"]},
+{k:"Kunst & Literatur",kid:1,d:1,q:"Womit malt man auf Papier?",a:["Mit Buntstiften","Mit einem Löffel","Mit einer Gabel","Mit einer Schere"]},
+{k:"Kunst & Literatur",kid:1,d:2,q:"Wer schrieb die Geschichten von Pippi Langstrumpf?",a:["Astrid Lindgren","Die Brüder Grimm","Michael Ende","Erich Kästner"]},
+{k:"Kunst & Literatur",kid:1,d:2,q:"Wo lebt Heidi in dem bekannten Kinderbuch?",a:["In den Bergen","Am Meer","In der Wüste","Im Regenwald"]},
+{k:"Kunst & Literatur",kid:1,d:2,q:"Wer lässt im Märchen Brotkrumen fallen, um den Weg zu finden?",a:["Hänsel und Gretel","Schneewittchen","Rotkäppchen","Aschenputtel"]},
+{k:"Kunst & Literatur",kid:1,d:2,q:"Welche Farben braucht man, um Grün zu mischen?",a:["Blau und Gelb","Rot und Blau","Rot und Gelb","Schwarz und Weiß"]},
+{k:"Kunst & Literatur",kid:1,d:2,q:"Wie heißt der kleine Junge im Dschungel bei den Wölfen?",a:["Mowgli","Peter Pan","Aladin","Tarzan"]},
+{k:"Kunst & Literatur",kid:1,d:2,q:"In welchem Märchen wird ein Frosch zum Prinzen?",a:["Der Froschkönig","Der gestiefelte Kater","Die Bremer Stadtmusikanten","Rumpelstilzchen"]},
+{k:"Kunst & Literatur",kid:1,d:2,q:"Welche vier Tiere ziehen gemeinsam nach Bremen?",a:["Esel, Hund, Katze und Hahn","Kuh, Schwein, Schaf und Huhn","Pferd, Ziege, Gans und Ente","Fuchs, Hase, Reh und Dachs"]},
+{k:"Kunst & Literatur",kid:1,d:2,q:"Wie heißt der kleine Bär, der Honig liebt?",a:["Winnie Puuh","Paddington","Balu","Bruno"]},
+{k:"Kunst & Literatur",kid:1,d:2,q:"Welche Farben ergeben zusammen Orange?",a:["Rot und Gelb","Blau und Gelb","Rot und Blau","Grün und Braun"]},
+{k:"Kunst & Literatur",kid:1,d:3,q:"Wer sammelte die deutschen Märchen und schrieb sie auf?",a:["Die Brüder Grimm","Astrid Lindgren","Michael Ende","Otfried Preußler"]},
+{k:"Kunst & Literatur",kid:1,d:3,q:"In welchem Märchen muss man den Namen eines Männchens erraten?",a:["Rumpelstilzchen","Der Froschkönig","Schneewittchen","Frau Holle"]},
+{k:"Kunst & Literatur",kid:1,d:3,q:"Wer schrieb das Buch „Die kleine Raupe Nimmersatt“?",a:["Eric Carle","Janosch","Michael Ende","Cornelia Funke"]},
+{k:"Kunst & Literatur",kid:1,d:3,q:"Wie lange schläft Dornröschen im Märchen?",a:["100 Jahre","10 Jahre","50 Jahre","1000 Jahre"]},
+{k:"Kunst & Literatur",kid:1,d:3,q:"Wie heißt das Mädchen, das in ein Kaninchenloch fällt?",a:["Alice","Wendy","Dorothy","Matilda"]},
+{k:"Kunst & Literatur",kid:1,d:3,q:"Wer schrieb die Geschichte vom „Sams“?",a:["Paul Maar","Erich Kästner","Michael Ende","Astrid Lindgren"]},
+{k:"Kunst & Literatur",kid:1,d:3,q:"Welche Farbe entsteht, wenn man alle Wasserfarben mischt?",a:["Braun","Weiß","Gelb","Rosa"]},
+
+/* ===== Kinder: Musik & Film ===== */
+{k:"Musik & Film",kid:1,d:1,q:"Welches Instrument hat schwarze und weiße Tasten?",a:["Das Klavier","Die Gitarre","Die Trommel","Die Flöte"]},
+{k:"Musik & Film",kid:1,d:1,q:"Auf welches Instrument schlägt man mit Stöcken?",a:["Auf die Trommel","Auf die Geige","Auf die Flöte","Auf die Harfe"]},
+{k:"Musik & Film",kid:1,d:1,q:"Welches Instrument bläst man an?",a:["Die Flöte","Die Trommel","Die Gitarre","Das Klavier"]},
+{k:"Musik & Film",kid:1,d:1,q:"Wie heißt die Maus von Walt Disney?",a:["Micky Maus","Bugs Bunny","Speedy Gonzales","Jerry"]},
+{k:"Musik & Film",kid:1,d:1,q:"Welche Farbe hat die Ente Donald am Schnabel?",a:["Orange","Blau","Grün","Rot"]},
+{k:"Musik & Film",kid:1,d:1,q:"Wie heißt der Elefant mit den großen Ohren, der fliegen kann?",a:["Dumbo","Bambi","Simba","Nemo"]},
+{k:"Musik & Film",kid:1,d:1,q:"Wie heißt der kleine Fisch, der gesucht wird?",a:["Nemo","Dory","Marlin","Flunder"]},
+{k:"Musik & Film",kid:1,d:1,q:"Welches Tier ist Simba im „König der Löwen“?",a:["Ein Löwe","Ein Tiger","Ein Bär","Ein Wolf"]},
+{k:"Musik & Film",kid:1,d:1,q:"Wie viele Saiten hat eine normale Gitarre?",a:["6","4","8","10"]},
+{k:"Musik & Film",kid:1,d:2,q:"Wie heißt der Schneemann aus dem Film „Die Eiskönigin“?",a:["Olaf","Sven","Kristoff","Hans"]},
+{k:"Musik & Film",kid:1,d:2,q:"Wie heißen die beiden Schwestern in „Die Eiskönigin“?",a:["Elsa und Anna","Ariel und Ursula","Belle und Aurora","Merida und Moana"]},
+{k:"Musik & Film",kid:1,d:2,q:"Wie heißt der grüne Oger aus dem Sumpf?",a:["Shrek","Hulk","Gollum","Yoda"]},
+{k:"Musik & Film",kid:1,d:2,q:"Welches Tier ist Balu im „Dschungelbuch“?",a:["Ein Bär","Ein Affe","Ein Tiger","Eine Schlange"]},
+{k:"Musik & Film",kid:1,d:2,q:"Wie heißt der Cowboy in „Toy Story“?",a:["Woody","Buzz","Rex","Slinky"]},
+{k:"Musik & Film",kid:1,d:2,q:"Welches Instrument spielt man mit einem Bogen?",a:["Die Geige","Die Trompete","Das Schlagzeug","Das Akkordeon"]},
+{k:"Musik & Film",kid:1,d:2,q:"Wie viele Musiker sind ein Duo?",a:["2","3","4","1"]},
+{k:"Musik & Film",kid:1,d:2,q:"Wie heißt die Meerjungfrau aus dem Disney-Film?",a:["Arielle","Elsa","Moana","Jasmin"]},
+{k:"Musik & Film",kid:1,d:2,q:"Welches Tier ist Bambi?",a:["Ein Reh","Ein Hase","Ein Fuchs","Ein Eichhörnchen"]},
+{k:"Musik & Film",kid:1,d:3,q:"Wie heißen die sieben Töne der Tonleiter am Anfang?",a:["Do, Re, Mi","A, B, C","Eins, Zwei, Drei","Rot, Gelb, Blau"]},
+{k:"Musik & Film",kid:1,d:3,q:"Wie nennt man das Zeichen, mit dem Noten aufgeschrieben werden?",a:["Notenschlüssel","Ausrufezeichen","Fragezeichen","Sternchen"]},
+{k:"Musik & Film",kid:1,d:3,q:"Wie heißt der kleine Roboter aus „Star Wars“, der piepst?",a:["R2-D2","Wall-E","Optimus Prime","Bumblebee"]},
+{k:"Musik & Film",kid:1,d:3,q:"Wie heißt der Zauberer in „Harry Potter“ mit dem langen weißen Bart?",a:["Dumbledore","Gandalf","Merlin","Voldemort"]},
+{k:"Musik & Film",kid:1,d:3,q:"Wie heißt das Lied, das man zum Geburtstag singt?",a:["Happy Birthday","Alle meine Entchen","Bruder Jakob","Hänschen klein"]},
+{k:"Musik & Film",kid:1,d:3,q:"Welches Instrument ist am größten?",a:["Der Kontrabass","Die Geige","Die Flöte","Die Trompete"]},
+{k:"Musik & Film",kid:1,d:3,q:"Wie heißt der kleine Roboter, der die Erde aufräumt?",a:["Wall-E","R2-D2","Nemo","Stitch"]},
+
+/* ===== Kinder: Sport ===== */
+{k:"Sport",kid:1,d:1,q:"Mit welchem Körperteil darf man beim Fußball den Ball nicht spielen?",a:["Mit der Hand","Mit dem Fuß","Mit dem Kopf","Mit dem Knie"]},
+{k:"Sport",kid:1,d:1,q:"Womit fährt man beim Radfahren?",a:["Mit dem Fahrrad","Mit dem Roller","Mit dem Auto","Mit dem Bus"]},
+{k:"Sport",kid:1,d:1,q:"In welcher Sportart springt man ins Wasser?",a:["Beim Schwimmen","Beim Fußball","Beim Turnen","Beim Radfahren"]},
+{k:"Sport",kid:1,d:1,q:"Wie viele Tore braucht man, um beim Fußball zu punkten?",a:["1","2","3","5"]},
+{k:"Sport",kid:1,d:1,q:"Was zieht man zum Sport an den Füßen an?",a:["Turnschuhe","Gummistiefel","Sandalen","Hausschuhe"]},
+{k:"Sport",kid:1,d:1,q:"Auf was fährt man beim Skifahren?",a:["Auf Schnee","Auf Sand","Auf Wasser","Auf Gras"]},
+{k:"Sport",kid:1,d:1,q:"Welche Form hat ein Fußball?",a:["Rund","Eckig","Oval","Dreieckig"]},
+{k:"Sport",kid:1,d:1,q:"Wer passt beim Fußball auf das Tor auf?",a:["Der Torwart","Der Stürmer","Der Schiedsrichter","Der Trainer"]},
+{k:"Sport",kid:1,d:2,q:"Wie viele Spieler stehen bei einer Fußballmannschaft auf dem Feld?",a:["11","9","7","5"]},
+{k:"Sport",kid:1,d:2,q:"Welche Karte zeigt der Schiedsrichter beim Platzverweis?",a:["Die rote Karte","Die gelbe Karte","Die blaue Karte","Die grüne Karte"]},
+{k:"Sport",kid:1,d:2,q:"In welcher Sportart wirft man den Ball in einen Korb?",a:["Beim Basketball","Beim Fußball","Beim Handball","Beim Tennis"]},
+{k:"Sport",kid:1,d:2,q:"Wie viele Ringe hat das Zeichen der Olympischen Spiele?",a:["5","3","4","6"]},
+{k:"Sport",kid:1,d:2,q:"Welche Medaille bekommt der Sieger?",a:["Gold","Silber","Bronze","Eisen"]},
+{k:"Sport",kid:1,d:2,q:"In welcher Sportart benutzt man einen Schläger und ein Netz?",a:["Beim Tennis","Beim Fußball","Beim Boxen","Beim Turnen"]},
+{k:"Sport",kid:1,d:2,q:"Wie heißt der Sport, bei dem man über eine Matte springt und rollt?",a:["Turnen","Schwimmen","Reiten","Segeln"]},
+{k:"Sport",kid:1,d:2,q:"Auf welchem Tier sitzt man beim Reiten?",a:["Auf dem Pferd","Auf der Kuh","Auf dem Esel","Auf dem Kamel"]},
+{k:"Sport",kid:1,d:3,q:"Wie viele Spieler stehen bei einer Handballmannschaft auf dem Feld?",a:["7","5","9","11"]},
+{k:"Sport",kid:1,d:3,q:"Wie nennt man drei Tore von einem Spieler in einem Spiel?",a:["Hattrick","Doppelpack","Triple","Dreier"]},
+{k:"Sport",kid:1,d:3,q:"Wie oft finden die Olympischen Sommerspiele statt?",a:["Alle vier Jahre","Jedes Jahr","Alle zwei Jahre","Alle zehn Jahre"]},
+{k:"Sport",kid:1,d:3,q:"Welche Sportart wird auf einem Eisfeld mit Schlittschuhen gespielt?",a:["Eishockey","Basketball","Volleyball","Golf"]},
+{k:"Sport",kid:1,d:3,q:"Wie heißt der Sport, bei dem man mit Pfeil und Bogen schießt?",a:["Bogenschießen","Speerwurf","Fechten","Kugelstoßen"]},
+{k:"Sport",kid:1,d:3,q:"Wie nennt man den Trainer einer Fußballmannschaft noch?",a:["Coach","Kapitän","Manager","Schiedsrichter"]},
+{k:"Sport",kid:1,d:3,q:"Wie lange dauert eine Halbzeit beim Fußball der Erwachsenen?",a:["45 Minuten","30 Minuten","60 Minuten","20 Minuten"]},
+
+/* ===== Kinder: Vermischtes ===== */
+{k:"Vermischtes",kid:1,d:1,q:"Wie viele Tage hat eine Woche?",a:["7","5","6","10"]},
+{k:"Vermischtes",kid:1,d:1,q:"Wie viele Monate hat ein Jahr?",a:["12","10","11","14"]},
+{k:"Vermischtes",kid:1,d:1,q:"Wie viel ist 5 plus 6?",a:["11","10","12","9"]},
+{k:"Vermischtes",kid:1,d:1,q:"Wie viel ist 3 mal 4?",a:["12","7","9","16"]},
+{k:"Vermischtes",kid:1,d:1,q:"Welche Farbe hat eine reife Banane?",a:["Gelb","Rot","Blau","Lila"]},
+{k:"Vermischtes",kid:1,d:1,q:"Welche Farbe hat eine Tomate?",a:["Rot","Blau","Grün","Schwarz"]},
+{k:"Vermischtes",kid:1,d:1,q:"Wie viele Räder hat ein Fahrrad?",a:["2","3","4","1"]},
+{k:"Vermischtes",kid:1,d:1,q:"Wie viele Beine hat ein Stuhl meistens?",a:["4","3","2","6"]},
+{k:"Vermischtes",kid:1,d:1,q:"Welcher Tag kommt nach Montag?",a:["Dienstag","Mittwoch","Sonntag","Freitag"]},
+{k:"Vermischtes",kid:1,d:1,q:"Was benutzt man zum Schneiden von Papier?",a:["Eine Schere","Einen Löffel","Ein Lineal","Einen Radiergummi"]},
+{k:"Vermischtes",kid:1,d:1,q:"Womit putzt man sich die Zähne?",a:["Mit einer Zahnbürste","Mit einem Kamm","Mit einem Schwamm","Mit einem Tuch"]},
+{k:"Vermischtes",kid:1,d:1,q:"Wie viele Augen hat ein Mensch?",a:["2","1","3","4"]},
+{k:"Vermischtes",kid:1,d:2,q:"Wie viel ist 7 mal 8?",a:["56","54","58","48"]},
+{k:"Vermischtes",kid:1,d:2,q:"Wie viel ist 100 minus 45?",a:["55","65","45","35"]},
+{k:"Vermischtes",kid:1,d:2,q:"Wie viele Minuten hat eine Stunde?",a:["60","30","100","24"]},
+{k:"Vermischtes",kid:1,d:2,q:"Wie viele Stunden hat ein Tag?",a:["24","12","20","30"]},
+{k:"Vermischtes",kid:1,d:2,q:"Welche Form hat ein Ei?",a:["Oval","Quadratisch","Dreieckig","Sechseckig"]},
+{k:"Vermischtes",kid:1,d:2,q:"Wie viele Ecken hat ein Dreieck?",a:["3","4","2","5"]},
+{k:"Vermischtes",kid:1,d:2,q:"Wie viele Ecken hat ein Quadrat?",a:["4","3","5","6"]},
+{k:"Vermischtes",kid:1,d:2,q:"Wie heißt der erste Monat im Jahr?",a:["Januar","Februar","Dezember","März"]},
+{k:"Vermischtes",kid:1,d:2,q:"Wie viele Buchstaben hat das Wort „Schule“?",a:["6","5","7","8"]},
+{k:"Vermischtes",kid:1,d:2,q:"Welches Obst ist innen grün und außen braun und haarig?",a:["Die Kiwi","Die Melone","Die Birne","Die Ananas"]},
+{k:"Vermischtes",kid:1,d:2,q:"Wie viele Cent hat ein Euro?",a:["100","50","10","1000"]},
+{k:"Vermischtes",kid:1,d:2,q:"Welche Farbe hat die Ampel, wenn man gehen darf?",a:["Grün","Rot","Gelb","Blau"]},
+{k:"Vermischtes",kid:1,d:3,q:"Wie viel ist die Hälfte von 84?",a:["42","44","48","38"]},
+{k:"Vermischtes",kid:1,d:3,q:"Wie viel ist 9 mal 9?",a:["81","72","91","89"]},
+{k:"Vermischtes",kid:1,d:3,q:"Wie viele Tage hat der Februar in einem normalen Jahr?",a:["28","30","31","29"]},
+{k:"Vermischtes",kid:1,d:3,q:"Wie viele Sekunden hat eine Minute?",a:["60","30","100","24"]},
+{k:"Vermischtes",kid:1,d:3,q:"Wie heißt die Zahl nach 999?",a:["1000","990","1100","9999"]},
+{k:"Vermischtes",kid:1,d:3,q:"Wie viele Seiten hat ein Fünfeck?",a:["5","4","6","7"]},
+{k:"Vermischtes",kid:1,d:3,q:"Welcher Monat kommt vor dem Dezember?",a:["November","Oktober","Januar","September"]},
+{k:"Vermischtes",kid:1,d:3,q:"Wie viele Millimeter hat ein Meter?",a:["1000","100","10","10000"]},
+{k:"Vermischtes",kid:1,d:3,q:"Wie viel wiegt ein Liter Wasser ungefähr?",a:["1 Kilogramm","100 Gramm","10 Kilogramm","1 Gramm"]}
 ];
 
 const DIFF = {1:{n:"leicht",p:1},2:{n:"mittel",p:2},3:{n:"schwer",p:3}};
@@ -1304,7 +1528,8 @@ const PANELS = ["setup","fbsetup","lobby","join","invite","pass","game","share",
 const only = id => { PANELS.forEach(p => gone(p)); show(id); };
 const shuffle = arr => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
 
-let cfg = { np: 2, diff: "mix", mode: "alt", len: 10, time: 30 };
+let cfg = { np: 2, diff: "mix", mode: "alt", len: 10, time: 30,
+            family: false, kids: [false, false, false, false] };
 let G = null, tick = null, pending = null, lastLink = null, showCodeOnly = false;
 
 /* ================= Link-Kodierung ================= */
@@ -1342,6 +1567,14 @@ function buildNames() {
     d.className = "nf";
     d.innerHTML = `<input type="text" id="n${i}" maxlength="18" placeholder="Spieler ${i+1}" value="${old[i] !== undefined ? old[i] : (n === 1 ? "" : "Spieler " + (i+1))}">
                    <span class="dot" style="background:${PCOL[i]}"></span>`;
+    if (famOn()) {
+      const b = document.createElement("button");
+      b.className = "agebtn" + (cfg.kids[i] ? " kid" : "");
+      b.dataset.p = i;
+      b.textContent = cfg.kids[i] ? "🧒 Kind" : "🧑 Erwachsen";
+      b.onclick = () => { cfg.kids[i] = !cfg.kids[i]; buildNames(); updateAvail(); };
+      d.appendChild(b);
+    }
     box.appendChild(d);
   }
   $("lblNames").textContent = n === 1 ? "Dein Name" : "Namen";
@@ -1354,11 +1587,32 @@ cfg.cats = CATS.slice();
 /* Fragenpool nach Schwierigkeit UND Kategorie. Eine leere Kategorienauswahl
    wird als „alle“ gewertet, sonst bliebe gar nichts übrig.               */
 function catsOn() { return cfg.cats && cfg.cats.length ? cfg.cats : CATS; }
-const pool = () => {
-  const on = catsOn();
-  return BANK.filter(q => (cfg.diff === "mix" || q.d === +cfg.diff) && on.includes(q.k));
+
+/* ================= Familienspiel =================
+   Ist es an, zieht jeder Spieler aus seinem eigenen Topf:
+   Kinder aus den mit kid:1 markierten Fragen, alle anderen
+   aus dem normalen Katalog. Nur bei „Abwechselnd“ und
+   „Nacheinander“ sinnvoll – dort sitzt man am selben Gerät. */
+const famModes = ["alt", "seq"];
+function famOn() { return !!cfg.family && famModes.includes(cfg.mode); }
+function isKid(i) { return famOn() && !!cfg.kids[i]; }
+function kidCount() { let n = 0; for (let i = 0; i < cfg.np; i++) if (isKid(i)) n++; return n; }
+
+/* kid = true → Kinderfragen, sonst der normale Katalog. */
+const pool = (kid) => {
+  const on = catsOn(), wantKid = kid ? 1 : 0;
+  return BANK.filter(q => (q.kid ? 1 : 0) === wantKid
+    && (cfg.diff === "mix" || q.d === +cfg.diff) && on.includes(q.k));
 };
-const maxPerPlayer = () => cfg.mode === "alt" ? Math.floor(pool().length / cfg.np) : pool().length;
+/* Im Familienspiel begrenzt der kleinere Topf – sonst gehen dem
+   Kind mitten im Spiel die Fragen aus.                        */
+function maxPerPlayer() {
+  if (!famOn()) return cfg.mode === "alt" ? Math.floor(pool(false).length / cfg.np) : pool(false).length;
+  const kinder = kidCount(), erw = Math.max(0, cfg.np - kinder), grenzen = [];
+  if (erw)    grenzen.push(Math.floor(pool(false).length / erw));
+  if (kinder) grenzen.push(Math.floor(pool(true).length / kinder));
+  return grenzen.length ? Math.min(...grenzen) : 0;
+}
 
 function buildCatChips() {
   const box = $("cCats");
@@ -1411,9 +1665,9 @@ function freshFirst(arr) {
   const old = arr.filter(i => i in rank).sort((a, b) => rank[a] - rank[b]);
   return [...fresh, ...old];
 }
-function freshCount() {
+function freshCount(kid) {
   const rank = seenRank();
-  return pool().map(q => BANK.indexOf(q)).filter(i => !(i in rank)).length;
+  return pool(kid).map(q => BANK.indexOf(q)).filter(i => !(i in rank)).length;
 }
 
 /* ================= Winner-Board =================
@@ -1505,9 +1759,20 @@ function paintHall(id) {
 
 function updateAvail() {
   $("fPlayers").classList.toggle("hide", SOLO());
-  $("lblLen").textContent = cfg.mode === "alt" ? "Fragen pro Spieler" : "Anzahl Fragen";
+  $("lblLen").textContent = cfg.mode === "alt" || famOn() ? "Fragen pro Spieler" : "Anzahl Fragen";
   $("start").textContent = cfg.mode === "link" ? "Challenge spielen"
     : cfg.mode === "live" ? "Raum erstellen" : "Spiel starten";
+
+  /* Familienspiel gibt es nur dort, wo alle am selben Gerät sitzen. */
+  const famMoeglich = famModes.includes(cfg.mode);
+  $("fFamily").classList.toggle("hide", !famMoeglich);
+  [...$("cFamily").children].forEach(c =>
+    c.classList.toggle("on", famMoeglich && (c.dataset.v === "1") === !!cfg.family));
+  const kinder = kidCount();
+  $("famHint").innerHTML = !famOn() ? ""
+    : kinder === 0 ? `Tippe unter <b>Namen</b> auf „Erwachsen“, um jemanden zum Kind zu machen.`
+    : kinder === cfg.np ? `Alle spielen Kinderfragen – ein reines Kinderquiz.`
+    : `${kinder} von ${cfg.np} spielen Kinderfragen. Punkte zählen für alle gleich.`;
 
   const mp = maxPerPlayer();
   const chips = [...$("cLen").children];
@@ -1528,11 +1793,13 @@ function updateAvail() {
 function renderHint(mp) {
   if (mp === undefined) mp = maxPerPlayer();
   const dn = cfg.diff === "mix" ? "gemischt" : DIFF[cfg.diff].n;
-  const base =
-    cfg.mode === "alt" ? `${pool().length} Fragen (${dn}) im Pool, jeder bekommt eigene – max. <b>${mp}</b> pro Spieler bei ${cfg.np} Spielern.`
+  const base = famOn()
+    ? `Familienspiel: <b>${pool(false).length}</b> Fragen für Erwachsene, <b>${pool(true).length}</b> für Kinder (${dn}). `
+      + `Jeder bekommt eigene – max. <b>${mp}</b> pro Spieler.`
+    : cfg.mode === "alt" ? `${pool(false).length} Fragen (${dn}) im Pool, jeder bekommt eigene – max. <b>${mp}</b> pro Spieler bei ${cfg.np} Spielern.`
     : cfg.mode === "seq" ? `Alle spielen dieselben Fragen – max. <b>${mp}</b> möglich (${dn}).`
     : `Du spielst diese Fragen zuerst, dein Gegner bekommt exakt dieselben – max. <b>${mp}</b> (${dn}).`;
-  const fresh = freshCount();
+  const fresh = famOn() ? freshCount(false) + freshCount(true) : freshCount(false);
   const memo = fresh
     ? `Davon <b>${fresh}</b> noch nie gestellt – die kommen zuerst.`
     : `Alle Fragen waren schon dran – es kommen jetzt die am längsten zurückliegenden. <a href="#" id="resetSeen">Gedächtnis leeren</a>`;
@@ -1553,6 +1820,14 @@ function wireChips(boxId, key, after) {
     if (after) after();
   });
 }
+$("cFamily").addEventListener("click", e => {
+  const c = e.target.closest(".chip");
+  if (!c || c.classList.contains("off")) return;
+  cfg.family = c.dataset.v === "1";
+  /* Sinnvolle Vorbelegung: der letzte Spieler ist das Kind. */
+  if (cfg.family && !cfg.kids.some(Boolean)) cfg.kids[cfg.np - 1] = true;
+  buildNames(); updateAvail();
+});
 wireChips("cPlayers", "np", () => { buildNames(); updateAvail(); });
 wireChips("cDiff", "diff", updateAvail);
 wireChips("cLen", "len");
@@ -1572,8 +1847,8 @@ updateAvail();
 paintHalls();
 
 /* ================= Fragen ziehen ================= */
-function drawIdx(n) {
-  const src = pool().map(q => BANK.indexOf(q));
+function drawIdx(n, kid) {
+  const src = pool(kid).map(q => BANK.indexOf(q));
   if (cfg.diff !== "mix") return markSeen(freshFirst(src).slice(0, n));
   const rank = seenRank();
   const byDiff = {1:[],2:[],3:[]};
@@ -1623,18 +1898,40 @@ $("start").onclick = () => {
   for (let i = 0; i < np; i++) names.push(($("n" + i).value || "").trim() || (np === 1 ? "Du" : "Spieler " + (i+1)));
 
   const order = [];
-  let qIdx;
-  if (cfg.mode === "alt") {
-    qIdx = drawIdx(cfg.len * np);
+  let qIdx, kidFlags = Array(np).fill(false);
+  if (famOn()) {
+    /* Jeder Spieler bekommt seinen eigenen Satz aus dem passenden Topf. */
+    for (let i = 0; i < np; i++) kidFlags[i] = isKid(i);
+    const nk = kidFlags.filter(Boolean).length, na = np - nk;
+    const topfErw = na ? drawIdx(cfg.len * na, false) : [];
+    const topfKind = nk ? drawIdx(cfg.len * nk, true) : [];
+    const je = [];
+    let ai = 0, ki = 0;
+    for (let p = 0; p < np; p++) {
+      const src = kidFlags[p] ? topfKind : topfErw;
+      const ab = (kidFlags[p] ? ki++ : ai++) * cfg.len;
+      je.push(src.slice(ab, ab + cfg.len));
+    }
+    if (cfg.mode === "alt") {
+      for (let j = 0; j < cfg.len; j++)
+        for (let p = 0; p < np; p++) order.push({ p, qi: je[p][j], nr: j + 1, pass: false });
+    } else {
+      for (let p = 0; p < np; p++)
+        je[p].forEach((qi, j) => order.push({ p, qi, nr: j + 1, pass: j === 0 }));
+    }
+    qIdx = je.flat();
+  } else if (cfg.mode === "alt") {
+    qIdx = drawIdx(cfg.len * np, false);
     qIdx.forEach((qi, i) => order.push({ p: i % np, qi, nr: Math.floor(i / np) + 1, pass: false }));
   } else {
-    qIdx = drawIdx(cfg.len);
+    qIdx = drawIdx(cfg.len, false);
     for (let p = 0; p < np; p++)
       qIdx.forEach((qi, j) => order.push({ p, qi, nr: j + 1, pass: cfg.mode === "seq" && j === 0 }));
   }
 
   G = {
     names, np, mode: cfg.mode, perPlayer: cfg.len, time: cfg.time,
+    family: famOn(), kids: kidFlags,
     qIdx, score: Array(np).fill(0), right: Array(np).fill(0),
     res: Array.from({length: np}, () => []),
     pts: Array.from({length: np}, () => []),
@@ -1694,8 +1991,12 @@ function step() {
     only("pass");
     $("passName").innerHTML = `<span style="color:${PCOL[e.p]}">${esc(G.names[e.p])}</span> ist dran`;
     $("passText").textContent = e.p === 0
-      ? `Du beantwortest jetzt ${G.perPlayer} Fragen allein. Danach bekommen die anderen genau dieselben Fragen.`
-      : `Gerät bitte an ${G.names[e.p]} weitergeben – und dabei nicht mitschauen. Es kommen dieselben ${G.perPlayer} Fragen wie für die anderen.`;
+      ? (G.family
+          ? `Du beantwortest jetzt ${G.perPlayer} eigene Fragen. Danach sind die anderen mit ihren Fragen dran.`
+          : `Du beantwortest jetzt ${G.perPlayer} Fragen allein. Danach bekommen die anderen genau dieselben Fragen.`)
+      : G.family
+        ? `Gerät bitte an ${G.names[e.p]} weitergeben – und dabei nicht mitschauen. ${G.perPlayer} eigene Fragen${G.kids[e.p] ? " für Kinder" : ""}.`
+        : `Gerät bitte an ${G.names[e.p]} weitergeben – und dabei nicht mitschauen. Es kommen dieselben ${G.perPlayer} Fragen wie für die anderen.`;
     return;
   }
   render();
@@ -1714,9 +2015,21 @@ function startTiebreak(tied) {
 }
 function tbNextRound() {
   TB.round++;
-  const drawn = drawIdx(1);
-  if (TB.round > 5 || !drawn.length) { TB.winner = null; return showEnd(); }
-  TB.qi = drawn[0];
+  if (TB.round > 5) { TB.winner = null; return showEnd(); }
+  /* Normalerweise dieselbe Frage für alle. Im Familienspiel geht das
+     nicht – dort zieht jeder aus seinem eigenen Topf.             */
+  TB.qs = {};
+  if (G.family) {
+    for (const p of TB.players) {
+      const d = drawIdx(1, G.kids[p]);
+      if (!d.length) { TB.winner = null; return showEnd(); }
+      TB.qs[p] = d[0];
+    }
+  } else {
+    const d = drawIdx(1, false);
+    if (!d.length) { TB.winner = null; return showEnd(); }
+    TB.players.forEach(p => TB.qs[p] = d[0]);
+  }
   TB.res = {};
   TB.i = 0;
   tbStep();
@@ -1731,7 +2044,7 @@ function tbStep() {
 function tbRender() {
   clearInterval(tick);
   only("game");
-  const p = TB.players[TB.i], q = BANK[TB.qi];
+  const p = TB.players[TB.i], q = BANK[TB.qs[p]];
   G.answered = false;
 
   G.names.forEach((_, i) => {
@@ -1745,6 +2058,7 @@ function tbRender() {
   $("tagCat").textContent = q.k;
   $("tagDiff").textContent = "Stichfrage";
   $("tagDiff").className = "tag d" + q.d;
+  $("tagKid").style.display = q.kid ? "" : "none";
   $("turn").innerHTML = `Stichfrage ${TB.round} · <b style="color:${PCOL[p]}">${esc(G.names[p])}</b>`;
   $("qtext").textContent = q.q;
 
@@ -1780,7 +2094,7 @@ function tbAnswer(chosen, btn) {
   G.answered = true;
   clearInterval(tick);
   clearPick();
-  const p = TB.players[TB.i], q = BANK[TB.qi], correct = q.a[0], ok = chosen === correct;
+  const p = TB.players[TB.i], q = BANK[TB.qs[p]], correct = q.a[0], ok = chosen === correct;
   TB.res[p] = ok;
 
   [...$("opts").children].forEach(b => {
@@ -1804,7 +2118,7 @@ function tbAnswer(chosen, btn) {
 }
 function tbEvaluate() {
   const richtige = TB.players.filter(p => TB.res[p]);
-  TB.log.push({ round: TB.round, qi: TB.qi, richtige: richtige.slice() });
+  TB.log.push({ round: TB.round, qs: TB.qs, richtige: richtige.slice() });
   if (richtige.length === 1) { TB.winner = richtige[0]; return showEnd(); }
   /* Alle richtig oder alle falsch – nur die noch Gleichauf spielen weiter. */
   if (richtige.length > 1) TB.players = richtige;
@@ -1831,6 +2145,7 @@ function render() {
   const d = DIFF[q.d];
   $("tagDiff").textContent = d.n + " · " + d.p + (d.p === 1 ? " Punkt" : " Punkte");
   $("tagDiff").className = "tag d" + q.d;
+  $("tagKid").style.display = q.kid ? "" : "none";
 
   $("turn").innerHTML = `Frage ${e.nr} von ${g.perPlayer} · <b style="color:${PCOL[p]}">${esc(g.names[p])}</b>`
     + (g.mode === "seq" ? ` · Durchgang ${p + 1} von ${g.np}` : "");
@@ -2353,7 +2668,7 @@ async function liveCreate() {
   let d;
   try { d = await connect(); }
   catch (e) { return showFbSetup(e.message === "nocfg" ? null : e.message); }
-  const code = rnd(4), me = rnd(9), q = drawIdx(cfg.len);
+  const code = rnd(4), me = rnd(9), q = drawIdx(cfg.len, false);
   try {
     await withTimeout(d.ref("rooms/" + code).set({
       host: me, state: "lobby", time: cfg.time, q, cur: -1,
@@ -2487,7 +2802,7 @@ function rematchDraw(v) {
   const merkDiff = cfg.diff, merkCats = cfg.cats;
   if (v.diff) cfg.diff = v.diff;
   if (Array.isArray(v.cats) && v.cats.length) cfg.cats = v.cats;
-  const q = drawIdx((v.q || []).length || 10);
+  const q = drawIdx((v.q || []).length || 10, false);
   cfg.diff = merkDiff; cfg.cats = merkCats;
   return q;
 }
@@ -2632,6 +2947,7 @@ function liveRenderQ() {
   $("tagCat").textContent = q.k;
   $("tagDiff").textContent = DIFF[q.d].n + " · " + DIFF[q.d].p + (DIFF[q.d].p === 1 ? " Punkt" : " Punkte");
   $("tagDiff").className = "tag d" + q.d;
+  $("tagKid").style.display = q.kid ? "" : "none";
   $("prog").style.width = (v.cur / v.q.length * 100) + "%";
   $("turn").innerHTML = `Frage ${v.cur + 1} von ${v.q.length} · <b>alle gleichzeitig</b>`;
   $("qtext").textContent = q.q;

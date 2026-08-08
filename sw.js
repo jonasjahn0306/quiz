@@ -7,8 +7,8 @@
    wäre offline schneller, würde aber nach jedem Upload eine veraltete
    Version festhalten. Das ist hier der schlechtere Kompromiss.      */
 
-const CACHE = "quizduell-v1";
-const DATEIEN = ["./", "./quiz-duell.html", "./manifest.json", "./icon.svg", "./icon-180.png"];
+const CACHE = "fragenfuchs-v2";
+const DATEIEN = ["./", "./index.html", "./quiz-duell.html", "./manifest.json", "./icon.svg", "./icon-180.png"];
 
 self.addEventListener("install", ev => {
   ev.waitUntil(
@@ -48,7 +48,7 @@ self.addEventListener("fetch", ev => {
         return res;
       })
       .catch(() => caches.match(req).then(treffer =>
-        treffer || caches.match("./quiz-duell.html")
+        treffer || caches.match("./index.html") || caches.match("./")
       ))
   );
 });

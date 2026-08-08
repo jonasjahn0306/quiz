@@ -2,7 +2,7 @@
   "name": "Fragenfuchs",
   "short_name": "Fragenfuchs",
   "description": "Quiz für Familie, Kinder und Grundschule – mit Klassenstufen, Lernkartei und Familienspiel.",
-  "start_url": "quiz-duell.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",

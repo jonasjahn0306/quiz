@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quiz-Duell – Allgemeinwissen für 2 bis 4 Spieler</title>
+<title>Fragenfuchs – Quiz für Familie, Kinder und Grundschule</title>
 
 <!-- Installierbar und offline nutzbar. Wirkt nur über https, also
      auf GitHub Pages – beim direkten Öffnen der Datei nicht. -->
@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#0f1020">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Quiz-Duell">
+<meta name="apple-mobile-web-app-title" content="Fragenfuchs">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
@@ -226,12 +226,24 @@
   .tag.kidtag { background: rgba(122,162,255,.16); color: var(--p1); border-color: rgba(122,162,255,.4); }
   .tag.revtag { background: rgba(61,220,132,.14); color: var(--ok); border-color: rgba(61,220,132,.4); }
   .jokerbtn { width: 100%; margin: 4px 0 14px; font-size: .9rem; padding: 11px; }
+  .qrow { display: flex; align-items: flex-start; gap: 10px; }
+  .qrow .q { flex: 1; }
+  .speakbtn {
+    flex: 0 0 auto; width: 44px; height: 44px; border-radius: 12px; cursor: pointer;
+    background: var(--card2); border: 1px solid var(--line); font-size: 1.15rem; line-height: 1;
+  }
+  .speakbtn:hover { border-color: var(--p1); }
+  .speakbtn.on { border-color: var(--p1); background: #1b1e3d; }
   .linkbtn.danger { color: var(--no); font-weight: 600; }
   .statgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }
   .statcard { background: var(--card2); border-radius: 13px; padding: 14px 15px; }
   .statcard .sv { font-size: 1.5rem; font-weight: 700; line-height: 1.15; }
   .statcard .sl { font-size: .78rem; color: var(--dim); margin-top: 3px; line-height: 1.35; }
   .statcard.wide { grid-column: 1 / -1; }
+  .stathead {
+    grid-column: 1 / -1; font-size: .74rem; text-transform: uppercase; letter-spacing: .09em;
+    color: var(--dim); margin: 6px 0 -4px;
+  }
   .statbar { height: 7px; border-radius: 99px; background: var(--line); margin-top: 9px; overflow: hidden; }
   .statbar i { display: block; height: 100%; background: linear-gradient(90deg,var(--p1),var(--p2)); }
   .hall { margin-bottom: 22px; }
@@ -280,8 +292,8 @@
 
   <!-- ============ SETUP ============ -->
   <div class="panel" id="setup">
-    <h1><span>Quiz-Duell</span></h1>
-    <p class="sub">Allgemeinwissen für 1 bis 4 Spieler.</p>
+    <h1><span>Fragenfuchs</span></h1>
+    <p class="sub">Quiz für Familie, Kinder und Grundschule – 1 bis 4 Spieler.</p>
 
     <div class="field">
       <div class="modes" id="modeGrid">
@@ -372,6 +384,16 @@
         <div class="hint" id="famHint"></div>
       </div>
 
+      <div class="field" id="fSpeak">
+        <label>Fragen vorlesen</label>
+        <div class="chips" id="cSpeak">
+          <div class="chip on" data-v="0">Aus</div>
+          <div class="chip" data-v="1">Auf Knopfdruck</div>
+          <div class="chip" data-v="2">Automatisch</div>
+        </div>
+        <div class="hint" id="speakHint"></div>
+      </div>
+
       <div class="field" id="fLearn">
         <label>Fehler wiederholen</label>
         <div class="chips" id="cLearn">
@@ -401,6 +423,7 @@
     <div class="ctr"><div class="ico">📊</div><h2>Deine Statistik</h2></div>
     <div class="statgrid" id="statBox"></div>
     <div class="hall" id="hallStats"></div>
+    <div class="hall" id="hallStatsSchule"></div>
     <div style="display:flex;gap:12px;flex-wrap:wrap">
       <button class="ghost" style="flex:1" id="statBack">Zurück</button>
       <button class="ghost" style="flex:1" id="statReset">Alles zurücksetzen</button>
@@ -515,7 +538,10 @@
     </div>
 
     <div class="turn" id="turn"></div>
-    <div class="q" id="qtext"></div>
+    <div class="qrow">
+      <div class="q" id="qtext"></div>
+      <button class="speakbtn hide" id="speak" title="Frage vorlesen" aria-label="Frage vorlesen">🔊</button>
+    </div>
     <div class="opts" id="opts"></div>
     <button class="big hide" id="confirm">Antwort bestätigen</button>
     <button class="ghost jokerbtn" id="joker" style="display:none"></button>
@@ -2413,6 +2439,91 @@ const BANK = [
 
 const DIFF = {1:{n:"leicht",p:1},2:{n:"mittel",p:2},3:{n:"schwer",p:3}};
 
+/* ================= Erzeugte Rechenaufgaben =================
+   Im Grundschul-Modus werden Rechenaufgaben bei jedem Spiel neu
+   gewürfelt statt fest gespeichert. Damit geht in genau dem
+   Bereich, in dem Üben am meisten bringt, der Vorrat nie aus.
+
+   Technisch werden sie hinten an BANK angehängt, damit alle
+   bestehenden Zugriffe über BANK[index] unverändert weiterlaufen.
+   BANK_FIX merkt sich die feste Katalogsgröße – alles darüber ist
+   flüchtig und wird bei jeder Ziehung neu aufgebaut.          */
+const BANK_FIX = BANK.length;
+const istErzeugt = i => i >= BANK_FIX;
+
+const zufall = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
+/* Vier verschiedene Antworten: die richtige plus drei knappe Irrläufer. */
+function rechenFrage(text, loesung, streuung, d, einheit) {
+  const falsch = new Set();
+  let schutz = 0;
+  while (falsch.size < 3 && schutz++ < 60) {
+    const ab = zufall(1, streuung) * (Math.random() < .5 ? -1 : 1);
+    const v = loesung + ab;
+    if (v !== loesung && v >= 0) falsch.add(v);
+  }
+  let k = 1;
+  while (falsch.size < 3) { if (loesung + k !== loesung) falsch.add(loesung + k); k++; }
+  const zeig = v => einheit ? v + " " + einheit : String(v);
+  return { k: "Vermischtes", kid: 1, g: null, t: "Rechnen", d,
+           q: text, a: [zeig(loesung), ...[...falsch].slice(0, 3).map(zeig)] };
+}
+
+/* Je Klassenstufe passende Aufgabentypen. */
+function macheRechenaufgabe(klasse) {
+  const w = Math.random();
+  if (klasse === 1) {
+    if (w < .5) { const a = zufall(1, 12), b = zufall(1, 20 - a);
+      return rechenFrage(`Wie viel ist ${a} + ${b}?`, a + b, 3, a + b > 10 ? 2 : 1); }
+    const a = zufall(5, 20), b = zufall(1, a);
+    return rechenFrage(`Wie viel ist ${a} − ${b}?`, a - b, 3, a > 12 ? 2 : 1);
+  }
+  if (klasse === 2) {
+    if (w < .45) { const a = zufall(2, 10), b = zufall(2, 10);
+      return rechenFrage(`Wie viel ist ${a} · ${b}?`, a * b, 6, a * b > 40 ? 3 : 2); }
+    if (w < .7) { const b = zufall(2, 10), e = zufall(2, 10);
+      return rechenFrage(`Wie viel ist ${b * e} : ${b}?`, e, 3, 2); }
+    const a = zufall(20, 90), b = zufall(5, 100 - a);
+    return rechenFrage(`Wie viel ist ${a} + ${b}?`, a + b, 6, 1);
+  }
+  if (klasse === 3) {
+    if (w < .35) { const a = zufall(3, 10), b = zufall(3, 10);
+      return rechenFrage(`Wie viel ist ${a} · ${b}?`, a * b, 6, 1); }
+    if (w < .6) { const b = zufall(3, 10), e = zufall(3, 12);
+      return rechenFrage(`Wie viel ist ${b * e} : ${b}?`, e, 3, 2); }
+    if (w < .8) { const a = zufall(120, 800), b = zufall(50, 199);
+      return rechenFrage(`Wie viel ist ${a} + ${b}?`, a + b, 12, 2); }
+    const a = zufall(300, 999), b = zufall(50, 299);
+    return rechenFrage(`Wie viel ist ${a} − ${b}?`, a - b, 12, 3);
+  }
+  /* 4. Klasse */
+  if (w < .3) { const a = zufall(12, 40), b = zufall(3, 12);
+    return rechenFrage(`Wie viel ist ${a} · ${b}?`, a * b, 15, 2); }
+  if (w < .55) { const b = zufall(4, 12), e = zufall(12, 60);
+    return rechenFrage(`Wie viel ist ${b * e} : ${b}?`, e, 8, 3); }
+  if (w < .75) { const a = zufall(1200, 8000), b = zufall(300, 1800);
+    return rechenFrage(`Wie viel ist ${a} + ${b}?`, a + b, 40, 2); }
+  if (w < .9) { const g = zufall(2, 20) * 10, pz = [10, 20, 25, 50][zufall(0, 3)];
+    return rechenFrage(`Wie viel sind ${pz} % von ${g}?`, Math.round(g * pz / 100), 6, 3); }
+  const s = zufall(3, 15), t2 = zufall(3, 15);
+  return rechenFrage(`Wie groß ist die Fläche eines Rechtecks mit ${s} cm und ${t2} cm?`, s * t2, 12, 3, "cm²");
+}
+
+/* Erzeugt frische Aufgaben und liefert ihre Indizes zurück. */
+function erzeugeRechenaufgaben(klasse, anzahl) {
+  BANK.length = BANK_FIX;                 /* alte Aufgaben verwerfen */
+  const idx = [], gesehen = new Set();
+  let schutz = 0;
+  while (idx.length < anzahl && schutz++ < anzahl * 30) {
+    const f = macheRechenaufgabe(klasse);
+    if (gesehen.has(f.q)) continue;       /* nicht zweimal dieselbe Aufgabe */
+    if (new Set(f.a).size !== 4) continue;
+    gesehen.add(f.q);
+    f.g = klasse;
+    idx.push(BANK.push(f) - 1);
+  }
+  return idx;
+}
+
 /* ================= Bonuspunkte =================
    Grundpunkte kommen aus der Schwierigkeit (1–3). Dazu:
    Tempo 0–2 (nur mit Bedenkzeit) und Serie 0–2.
@@ -2440,10 +2551,13 @@ const show = id => $(id).classList.remove("hide");
 const gone = id => $(id).classList.add("hide");
 const PANELS = ["setup","fbsetup","lobby","join","invite","pass","game","share","end","vs","liveEnd","stats"];
 const only = id => { PANELS.forEach(p => gone(p)); show(id); };
+/* Kann der Browser vorlesen? Muss vor dem ersten updateAvail() feststehen. */
+const ttsDa = typeof window.speechSynthesis !== "undefined"
+  && typeof window.SpeechSynthesisUtterance !== "undefined";
 const shuffle = arr => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
 
 let cfg = { np: 2, diff: "mix", mode: "alt", len: 10, time: 30,
-            family: false, kids: [false, false, false, false], repeatWrong: true, grade: 1 };
+            family: false, kids: [false, false, false, false], repeatWrong: true, grade: 1, speak: 0 };
 let G = null, tick = null, pending = null, lastLink = null, showCodeOnly = false;
 
 /* ================= Link-Kodierung ================= */
@@ -2518,7 +2632,7 @@ function kidCount() { let n = 0; for (let i = 0; i < cfg.np; i++) if (isKid(i)) 
 const pool = (kid) => {
   /* Im Grundschul-Modus zählt allein die Klassenstufe – Kategorien
      und Schwierigkeitswahl bleiben dort außen vor.                */
-  if (schuleOn()) return BANK.filter(q => q.g === +cfg.grade);
+  if (schuleOn()) return BANK.filter((q, i) => q.g === +cfg.grade && !istErzeugt(i));
   const on = catsOn(), wantKid = kid ? 1 : 0;
   /* Grundschulfragen tauchen sonst nirgends auf. */
   return BANK.filter(q => (q.kid ? 1 : 0) === wantKid && !q.g
@@ -2565,8 +2679,10 @@ function seenList() {
   catch (e) { return []; }
 }
 function markSeen(idxs) {
-  const keep = seenList().filter(i => !idxs.includes(i)).concat(idxs);
-  try { localStorage.setItem(SEEN_KEY, JSON.stringify(keep.slice(-BANK.length))); } catch (e) {}
+  /* Erzeugte Aufgaben leben nur für dieses Spiel – nicht merken. */
+  const echt = idxs.filter(i => !istErzeugt(i));
+  const keep = seenList().filter(i => !echt.includes(i)).concat(echt);
+  try { localStorage.setItem(SEEN_KEY, JSON.stringify(keep.slice(-BANK_FIX))); } catch (e) {}
   renderHint();
   return idxs;
 }
@@ -2614,7 +2730,7 @@ function bumpGames() { try { localStorage.setItem(GAMES_KEY, gamesPlayed() + 1);
 
 /* Nach jeder beantworteten Frage aufrufen. */
 function noteAnswer(qi, ok) {
-  if (!BANK[qi]) return;
+  if (!BANK[qi] || istErzeugt(qi)) return;   /* flüchtige Aufgaben nicht in die Kartei */
   const o = wrongMap(), jetzt = gamesPlayed(), e = o[qi];
   if (!ok) {
     o[qi] = { b: 1, d: jetzt + FACH_PAUSE[1] };
@@ -2646,11 +2762,12 @@ function statsGet() {
   catch (e) { return {}; }
 }
 function statsSet(o) { try { localStorage.setItem(STATS_KEY, JSON.stringify(o)); } catch (e) {} }
-function statNote(ok, streak) {
+function statNote(ok, streak, schule) {
   const o = statsGet();
-  o.n = (o.n || 0) + 1;
-  if (ok) o.r = (o.r || 0) + 1;
-  if (streak > (o.best || 0)) o.best = streak;
+  const p = schule ? "s" : "";          /* getrennte Zähler für die Grundschule */
+  o[p + "n"] = (o[p + "n"] || 0) + 1;
+  if (ok) o[p + "r"] = (o[p + "r"] || 0) + 1;
+  if (streak > (o[p + "best"] || 0)) o[p + "best"] = streak;
   statsSet(o);
 }
 function statLearned() { const o = statsGet(); o.learned = (o.learned || 0) + 1; statsSet(o); }
@@ -2692,6 +2809,9 @@ function hallReset() {
             HALL_MIN Fragen mit, sonst gewinnt ein Glückstreffer.
    "sum"  – Punkte gesamt, die frühere Rangfolge.                     */
 const HALL_MIN = 5;
+/* Grundschulergebnisse sind mit dem Erwachsenenquiz nicht vergleichbar –
+   andere Fragen, andere Zielgruppe. Deshalb zwei getrennte Wertungen. */
+const istSchulErgebnis = e => !!e.g;
 let hallMode = "avg";
 const perQ = e => e.q > 0 ? e.s / e.q : 0;
 function hallRankable(e) { return hallMode === "sum" || e.q >= HALL_MIN; }
@@ -2701,10 +2821,13 @@ function hallCmp(a, b) {
     : b.s - a.s || b.r - a.r || a.t - b.t;
 }
 /* Top n: bestes Ergebnis je Name, Groß-/Kleinschreibung egal. */
-function hallTop(n) {
+function hallTop(n, schule) {
   const best = new Map();
-  hallList().filter(hallRankable).forEach(e => {
-    const key = e.n.toLowerCase();
+  hallList().filter(hallRankable)
+    .filter(e => istSchulErgebnis(e) === !!schule)
+    .forEach(e => {
+    /* In der Grundschule zählt jede Klassenstufe für sich. */
+    const key = e.n.toLowerCase() + (schule ? "|" + e.g : "");
     const cur = best.get(key);
     if (!cur || hallCmp(e, cur) < 0) best.set(key, e);
   });
@@ -2730,13 +2853,15 @@ function runAt(run, j) {
   return s;
 }
 
-const HALL_IDS = ["hallEnd", "hallLive", "hallVs", "hallStats"];
-function paintHalls() { HALL_IDS.forEach(paintHall); }
-function paintHall(id) {
+/* id → Wertungsbereich (true = Grundschule) */
+const HALL_IDS = { hallEnd: false, hallLive: false, hallVs: false,
+                   hallStats: false, hallStatsSchule: true };
+function paintHalls() { Object.keys(HALL_IDS).forEach(id => paintHall(id, HALL_IDS[id])); }
+function paintHall(id, schule) {
   const box = $(id);
   if (!box) return;
-  const top = hallTop(5);
-  const head = `<div class="hlbl">🏆 Winner-Board · Top 5` +
+  const top = hallTop(5, schule);
+  const head = `<div class="hlbl">${schule ? "🎒 Bestenliste Grundschule" : "🏆 Winner-Board"} · Top 5` +
     (hallList().length ? `<button class="linkbtn clr" data-hallreset="1">zurücksetzen</button>` : ``) + `</div>` +
     `<div class="hswitch">
        <button class="chip${hallMode === "avg" ? " on" : ""}" data-hallmode="avg">Punkte pro Frage</button>
@@ -2751,13 +2876,13 @@ function paintHall(id) {
   if (!top.length) {
     box.innerHTML = head + `<div class="empty">` + (hallList().length
       ? `Noch kein Ergebnis mit mindestens ${HALL_MIN} Fragen. Kürzere Spiele zählen für diese Wertung nicht mit.`
-      : `Noch keine Ergebnisse. Das erste abgeschlossene Spiel landet hier.`) + `</div>`;
+      : (schule ? `Noch keine Grundschul-Ergebnisse.` : `Noch keine Ergebnisse. Das erste abgeschlossene Spiel landet hier.`)) + `</div>`;
     return wire();
   }
   box.innerHTML = head + top.map((e, pos) => `
     <div class="rrow" style="border-left-color:${PCOL[pos % 4]}">
       <span class="pos">${MEDAL[pos] || (pos + 1) + "."}</span>
-      <span class="rn">${esc(e.n)} <small>· ${new Date(e.t).toLocaleDateString("de-DE")}</small></span>
+      <span class="rn">${esc(e.n)} <small>· ${e.g ? e.g + ". Klasse · " : ""}${new Date(e.t).toLocaleDateString("de-DE")}</small></span>
       <span class="rq">${e.r}/${e.q} richtig · ${e.s} Pkt.</span>
       <span class="rp" style="color:${PCOL[pos % 4]}">${
         hallMode === "avg" ? perQ(e).toFixed(1).replace(".", ",") : e.s}</span>
@@ -2770,19 +2895,28 @@ function paintStats() {
   const st = statsGet();
   const beantwortet = st.n || 0, richtig = st.r || 0;
   const quote = beantwortet ? Math.round(richtig / beantwortet * 100) : 0;
+  const sBeantwortet = st.sn || 0, sRichtig = st.sr || 0;
+  const sQuote = sBeantwortet ? Math.round(sRichtig / sBeantwortet * 100) : 0;
   const kartei = Object.keys(wrongMap()).length;
   const gelernt = st.learned || 0;
-  const gesehen = seenList().length, gesamt = BANK.length;
+  const gesehen = seenList().length, gesamt = BANK_FIX;
   const abdeckung = Math.round(gesehen / gesamt * 100);
 
   const karte = (wert, label, breit) =>
     `<div class="statcard${breit ? " wide" : ""}"><div class="sv">${wert}</div><div class="sl">${label}</div></div>`;
+  const trenner = t => `<div class="stathead">${t}</div>`;
 
   $("statBox").innerHTML =
+    trenner("Quiz und Familienspiel") +
     karte(gamesPlayed(), "Partien gespielt") +
     karte(beantwortet, "Fragen beantwortet") +
     karte(quote + " %", `Trefferquote · ${richtig} von ${beantwortet} richtig`) +
     karte(st.best || 0, "Längste Serie richtiger Antworten") +
+    (sBeantwortet ? trenner("Grundschule") +
+      karte(sBeantwortet, "Aufgaben gerechnet und beantwortet") +
+      karte(sQuote + " %", `Trefferquote · ${sRichtig} von ${sBeantwortet} richtig`) +
+      karte(st.sbest || 0, "Längste Serie in der Grundschule", true) : "") +
+    trenner("Fortschritt") +
     `<div class="statcard wide">
        <div class="sv">${gesehen} <span style="font-size:.9rem;color:var(--dim);font-weight:400">von ${gesamt}</span></div>
        <div class="sl">Fragen des Katalogs schon gesehen – ${abdeckung} %</div>
@@ -2793,7 +2927,8 @@ function paintStats() {
        <div class="sl">Fragen, die du nach mehrfachem Üben sicher konntest.
          ${kartei ? `<b>${kartei}</b> liegen noch in der Lernkartei.` : `Die Lernkartei ist gerade leer.`}</div>
      </div>`;
-  paintHall("hallStats");
+  paintHall("hallStats", false);
+  paintHall("hallStatsSchule", true);
 }
 $("showStats").onclick = () => { paintStats(); only("stats"); };
 $("statBack").onclick = () => only("setup");
@@ -2823,7 +2958,7 @@ const MODE_TEXT = {
 
 /* ---- Einstellungen über Sitzungen hinweg merken ---- */
 const CFG_KEY = "quizduell.cfg";
-const CFG_FELDER = ["np","diff","mode","len","time","family","kids","cats","repeatWrong","grade"];
+const CFG_FELDER = ["np","diff","mode","len","time","family","kids","cats","repeatWrong","grade","speak"];
 function cfgSave() {
   const o = {};
   CFG_FELDER.forEach(k => o[k] = cfg[k]);
@@ -2894,6 +3029,12 @@ function updateAvail() {
     $("gradeHint").innerHTML = `<b>${p.length}</b> Fragen für die ${cfg.grade}. Klasse · `
       + esc(themen.join(" · ")) + `<br>Ohne Zeitlimit – in Ruhe überlegen.`;
   }
+
+  $("fSpeak").classList.toggle("hide", !ttsDa);
+  $("speakHint").innerHTML = !ttsDa ? ""
+    : +cfg.speak === 0 ? `Aus. Für Leseanfänger lohnt sich „Automatisch“.`
+    : +cfg.speak === 1 ? `Ein Lautsprecher-Knopf neben der Frage liest auf Tippen vor.`
+    : `Jede Frage wird beim Erscheinen automatisch vorgelesen.`;
 
   /* Familienspiel gibt es nur dort, wo alle am selben Gerät sitzen. */
   const famMoeglich = famModes.includes(cfg.mode);
@@ -2973,6 +3114,7 @@ function wireChips(boxId, key, after) {
   });
 }
 wireChips("cGrade", "grade", () => updateAvail());
+wireChips("cSpeak", "speak", () => updateAvail());
 $("cLearn").addEventListener("click", e => {
   const c = e.target.closest(".chip");
   if (!c) return;
@@ -3011,6 +3153,12 @@ paintHalls();
 /* mitWiederholung: false für Live-Räume und Stichfragen – dort haben
    die Lernkarten eines einzelnen Geräts nichts zu suchen.          */
 function drawIdx(n, kid, mitWiederholung) {
+  /* Grundschule: knapp die Hälfte sind frisch gewürfelte Rechenaufgaben. */
+  let erzeugt = [];
+  if (schuleOn() && n >= 2) erzeugt = erzeugeRechenaufgaben(+cfg.grade, Math.round(n * 0.45));
+  else if (!schuleOn()) BANK.length = BANK_FIX;   /* Reste des letzten Grundschulspiels verwerfen */
+  n = Math.max(0, n - erzeugt.length);
+
   /* Fällige Wiederholungen vorab reservieren, höchstens ein Viertel. */
   let vorab = [];
   lastReview = new Set();
@@ -3020,7 +3168,7 @@ function drawIdx(n, kid, mitWiederholung) {
     vorab.forEach(i => lastReview.add(i));
   }
   const rest = n - vorab.length;
-  const mische = liste => markSeen(shuffle([...vorab, ...liste]));
+  const mische = liste => markSeen(shuffle([...erzeugt, ...vorab, ...liste]));
 
   const src = pool(kid).map(q => BANK.indexOf(q)).filter(i => !lastReview.has(i));
   if (rest <= 0) return mische([]);
@@ -3263,6 +3411,7 @@ function tbRender() {
   gone("fb"); gone("next"); gone("wait"); gone("force");
   clearPick();
   resetQuit();
+  ttsSetup(q.q);
   $("joker").style.display = "none";
   paintStreak(0);
 
@@ -3355,6 +3504,7 @@ function render() {
   gone("fb"); gone("next"); gone("wait"); gone("force");
   clearPick();
   resetQuit();
+  ttsSetup(q.q);
   g.qStart = Date.now();
   showJoker(g.joker[p], () => useJoker(q.a[0], p));
   paintStreak(g.streak[p]);
@@ -3370,6 +3520,40 @@ function render() {
       if (left <= 0) { clearInterval(tick); const p = takePick(); answer(p.txt, p.btn); }
     }, 1000);
   } else $("timer").textContent = "";
+}
+
+/* ================= Vorlesen =================
+   Nutzt die eingebaute Sprachausgabe des Browsers – keine
+   Zusatzbibliothek, keine Datenübertragung. Fehlt sie (ältere
+   Browser), bleibt der Knopf einfach verborgen.              */
+function ttsStop() { if (ttsDa) try { speechSynthesis.cancel(); } catch (e) {} }
+function ttsSprich(text) {
+  if (!ttsDa || !text) return;
+  ttsStop();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "de-DE";
+  u.rate = 0.92;          /* etwas langsamer – für Kinder besser zu folgen */
+  const btn = $("speak");
+  u.onend = u.onerror = () => { if (btn) btn.classList.remove("on"); };
+  if (btn) btn.classList.add("on");
+  try { speechSynthesis.speak(u); } catch (e) { if (btn) btn.classList.remove("on"); }
+}
+/* Frage samt Antwortmöglichkeiten in Vorlese-Text gießen. */
+function ttsText(frage) {
+  const opts = [...$("opts").children]
+    .filter(b => !b.disabled)
+    .map((b, i) => `${KEYS[i]}: ${b.querySelector(".tx").textContent}`);
+  return frage + ". " + opts.join(". ");
+}
+/* Nach jedem Fragenaufbau aufrufen. */
+function ttsSetup(frage) {
+  const btn = $("speak");
+  if (!btn) return;
+  btn.classList.remove("on");
+  btn.classList.toggle("hide", !ttsDa || !cfg.speak);
+  btn.onclick = () => ttsSprich(ttsText(frage));
+  ttsStop();
+  if (ttsDa && +cfg.speak === 2) setTimeout(() => ttsSprich(ttsText(frage)), 250);
 }
 
 /* ================= Antwort auswählen und bestätigen =================
@@ -3454,6 +3638,8 @@ function answer(chosen, btn) {
   const ok = chosen === correct;
 
   clearPick();
+  ttsStop();
+  $("speak").classList.add("hide");
   $("joker").style.display = "none";
   [...$("opts").children].forEach(b => {
     b.disabled = true;
@@ -3485,7 +3671,7 @@ function answer(chosen, btn) {
   }
   paintStreak(g.streak[p]);
   paintRecord(e.nr);
-  statNote(ok, g.streak[p]);
+  statNote(ok, g.streak[p], !!g.grade);
 
   const fb = $("fb");
   fb.className = "fb " + (ok ? "ok" : "no");
@@ -3534,6 +3720,7 @@ $("quit").onclick = () => {
 };
 function quitGame() {
   clearInterval(tick); clearInterval(liveTick);
+  ttsStop();
   TB = null;
   if (LV) return leaveRoom();   /* meldet im Live-Raum sauber ab */
   G = null;
@@ -3551,6 +3738,7 @@ function finish() {
 function showEnd() {
   const g = G;
   only("end");
+  paintHall("hallEnd", !!g.grade);
   if (!g.counted) {
     g.counted = true;
     hallAdd(g.names.map((n, i) => ({ n, s: g.score[i], r: g.right[i], q: g.perPlayer,
@@ -3640,7 +3828,7 @@ function showEnd() {
 function showShare() {
   const g = G;
   hallAdd([{ n: g.names[0], s: g.score[0], r: g.right[0], q: g.perPlayer }]);
-  lastLink = makeUrl("c", { v: 1, b: BANK.length, n: g.names[0], t: g.time,
+  lastLink = makeUrl("c", { v: 1, b: BANK_FIX, n: g.names[0], t: g.time,
     q: g.qIdx, r: g.res[0].join(""), p: g.pts[0].join("") });
   only("share");
   $("shTitle").innerHTML = `Du hast <span style="color:var(--p1)">${g.score[0]} Punkte</span>`;
@@ -3732,7 +3920,7 @@ function showVs(data) {
   $("vsHome").classList.toggle("hide", myTurn);
   if (myTurn) {
     $("vsShare").onclick = () => {
-      lastLink = makeUrl("r", { v: 2, b: BANK.length, n: A.n, t: G.time, q: qIdx,
+      lastLink = makeUrl("r", { v: 2, b: BANK_FIX, n: A.n, t: G.time, q: qIdx,
         r: A.res.join(""), p: A.pts || "", n2: B.n, r2: B.res.join(""), p2: B.pts || "" });
       only("share");
       $("shTitle").textContent = "Ergebnis zurückschicken";
@@ -3782,11 +3970,15 @@ function handle(pl) {
   /* Der Katalog wächst nur hinten an, alte Indizes bleiben gültig.
      Deshalb ist nur eine GRÖSSERE Bank beim Absender ein Problem –
      dann kennt er Fragen, die es hier noch nicht gibt.            */
-  if (pl.b && pl.b > BANK.length) return false;
-  if (pl.q.some(i => i < 0 || i >= BANK.length)) return false;
+  if (pl.b && pl.b > BANK_FIX) return false;
+  if (pl.q.some(i => i < 0 || i >= BANK_FIX || istErzeugt(i))) return false;
   if (pl.v === 2) showVs(pl); else openInvite(pl);
   return true;
 }
+
+/* Hinweis: Die Speicherschlüssel heißen weiterhin "quizduell.*".
+   Ein Umbenennen würde Winner-Board, Lernkartei, Statistik und
+   Einstellungen aller Geräte auf einen Schlag löschen.          */
 
 /* ==================================================================
    LIVE-MODUS  (gleichzeitig spielen über Firebase Realtime Database)
@@ -4209,6 +4401,7 @@ function liveRenderQ() {
   gone("fb"); gone("next"); gone("wait"); gone("force");
   clearPick();
   resetQuit();
+  ttsSetup(q.q);
   if (LV.joker === undefined) LV.joker = true;
   showJoker(LV.joker, () => { LV.joker = false; LV.jokerUsedNow = true; applyFifty(q.a[0]); });
   paintStreak(LV.streak || 0);
@@ -4256,7 +4449,7 @@ function liveAnswer(txt, btn) {
   const pt = ok ? DIFF[q.d].p + speedBonus(frac) + streakBonus(LV.streak) : 0;
   LV.jokerUsedNow = false;
   paintStreak(LV.streak);
-  statNote(ok, LV.streak);
+  statNote(ok, LV.streak, false);
 
   LV.ref.child("ans/" + v.cur + "/" + LV.me)
     .set({ ok: ok ? 1 : 0, pt, t: firebase.database.ServerValue.TIMESTAMP });

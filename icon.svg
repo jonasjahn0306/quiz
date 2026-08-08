@@ -1,11 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#7aa2ff"/>
-      <stop offset="1" stop-color="#ff6ea9"/>
+    <linearGradient id="fell" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff9a4d"/>
+      <stop offset="1" stop-color="#f2622e"/>
     </linearGradient>
   </defs>
   <rect width="512" height="512" rx="112" fill="#0f1020"/>
-  <text x="256" y="330" font-family="Helvetica, Arial, sans-serif" font-size="260"
-        font-weight="700" text-anchor="middle" fill="url(#g)">?</text>
+
+  <!-- Ohren -->
+  <path d="M138 168 L120 78 L200 128 Z" fill="url(#fell)"/>
+  <path d="M374 168 L392 78 L312 128 Z" fill="url(#fell)"/>
+  <path d="M147 158 L138 108 L182 134 Z" fill="#0f1020" opacity=".55"/>
+  <path d="M365 158 L374 108 L330 134 Z" fill="#0f1020" opacity=".55"/>
+
+  <!-- Kopf -->
+  <path d="M256 118 C338 118 396 176 396 250 C396 326 336 392 256 392
+           C176 392 116 326 116 250 C116 176 174 118 256 118 Z" fill="url(#fell)"/>
+
+  <!-- Wangen -->
+  <path d="M256 392 C196 392 148 350 130 300 C170 316 210 322 256 322
+           C302 322 342 316 382 300 C364 350 316 392 256 392 Z" fill="#fff" opacity=".92"/>
+
+  <!-- Augen -->
+  <ellipse cx="207" cy="238" rx="19" ry="23" fill="#0f1020"/>
+  <ellipse cx="305" cy="238" rx="19" ry="23" fill="#0f1020"/>
+  <circle cx="213" cy="230" r="6" fill="#fff" opacity=".9"/>
+  <circle cx="311" cy="230" r="6" fill="#fff" opacity=".9"/>
+
+  <!-- Schnauze -->
+  <path d="M256 300 C239 300 226 290 226 279 C226 270 239 266 256 266
+           C273 266 286 270 286 279 C286 290 273 300 256 300 Z" fill="#0f1020"/>
+
+  <!-- Fragezeichen auf der Stirn -->
+  <text x="256" y="205" font-family="Helvetica, Arial, sans-serif" font-size="96"
+        font-weight="700" text-anchor="middle" fill="#0f1020" opacity=".35">?</text>
 </svg>

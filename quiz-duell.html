@@ -288,10 +288,22 @@
         <div class="mode on" data-mode="alt"><div class="mt">Abwechselnd</div></div>
         <div class="mode" data-mode="seq"><div class="mt">Nacheinander</div></div>
         <div class="mode" data-mode="solo"><div class="mt">Solo 🎯</div></div>
+        <div class="mode" data-mode="schule"><div class="mt">Grundschule 🎒</div></div>
         <div class="mode" data-mode="link"><div class="mt">Challenge</div></div>
         <div class="mode wide" data-mode="live"><div class="mt">Live online ⚡</div></div>
       </div>
       <div class="hint" id="modeHint"></div>
+    </div>
+
+    <div class="field hide" id="fGrade">
+      <label>Klassenstufe</label>
+      <div class="chips" id="cGrade">
+        <div class="chip on" data-v="1">1. Klasse</div>
+        <div class="chip" data-v="2">2. Klasse</div>
+        <div class="chip" data-v="3">3. Klasse</div>
+        <div class="chip" data-v="4">4. Klasse</div>
+      </div>
+      <div class="hint" id="gradeHint"></div>
     </div>
 
     <div class="field">
@@ -326,7 +338,7 @@
         <div class="hint" id="availHint"></div>
       </div>
 
-      <div class="field">
+      <div class="field" id="fDiff">
         <label>Schwierigkeit</label>
         <div class="chips" id="cDiff">
           <div class="chip on" data-v="mix">Gemischt</div>
@@ -336,12 +348,12 @@
         </div>
       </div>
 
-      <div class="field">
+      <div class="field" id="fCats">
         <label>Kategorien</label>
         <div class="chips" id="cCats"></div>
       </div>
 
-      <div class="field">
+      <div class="field" id="fTime">
         <label>Bedenkzeit pro Frage</label>
         <div class="chips" id="cTime">
           <div class="chip" data-v="15">15 Sek.</div>
@@ -1982,7 +1994,421 @@ const BANK = [
 {k:"Vermischtes",kid:1,d:3,q:"Wie viele Minuten sind eine Viertelstunde?",a:["15","20","30","10"]},
 {k:"Vermischtes",kid:1,d:3,q:"Wie viele Gramm sind ein halbes Kilo?",a:["500","250","100","1000"]},
 {k:"Vermischtes",kid:1,d:3,q:"Wie viele Ecken hat ein Fußballfeld?",a:["4","6","2","8"]},
-{k:"Vermischtes",kid:1,d:3,q:"Wie viel ist 100 geteilt durch 4?",a:["25","20","30","50"]}
+{k:"Vermischtes",kid:1,d:3,q:"Wie viel ist 100 geteilt durch 4?",a:["25","20","30","50"]},
+
+/* ==================================================================
+   GRUNDSCHULE  (kid:1, g:1–4)  – nur im Modus „Grundschule“
+   g = Klassenstufe, t = Thema für die Anzeige.
+   ================================================================== */
+
+/* ---------- 1. Klasse ---------- */
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:1,q:"Wie viel ist 3 + 4?",a:["7","6","8","5"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:1,q:"Wie viel ist 5 + 5?",a:["10","9","11","12"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:1,q:"Wie viel ist 2 + 6?",a:["8","7","9","10"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:1,q:"Wie viel ist 7 + 3?",a:["10","9","11","8"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:1,q:"Wie viel ist 4 + 4?",a:["8","6","10","9"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:1,q:"Wie viel ist 1 + 9?",a:["10","9","11","8"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:1,q:"Wie viel ist 6 - 2?",a:["4","3","5","6"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:1,q:"Wie viel ist 9 - 3?",a:["6","5","7","8"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:1,q:"Wie viel ist 10 - 4?",a:["6","5","7","4"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:1,q:"Wie viel ist 8 - 5?",a:["3","2","4","5"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:1,q:"Wie viel ist 0 + 7?",a:["7","0","8","6"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:1,q:"Wie viel ist 6 - 6?",a:["0","1","6","12"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:1,q:"Welche Zahl kommt nach 9?",a:["10","8","11","19"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:1,q:"Welche Zahl kommt vor 15?",a:["14","16","13","10"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:1,q:"Welche Zahl liegt zwischen 6 und 8?",a:["7","5","9","10"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:1,q:"Welche Zahl ist größer: 13 oder 9?",a:["13","9","Beide gleich","Weiß man nicht"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:1,q:"Welche Zahl ist kleiner: 17 oder 11?",a:["11","17","Beide gleich","Weiß man nicht"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:2,q:"Wie viel ist 9 + 4?",a:["13","12","14","15"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:2,q:"Wie viel ist 8 + 7?",a:["15","14","16","17"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:2,q:"Wie viel ist 6 + 6?",a:["12","11","13","10"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:2,q:"Wie viel ist 12 + 4?",a:["16","15","17","14"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:2,q:"Wie viel ist 11 + 8?",a:["19","18","20","17"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:2,q:"Wie viel ist 19 + 1?",a:["20","19","21","18"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:2,q:"Wie viel ist 15 - 6?",a:["9","8","10","7"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:2,q:"Wie viel ist 13 - 7?",a:["6","5","7","8"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:2,q:"Wie viel ist 14 - 5?",a:["9","8","10","11"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:2,q:"Wie viel ist 2 + 2 + 2?",a:["6","4","8","5"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:2,q:"Wie viel ist 5 + 5 + 5?",a:["15","10","20","12"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:2,q:"Wie viel ist das Doppelte von 4?",a:["8","6","4","10"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:2,q:"Wie viel ist die Hälfte von 10?",a:["5","6","4","10"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:3,q:"Wie viel ist 20 - 8?",a:["12","11","13","14"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:3,q:"Wie viel ist 17 - 9?",a:["8","7","9","10"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:3,q:"Wie viel ist das Doppelte von 7?",a:["14","12","16","13"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:3,q:"Wie viele Zehner hat die Zahl 14?",a:["1","4","14","2"]},
+{k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:3,q:"Wie viele Einer hat die Zahl 16?",a:["6","1","16","10"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:1,q:"Mit welchem Buchstaben beginnt das Wort „Apfel“?",a:["A","P","F","E"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:1,q:"Mit welchem Buchstaben beginnt das Wort „Sonne“?",a:["S","O","N","E"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:1,q:"Wie viele Buchstaben hat das Wort „Haus“?",a:["4","3","5","6"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:1,q:"Wie viele Buchstaben hat das Wort „Katze“?",a:["5","4","6","3"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:1,q:"Welches Wort reimt sich auf „Haus“?",a:["Maus","Baum","Hund","Blume"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:1,q:"Welches Wort reimt sich auf „Hund“?",a:["Mund","Haus","Katze","Baum"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:1,q:"Welcher Buchstabe kommt im ABC nach A?",a:["B","C","Z","D"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:1,q:"Welcher Buchstabe kommt im ABC vor D?",a:["C","E","B","F"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:1,q:"Welches dieser Wörter ist ein Tier?",a:["Katze","Tisch","Stuhl","Löffel"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:2,q:"Welches Wort reimt sich auf „Sonne“?",a:["Tonne","Mond","Regen","Wolke"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:2,q:"Welcher Buchstabe fehlt: H _ n d?",a:["U","A","E","O"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:2,q:"Welcher dieser Buchstaben ist ein Selbstlaut?",a:["A","B","K","T"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:2,q:"Wie viele Selbstlaute gibt es: a, e, i, o, u?",a:["5","4","6","3"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:2,q:"Wie viele Silben hat das Wort „Ba-na-ne“?",a:["3","2","4","1"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:2,q:"Wie viele Silben hat das Wort „Tisch“?",a:["1","2","3","4"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:2,q:"Welches Wort passt nicht dazu: Apfel, Birne, Auto, Banane?",a:["Auto","Apfel","Birne","Banane"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:3,q:"Wie schreibt man den ersten Buchstaben eines Namens?",a:["Groß","Klein","Schräg","Mit Punkt"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:3,q:"Was steht am Ende eines normalen Aussagesatzes?",a:["Ein Punkt","Ein Komma","Ein Fragezeichen","Ein Strich"]},
+{k:"Kunst & Literatur",kid:1,g:1,t:"Sprache",d:3,q:"Wie heißt die Mehrzahl von „Kind“?",a:["Kinder","Kinds","Kindes","Kindern"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:1,q:"Welches Tier legt Eier?",a:["Das Huhn","Die Kuh","Das Schwein","Das Pferd"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:1,q:"Welches Tier hat Federn?",a:["Der Vogel","Der Hund","Der Fisch","Die Maus"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:1,q:"Was frisst ein Hase besonders gern?",a:["Karotten","Fleisch","Fische","Käse"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:1,q:"Welche Farbe hat ein Marienkäfer meistens?",a:["Rot","Blau","Grün","Lila"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:1,q:"Welche Farbe hat eine Zitrone?",a:["Gelb","Rot","Blau","Braun"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:1,q:"Welches Tier quakt und hüpft?",a:["Der Frosch","Die Katze","Das Schaf","Der Vogel"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:1,q:"Welches Tier lebt auf dem Bauernhof?",a:["Das Schwein","Der Löwe","Der Pinguin","Der Affe"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:1,q:"Welche Jahreszeit ist am kältesten?",a:["Der Winter","Der Sommer","Der Frühling","Der Herbst"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:1,q:"Welches Tier schwimmt und hat Federn?",a:["Die Ente","Der Fisch","Der Hund","Die Kuh"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:2,q:"Wo wohnen Bienen?",a:["Im Bienenstock","Im Vogelnest","Im Bau","Im Stall"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:2,q:"Welches Tier baut ein Netz?",a:["Die Spinne","Die Biene","Die Ameise","Der Käfer"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:2,q:"In welcher Jahreszeit fallen die Blätter von den Bäumen?",a:["Im Herbst","Im Frühling","Im Sommer","Im Winter"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:2,q:"Welche Farben haben Blätter im Herbst oft?",a:["Gelb und Rot","Blau und Lila","Schwarz und Weiß","Grün und Blau"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:2,q:"Was wächst aus einem Samenkorn?",a:["Eine Pflanze","Ein Stein","Ein Tier","Ein Haus"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:2,q:"Was passiert im Frühling mit den Blumen?",a:["Sie blühen","Sie welken","Sie frieren","Sie fallen um"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:2,q:"Welches Tier hat Stacheln auf dem Rücken?",a:["Der Igel","Der Hase","Das Reh","Der Fuchs"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:3,q:"Was brauchen Menschen jeden Tag zum Leben?",a:["Wasser und Essen","Nur Süßigkeiten","Nur Schlaf","Nur Spielzeug"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:3,q:"Welches dieser Tiere ist kein Haustier?",a:["Der Löwe","Die Katze","Der Hund","Der Hamster"]},
+{k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:3,q:"Welches Tier verwandelt sich vom Ei zum Küken?",a:["Das Huhn","Der Hund","Die Kuh","Das Schaf"]},
+{k:"Geografie",kid:1,g:1,t:"Erdkunde",d:1,q:"Wie heißt unser Land?",a:["Deutschland","Frankreich","Italien","Spanien"]},
+{k:"Geografie",kid:1,g:1,t:"Erdkunde",d:1,q:"Wo fährt ein Schiff?",a:["Auf dem Wasser","In der Luft","Auf der Straße","Unter der Erde"]},
+{k:"Geografie",kid:1,g:1,t:"Erdkunde",d:1,q:"Wo fliegt ein Flugzeug?",a:["In der Luft","Im Wasser","Auf der Straße","Im Wald"]},
+{k:"Geografie",kid:1,g:1,t:"Erdkunde",d:1,q:"Was findest du am Strand?",a:["Sand und Meer","Schnee und Eis","Bäume und Pilze","Häuser und Straßen"]},
+{k:"Geografie",kid:1,g:1,t:"Erdkunde",d:2,q:"Was ist ein Wald?",a:["Viele Bäume zusammen","Viel Wasser","Ein hoher Berg","Eine große Stadt"]},
+{k:"Geografie",kid:1,g:1,t:"Erdkunde",d:2,q:"Was ist eine Insel?",a:["Land mitten im Wasser","Ein hoher Berg","Ein tiefes Loch","Ein großer Wald"]},
+{k:"Geografie",kid:1,g:1,t:"Erdkunde",d:2,q:"Wo ist es sehr heiß und trocken?",a:["In der Wüste","Am Nordpol","Im Regenwald","Im Gebirge"]},
+{k:"Geografie",kid:1,g:1,t:"Erdkunde",d:3,q:"Welche Stadt ist die größte in Deutschland?",a:["Berlin","Hamburg","München","Köln"]},
+{k:"Geografie",kid:1,g:1,t:"Erdkunde",d:3,q:"Wo liegt auch im Sommer Schnee?",a:["Auf sehr hohen Bergen","Am Strand","Im Wald","Auf der Wiese"]},
+{k:"Geografie",kid:1,g:1,t:"Erdkunde",d:3,q:"Was ist ein Berg?",a:["Eine sehr hohe Erhebung","Ein tiefes Tal","Ein breiter Fluss","Ein großer See"]},
+{k:"Geschichte",kid:1,g:1,t:"Sachkunde",d:1,q:"Bei welcher Ampelfarbe musst du stehen bleiben?",a:["Rot","Grün","Gelb","Blau"]},
+{k:"Geschichte",kid:1,g:1,t:"Sachkunde",d:1,q:"Wo darfst du sicher über die Straße gehen?",a:["Am Zebrastreifen","Zwischen parkenden Autos","Auf der Autobahn","In der Kurve"]},
+{k:"Geschichte",kid:1,g:1,t:"Sachkunde",d:1,q:"Was setzt du beim Fahrradfahren auf den Kopf?",a:["Einen Helm","Eine Mütze","Einen Hut","Nichts"]},
+{k:"Geschichte",kid:1,g:1,t:"Sachkunde",d:1,q:"Wo lernst du lesen und schreiben?",a:["In der Schule","Im Schwimmbad","Im Zoo","Im Kino"]},
+{k:"Geschichte",kid:1,g:1,t:"Sachkunde",d:2,q:"Wen rufst du an, wenn es brennt?",a:["Die Feuerwehr","Den Bäcker","Den Postboten","Den Nachbarn"]},
+{k:"Geschichte",kid:1,g:1,t:"Sachkunde",d:2,q:"Was macht ein Arzt?",a:["Er hilft kranken Menschen","Er backt Brot","Er baut Häuser","Er fährt Bus"]},
+{k:"Geschichte",kid:1,g:1,t:"Sachkunde",d:2,q:"Was macht ein Bäcker?",a:["Er backt Brot und Brötchen","Er repariert Autos","Er pflegt Tiere","Er malt Bilder"]},
+{k:"Geschichte",kid:1,g:1,t:"Sachkunde",d:3,q:"Welche Nummer wählt man in Deutschland im Notfall?",a:["112","110 nur bei Feuer","911","999"]},
+{k:"Musik & Film",kid:1,g:1,t:"Musik & Kunst",d:1,q:"Womit malt man ein Bild?",a:["Mit Farben und Pinsel","Mit einem Löffel","Mit einer Schere","Mit einem Hammer"]},
+{k:"Musik & Film",kid:1,g:1,t:"Musik & Kunst",d:2,q:"Welche Farbe entsteht aus Rot und Weiß?",a:["Rosa","Lila","Orange","Braun"]},
+{k:"Musik & Film",kid:1,g:1,t:"Musik & Kunst",d:2,q:"Was macht man mit einer Trommel?",a:["Man schlägt darauf","Man bläst hinein","Man zupft sie","Man streicht sie"]},
+{k:"Musik & Film",kid:1,g:1,t:"Musik & Kunst",d:3,q:"Was braucht man zum Singen?",a:["Die Stimme","Einen Stift","Einen Ball","Ein Buch"]},
+{k:"Sport",kid:1,g:1,t:"Sport",d:1,q:"Was macht man mit einem Fußball?",a:["Man tritt ihn","Man isst ihn","Man liest ihn","Man malt ihn an"]},
+{k:"Sport",kid:1,g:1,t:"Sport",d:2,q:"Was zieht man zum Sport an?",a:["Sportkleidung","Einen Mantel","Einen Schlafanzug","Gummistiefel"]},
+{k:"Sport",kid:1,g:1,t:"Sport",d:2,q:"Was macht man beim Weitsprung?",a:["Man springt so weit wie möglich","Man läuft im Kreis","Man wirft einen Ball","Man schwimmt"]},
+{k:"Sport",kid:1,g:1,t:"Sport",d:1,q:"Womit fängt man einen Ball?",a:["Mit den Händen","Mit den Ohren","Mit den Knien","Mit dem Rücken"]},
+{k:"Musik & Film",kid:1,g:1,t:"Musik & Kunst",d:1,q:"Welche Farbe entsteht aus Blau und Gelb?",a:["Grün","Lila","Orange","Grau"]},
+
+/* ---------- 2. Klasse ---------- */
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:1,q:"Wie viel ist 2 mal 3?",a:["6","5","8","9"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:1,q:"Wie viel ist 2 mal 5?",a:["10","8","12","7"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:1,q:"Wie viel ist 5 mal 4?",a:["20","15","25","16"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:1,q:"Wie viel ist 10 mal 3?",a:["30","13","33","20"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:1,q:"Wie viel ist 20 + 30?",a:["50","40","60","55"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:1,q:"Wie viel ist 40 + 25?",a:["65","55","75","60"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:1,q:"Wie viel ist 70 - 20?",a:["50","40","60","30"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:1,q:"Wie viel ist 100 - 50?",a:["50","40","60","150"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:1,q:"Welche Zahl kommt nach 99?",a:["100","98","110","90"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:1,q:"Wie viele Zehner hat die Zahl 60?",a:["6","0","60","16"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:2,q:"Wie viel ist 3 mal 4?",a:["12","10","14","16"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:2,q:"Wie viel ist 4 mal 6?",a:["24","20","28","26"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:2,q:"Wie viel ist 5 mal 7?",a:["35","30","40","45"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:2,q:"Wie viel ist 6 mal 3?",a:["18","15","21","16"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:2,q:"Wie viel ist 20 geteilt durch 4?",a:["5","4","6","10"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:2,q:"Wie viel ist 18 geteilt durch 3?",a:["6","5","7","9"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:2,q:"Wie viel ist 45 + 27?",a:["72","62","82","71"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:2,q:"Wie viel ist 63 - 28?",a:["35","45","25","37"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:2,q:"Wie viel ist die Hälfte von 60?",a:["30","20","40","25"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:2,q:"Wie viel ist das Doppelte von 25?",a:["50","45","55","40"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:2,q:"Wie viele Minuten hat eine halbe Stunde?",a:["30","20","45","60"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:2,q:"Wie viele Minuten hat eine Viertelstunde?",a:["15","10","20","25"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:3,q:"Wie viel ist 7 mal 8?",a:["56","54","48","64"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:3,q:"Wie viel ist 9 mal 7?",a:["63","56","72","54"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:3,q:"Wie viel ist 8 mal 8?",a:["64","56","72","48"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:3,q:"Wie viel ist 72 geteilt durch 8?",a:["9","8","7","6"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:3,q:"Wie viel ist 100 - 37?",a:["63","67","73","57"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:3,q:"Wie viele Cent sind ein halber Euro?",a:["50","25","100","10"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:3,q:"Wie viel Geld sind zwei 50-Cent-Münzen?",a:["1 Euro","50 Cent","2 Euro","1,50 Euro"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:3,q:"Wie spät ist es, wenn der große Zeiger auf 6 und der kleine auf 3 steht?",a:["Halb vier","Drei Uhr","Sechs Uhr","Viertel nach drei"]},
+{k:"Kunst & Literatur",kid:1,g:2,t:"Sprache",d:1,q:"Welches Wort ist ein Namenwort (Nomen)?",a:["Baum","laufen","schnell","und"]},
+{k:"Kunst & Literatur",kid:1,g:2,t:"Sprache",d:1,q:"Welches Wort ist ein Tunwort (Verb)?",a:["springen","Tisch","blau","Haus"]},
+{k:"Kunst & Literatur",kid:1,g:2,t:"Sprache",d:1,q:"Wie schreibt man Namenwörter im Deutschen?",a:["Groß","Klein","Kursiv","Fett"]},
+{k:"Kunst & Literatur",kid:1,g:2,t:"Sprache",d:1,q:"Welches Zeichen steht am Ende einer Frage?",a:["Ein Fragezeichen","Ein Punkt","Ein Komma","Ein Ausrufezeichen"]},
+{k:"Kunst & Literatur",kid:1,g:2,t:"Sprache",d:1,q:"Wie heißt die Mehrzahl von „Haus“?",a:["Häuser","Hause","Hauses","Häusern"]},
+{k:"Kunst & Literatur",kid:1,g:2,t:"Sprache",d:1,q:"Wie heißt die Mehrzahl von „Buch“?",a:["Bücher","Buchen","Buchs","Buche"]},
+{k:"Kunst & Literatur",kid:1,g:2,t:"Sprache",d:2,q:"Welches Wort ist ein Wiewort (Adjektiv)?",a:["schnell","rennen","Hund","gestern"]},
+{k:"Kunst & Literatur",kid:1,g:2,t:"Sprache",d:2,q:"Wie viele Silben hat das Wort „Schmet-ter-ling“?",a:["3","2","4","1"]},
+{k:"Kunst & Literatur",kid:1,g:2,t:"Sprache",d:2,q:"Welches Wort ist richtig geschrieben?",a:["Fahrrad","Farrad","Fahrat","Faarad"]},
+{k:"Kunst & Literatur",kid:1,g:2,t:"Sprache",d:2,q:"Welches Wort ist richtig geschrieben?",a:["Schule","Schuhle","Schulle","Shule"]},
+{k:"Kunst & Literatur",kid:1,g:2,t:"Sprache",d:2,q:"Welches Wort ist das Gegenteil von „groß“?",a:["klein","dick","lang","hoch"]},
+{k:"Kunst & Literatur",kid:1,g:2,t:"Sprache",d:2,q:"Welches Wort ist das Gegenteil von „hell“?",a:["dunkel","laut","weich","schwer"]},
+{k:"Kunst & Literatur",kid:1,g:2,t:"Sprache",d:3,q:"Wie viele Buchstaben hat das deutsche Alphabet ohne Umlaute?",a:["26","24","28","30"]},
+{k:"Kunst & Literatur",kid:1,g:2,t:"Sprache",d:3,q:"Welche Buchstaben sind die Umlaute?",a:["ä, ö, ü","a, e, i","b, c, d","s, t, r"]},
+{k:"Kunst & Literatur",kid:1,g:2,t:"Sprache",d:3,q:"Wie nennt man Wörter, die sich am Ende gleich anhören?",a:["Reimwörter","Namenwörter","Tunwörter","Wiewörter"]},
+{k:"Wissenschaft",kid:1,g:2,t:"Natur & Tiere",d:1,q:"Wie viele Beine hat eine Fliege?",a:["6","4","8","2"]},
+{k:"Wissenschaft",kid:1,g:2,t:"Natur & Tiere",d:1,q:"Welches Tier lebt im Wald?",a:["Das Reh","Der Delfin","Der Pinguin","Das Kamel"]},
+{k:"Wissenschaft",kid:1,g:2,t:"Natur & Tiere",d:1,q:"Was braucht eine Pflanze zum Wachsen außer Wasser?",a:["Licht","Musik","Salz","Zucker"]},
+{k:"Wissenschaft",kid:1,g:2,t:"Natur & Tiere",d:1,q:"Welcher Teil einer Blume lockt Insekten an?",a:["Die Blüte","Die Wurzel","Der Stängel","Das Blatt"]},
+{k:"Wissenschaft",kid:1,g:2,t:"Natur & Tiere",d:1,q:"Welches Tier ist ein Insekt?",a:["Die Ameise","Die Spinne","Der Regenwurm","Die Schnecke"]},
+{k:"Wissenschaft",kid:1,g:2,t:"Natur & Tiere",d:2,q:"Wie heißt das Junge einer Katze?",a:["Kätzchen","Welpe","Fohlen","Küken"]},
+{k:"Wissenschaft",kid:1,g:2,t:"Natur & Tiere",d:2,q:"Wie heißt das Junge eines Hundes?",a:["Welpe","Kätzchen","Kalb","Lamm"]},
+{k:"Wissenschaft",kid:1,g:2,t:"Natur & Tiere",d:2,q:"Wie heißt das Junge einer Kuh?",a:["Kalb","Fohlen","Ferkel","Lamm"]},
+{k:"Wissenschaft",kid:1,g:2,t:"Natur & Tiere",d:2,q:"Welches Tier ist ein Nagetier?",a:["Die Maus","Der Frosch","Der Vogel","Der Fisch"]},
+{k:"Wissenschaft",kid:1,g:2,t:"Natur & Tiere",d:2,q:"Woraus besteht eine Wolke?",a:["Aus winzigen Wassertropfen","Aus Watte","Aus Rauch","Aus Staub"]},
+{k:"Wissenschaft",kid:1,g:2,t:"Natur & Tiere",d:2,q:"Was kommt nach dem Blitz?",a:["Der Donner","Der Regenbogen","Der Nebel","Der Wind"]},
+{k:"Wissenschaft",kid:1,g:2,t:"Natur & Tiere",d:2,q:"Welche Tiere halten Winterschlaf?",a:["Igel und Siebenschläfer","Hunde und Katzen","Vögel und Fische","Kühe und Pferde"]},
+{k:"Wissenschaft",kid:1,g:2,t:"Natur & Tiere",d:3,q:"Wie nennt man Tiere, die Milch geben und ihre Jungen säugen?",a:["Säugetiere","Vögel","Reptilien","Fische"]},
+{k:"Wissenschaft",kid:1,g:2,t:"Natur & Tiere",d:3,q:"Wie viele Zähne hat ein Kind mit vollständigem Milchgebiss?",a:["20","32","16","24"]},
+{k:"Wissenschaft",kid:1,g:2,t:"Natur & Tiere",d:3,q:"Wie heißt der Teil der Pflanze, der sie im Boden festhält?",a:["Die Wurzel","Die Blüte","Das Blatt","Die Frucht"]},
+{k:"Wissenschaft",kid:1,g:2,t:"Natur & Tiere",d:3,q:"Welches Tier legt Eier und ist kein Vogel?",a:["Die Schildkröte","Der Hund","Die Kuh","Das Pferd"]},
+{k:"Geografie",kid:1,g:2,t:"Erdkunde",d:1,q:"Wie viele Himmelsrichtungen gibt es als Hauptrichtungen?",a:["4","2","6","8"]},
+{k:"Geografie",kid:1,g:2,t:"Erdkunde",d:1,q:"In welche Richtung zeigt der Kompass mit der roten Nadel?",a:["Nach Norden","Nach Süden","Nach Osten","Nach Westen"]},
+{k:"Geografie",kid:1,g:2,t:"Erdkunde",d:1,q:"Was ist ein Fluss?",a:["Fließendes Wasser","Stehendes Salzwasser","Ein hoher Berg","Ein tiefer Wald"]},
+{k:"Geografie",kid:1,g:2,t:"Erdkunde",d:2,q:"Welche Farbe haben Wälder auf einer Landkarte meistens?",a:["Grün","Blau","Braun","Gelb"]},
+{k:"Geografie",kid:1,g:2,t:"Erdkunde",d:2,q:"Welche Farbe haben Berge auf einer Landkarte meistens?",a:["Braun","Blau","Grün","Weiß"]},
+{k:"Geografie",kid:1,g:2,t:"Erdkunde",d:2,q:"Wie heißt die Hauptstadt von Deutschland?",a:["Berlin","Hamburg","München","Frankfurt"]},
+{k:"Geografie",kid:1,g:2,t:"Erdkunde",d:3,q:"Wie heißt das Meer im Norden von Deutschland an der Grenze zu Dänemark?",a:["Die Nordsee","Das Mittelmeer","Das Schwarze Meer","Der Atlantik"]},
+{k:"Geografie",kid:1,g:2,t:"Erdkunde",d:3,q:"Welches Land liegt südlich von Deutschland und hat Wien als Hauptstadt?",a:["Österreich","Polen","Dänemark","Belgien"]},
+{k:"Geografie",kid:1,g:2,t:"Erdkunde",d:3,q:"Wie nennt man eine Karte der ganzen Erde als Kugel?",a:["Globus","Atlas","Plan","Skizze"]},
+{k:"Geschichte",kid:1,g:2,t:"Sachkunde",d:1,q:"Wie viele Monate hat ein Jahr?",a:["12","10","11","14"]},
+{k:"Geschichte",kid:1,g:2,t:"Sachkunde",d:1,q:"Welcher Monat kommt nach dem März?",a:["April","Mai","Februar","Juni"]},
+{k:"Geschichte",kid:1,g:2,t:"Sachkunde",d:1,q:"In welchem Monat beginnt meistens das neue Schuljahr in Deutschland?",a:["Im August oder September","Im Januar","Im Mai","Im Dezember"]},
+{k:"Geschichte",kid:1,g:2,t:"Sachkunde",d:2,q:"Wie viele Tage hat der Monat April?",a:["30","31","28","29"]},
+{k:"Geschichte",kid:1,g:2,t:"Sachkunde",d:2,q:"Welche Jahreszeit beginnt im Dezember?",a:["Der Winter","Der Sommer","Der Herbst","Der Frühling"]},
+{k:"Geschichte",kid:1,g:2,t:"Sachkunde",d:2,q:"Was macht ein Feuerwehrmann?",a:["Er löscht Brände","Er backt Kuchen","Er unterrichtet Kinder","Er repariert Schuhe"]},
+{k:"Geschichte",kid:1,g:2,t:"Sachkunde",d:3,q:"Wie viele Tage hat ein normales Jahr?",a:["365","360","300","400"]},
+{k:"Geschichte",kid:1,g:2,t:"Sachkunde",d:3,q:"Wie nennt man ein Jahr mit 366 Tagen?",a:["Schaltjahr","Sonnenjahr","Mondjahr","Doppeljahr"]},
+{k:"Musik & Film",kid:1,g:2,t:"Musik & Kunst",d:1,q:"Welche Farben sind die drei Grundfarben beim Malen?",a:["Rot, Gelb, Blau","Rot, Grün, Braun","Schwarz, Weiß, Grau","Orange, Lila, Grün"]},
+{k:"Musik & Film",kid:1,g:2,t:"Musik & Kunst",d:2,q:"Welche Farbe entsteht aus Rot und Gelb?",a:["Orange","Grün","Lila","Braun"]},
+{k:"Musik & Film",kid:1,g:2,t:"Musik & Kunst",d:2,q:"Wie nennt man ein Lied, das man zusammen singt?",a:["Chorlied","Solo","Instrumental","Konzert"]},
+{k:"Musik & Film",kid:1,g:2,t:"Musik & Kunst",d:3,q:"Wie heißen die Zeichen, mit denen Musik aufgeschrieben wird?",a:["Noten","Buchstaben","Ziffern","Zeichen"]},
+{k:"Sport",kid:1,g:2,t:"Sport",d:1,q:"Wie viele Spieler sind bei einem Fußballteam auf dem Feld?",a:["11","7","9","5"]},
+{k:"Sport",kid:1,g:2,t:"Sport",d:2,q:"Welche Sportart macht man im Schwimmbad?",a:["Schwimmen","Reiten","Skifahren","Klettern"]},
+{k:"Sport",kid:1,g:2,t:"Sport",d:2,q:"Was braucht man zum Radfahren?",a:["Ein Fahrrad","Ein Boot","Ski","Schlittschuhe"]},
+{k:"Sport",kid:1,g:2,t:"Sport",d:3,q:"Wie heißt der Sport, bei dem man über eine Stange springt?",a:["Hochsprung","Weitsprung","Sprint","Kugelstoßen"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:1,q:"Wie viel ist 3 mal 3?",a:["9","6","12","8"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:1,q:"Wie viel ist 4 mal 4?",a:["16","12","20","14"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:2,q:"Wie viel ist 6 mal 6?",a:["36","30","42","32"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:2,q:"Wie viel ist 30 geteilt durch 5?",a:["6","5","7","8"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:2,q:"Wie viel ist 24 geteilt durch 6?",a:["4","3","5","6"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:3,q:"Wie viel ist 9 mal 9?",a:["81","72","91","89"]},
+{k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:3,q:"Wie viel ist 56 geteilt durch 7?",a:["8","7","9","6"]},
+{k:"Kunst & Literatur",kid:1,g:2,t:"Sprache",d:2,q:"Welches Wort ist das Gegenteil von „schnell“?",a:["langsam","laut","kalt","schwer"]},
+{k:"Kunst & Literatur",kid:1,g:2,t:"Sprache",d:2,q:"Wie heißt die Mehrzahl von „Baum“?",a:["Bäume","Baumen","Baums","Bäumer"]},
+{k:"Wissenschaft",kid:1,g:2,t:"Natur & Tiere",d:2,q:"Wie heißt das Junge eines Schafs?",a:["Lamm","Kalb","Ferkel","Fohlen"]},
+{k:"Wissenschaft",kid:1,g:2,t:"Natur & Tiere",d:2,q:"Welches Tier lebt im Meer und hat acht Arme?",a:["Der Krake","Der Hai","Der Wal","Der Hering"]},
+{k:"Geografie",kid:1,g:2,t:"Erdkunde",d:2,q:"Was zeigt eine Landkarte?",a:["Wie ein Gebiet von oben aussieht","Wie das Wetter wird","Wie viele Menschen dort wohnen","Wie hoch der Himmel ist"]},
+{k:"Geschichte",kid:1,g:2,t:"Sachkunde",d:2,q:"Welcher Monat ist der kürzeste im Jahr?",a:["Februar","April","Juni","November"]},
+{k:"Sport",kid:1,g:2,t:"Sport",d:2,q:"Wie viele Beine braucht man zum Sackhüpfen?",a:["Beide zusammen im Sack","Nur eins","Gar keins","Vier"]},
+
+/* ---------- 3. Klasse ---------- */
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:1,q:"Wie viel ist 7 mal 6?",a:["42","36","48","40"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:1,q:"Wie viel ist 8 mal 5?",a:["40","35","45","48"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:1,q:"Wie viel ist 200 + 300?",a:["500","400","600","550"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:1,q:"Wie viel ist 800 - 300?",a:["500","400","600","300"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:1,q:"Welche Zahl kommt nach 999?",a:["1000","990","1100","909"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:1,q:"Wie viele Hunderter hat die Zahl 450?",a:["4","5","0","45"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:1,q:"Wie viel ist 10 mal 10?",a:["100","20","110","1000"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:1,q:"Wie viele Zentimeter hat ein Meter?",a:["100","10","1000","50"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:2,q:"Wie viel ist 9 mal 8?",a:["72","64","81","76"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:2,q:"Wie viel ist 7 mal 7?",a:["49","42","56","47"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:2,q:"Wie viel ist 245 + 137?",a:["382","372","392","381"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:2,q:"Wie viel ist 512 - 248?",a:["264","274","254","364"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:2,q:"Wie viel ist 63 geteilt durch 9?",a:["7","8","6","9"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:2,q:"Wie viel ist 48 geteilt durch 6?",a:["8","6","7","9"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:2,q:"Wie viele Gramm hat ein Kilogramm?",a:["1000","100","10","500"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:2,q:"Wie viele Millimeter hat ein Zentimeter?",a:["10","100","5","1000"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:2,q:"Wie viele Meter hat ein Kilometer?",a:["1000","100","10000","500"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:2,q:"Wie viel kosten 3 Brötchen zu je 40 Cent?",a:["1,20 Euro","1,00 Euro","1,50 Euro","0,90 Euro"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:2,q:"Du hast 5 Euro und gibst 2,30 Euro aus. Wie viel bleibt?",a:["2,70 Euro","2,30 Euro","3,70 Euro","2,50 Euro"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:2,q:"Wie viel ist ein Viertel von 20?",a:["5","4","10","6"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:2,q:"Wie viel ist ein Drittel von 30?",a:["10","15","5","3"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:3,q:"Wie viel ist 125 mal 4?",a:["500","450","525","400"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:3,q:"Wie viel ist 360 geteilt durch 6?",a:["60","50","70","66"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:3,q:"Wie viele Minuten hat ein Tag?",a:["1440","1200","2400","720"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:3,q:"Wie viel wiegen 4 Pakete zu je 250 Gramm zusammen?",a:["1 Kilogramm","500 Gramm","2 Kilogramm","750 Gramm"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:3,q:"Wie viel ist die Hälfte von 250?",a:["125","120","130","150"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:3,q:"Welche Zahl ist durch 5 teilbar?",a:["45","43","47","49"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:3,q:"Wie viele Ecken hat ein Würfel?",a:["8","6","12","4"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:1,q:"Wie nennt man Wörter wie „laufen“ und „singen“?",a:["Verben","Nomen","Adjektive","Artikel"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:1,q:"Wie nennt man Wörter wie „Tisch“ und „Hund“?",a:["Nomen","Verben","Adjektive","Pronomen"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:1,q:"Welche Artikel gibt es im Deutschen?",a:["der, die, das","ein, kein, mein","und, oder, aber","hier, dort, da"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:1,q:"Welcher Artikel gehört zu „Sonne“?",a:["die","der","das","den"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:1,q:"Welcher Artikel gehört zu „Baum“?",a:["der","die","das","dem"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:2,q:"In welcher Zeitform steht „ich spielte“?",a:["Vergangenheit","Gegenwart","Zukunft","Befehlsform"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:2,q:"In welcher Zeitform steht „ich werde spielen“?",a:["Zukunft","Gegenwart","Vergangenheit","Möglichkeitsform"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:2,q:"Welches Wort ist richtig geschrieben?",a:["Vater","Fater","Vatter","Faater"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:2,q:"Welches Wort ist richtig geschrieben?",a:["Spaziergang","Spatziergang","Spazirgang","Schpaziergang"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:2,q:"Wie nennt man ein Wort mit gleicher Bedeutung wie ein anderes?",a:["Ein Synonym","Ein Gegenteil","Ein Reimwort","Eine Silbe"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:2,q:"Was trennt man am Ende einer Zeile nach Silben?",a:["Wörter","Sätze","Buchstaben","Zahlen"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:3,q:"Wie viele Fälle hat das Deutsche?",a:["4","3","5","6"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:3,q:"Wie heißt der erste Fall (Wer oder was?)?",a:["Nominativ","Genitiv","Dativ","Akkusativ"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:3,q:"Wie nennt man die wörtliche Rede in einem Text?",a:["Direkte Rede","Indirekte Rede","Erzählung","Beschreibung"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:3,q:"Welches Satzzeichen steht vor der wörtlichen Rede?",a:["Ein Doppelpunkt","Ein Semikolon","Ein Bindestrich","Ein Fragezeichen"]},
+{k:"Wissenschaft",kid:1,g:3,t:"Natur & Tiere",d:1,q:"Wie viele Beine haben alle Insekten?",a:["6","8","4","10"]},
+{k:"Wissenschaft",kid:1,g:3,t:"Natur & Tiere",d:1,q:"Welches Organ atmet die Luft ein?",a:["Die Lunge","Das Herz","Der Magen","Die Leber"]},
+{k:"Wissenschaft",kid:1,g:3,t:"Natur & Tiere",d:1,q:"Wie heißen die vier Teile einer Blütenpflanze von unten nach oben?",a:["Wurzel, Stängel, Blatt, Blüte","Blüte, Blatt, Stängel, Wurzel","Stängel, Wurzel, Blüte, Blatt","Blatt, Blüte, Wurzel, Stängel"]},
+{k:"Wissenschaft",kid:1,g:3,t:"Natur & Tiere",d:1,q:"Welches Tier ist ein Wirbeltier?",a:["Der Fisch","Die Schnecke","Der Wurm","Die Qualle"]},
+{k:"Wissenschaft",kid:1,g:3,t:"Natur & Tiere",d:2,q:"Wie nennt man den Kreislauf des Wassers in der Natur?",a:["Wasserkreislauf","Windkreislauf","Erdkreislauf","Sonnenkreislauf"]},
+{k:"Wissenschaft",kid:1,g:3,t:"Natur & Tiere",d:2,q:"Was passiert bei der Verdunstung?",a:["Wasser wird zu Wasserdampf","Wasser wird zu Eis","Eis wird zu Wasser","Dampf wird zu Eis"]},
+{k:"Wissenschaft",kid:1,g:3,t:"Natur & Tiere",d:2,q:"Welche drei Zustände kann Wasser haben?",a:["Fest, flüssig, gasförmig","Warm, kalt, lau","Süß, salzig, sauer","Hell, dunkel, trüb"]},
+{k:"Wissenschaft",kid:1,g:3,t:"Natur & Tiere",d:2,q:"Wie heißen die Tiere, die sowohl im Wasser als auch an Land leben?",a:["Amphibien","Reptilien","Säugetiere","Vögel"]},
+{k:"Wissenschaft",kid:1,g:3,t:"Natur & Tiere",d:2,q:"Welches Tier ist ein Reptil?",a:["Die Eidechse","Der Frosch","Die Ente","Die Fledermaus"]},
+{k:"Wissenschaft",kid:1,g:3,t:"Natur & Tiere",d:2,q:"Woraus machen Bienen Honig?",a:["Aus Blütennektar","Aus Wasser","Aus Blättern","Aus Erde"]},
+{k:"Wissenschaft",kid:1,g:3,t:"Natur & Tiere",d:2,q:"Wozu dienen die Blätter einer Pflanze vor allem?",a:["Sie fangen Licht ein","Sie halten sie im Boden","Sie locken Tiere an","Sie speichern Wasser"]},
+{k:"Wissenschaft",kid:1,g:3,t:"Natur & Tiere",d:3,q:"Wie viele Knochen hat ein erwachsener Mensch etwa?",a:["206","150","300","100"]},
+{k:"Wissenschaft",kid:1,g:3,t:"Natur & Tiere",d:3,q:"Wie heißt der Vorgang, bei dem Pflanzen mit Licht Nahrung herstellen?",a:["Fotosynthese","Verdauung","Atmung","Verdunstung"]},
+{k:"Wissenschaft",kid:1,g:3,t:"Natur & Tiere",d:3,q:"Welches Tier hat ein Skelett außen statt innen?",a:["Der Käfer","Der Hund","Der Vogel","Der Fisch"]},
+{k:"Wissenschaft",kid:1,g:3,t:"Natur & Tiere",d:3,q:"Wie nennt man Tiere, die andere Tiere jagen?",a:["Raubtiere","Beutetiere","Pflanzenfresser","Nutztiere"]},
+{k:"Geografie",kid:1,g:3,t:"Erdkunde",d:1,q:"Wie viele Bundesländer hat Deutschland?",a:["16","14","12","18"]},
+{k:"Geografie",kid:1,g:3,t:"Erdkunde",d:1,q:"An welchem Fluss liegt Köln?",a:["Am Rhein","An der Elbe","An der Donau","An der Weser"]},
+{k:"Geografie",kid:1,g:3,t:"Erdkunde",d:2,q:"Wie heißt der höchste Berg Deutschlands?",a:["Die Zugspitze","Der Brocken","Der Feldberg","Der Watzmann"]},
+{k:"Geografie",kid:1,g:3,t:"Erdkunde",d:2,q:"Wie heißt das Meer im Osten von Deutschland?",a:["Die Ostsee","Die Nordsee","Das Mittelmeer","Der Atlantik"]},
+{k:"Geografie",kid:1,g:3,t:"Erdkunde",d:2,q:"Wie viele Nachbarländer hat Deutschland?",a:["9","7","5","11"]},
+{k:"Geografie",kid:1,g:3,t:"Erdkunde",d:2,q:"In welchem Bundesland liegt Hamburg?",a:["Hamburg ist ein eigenes Bundesland","Niedersachsen","Schleswig-Holstein","Bremen"]},
+{k:"Geografie",kid:1,g:3,t:"Erdkunde",d:3,q:"Welcher Fluss ist der längste in Deutschland?",a:["Der Rhein","Die Elbe","Die Donau","Die Weser"]},
+{k:"Geografie",kid:1,g:3,t:"Erdkunde",d:3,q:"Wie heißt der größte See ganz in Deutschland?",a:["Die Müritz","Der Chiemsee","Der Bodensee","Der Ammersee"]},
+{k:"Geografie",kid:1,g:3,t:"Erdkunde",d:3,q:"Welches Bundesland ist das größte nach Fläche?",a:["Bayern","Niedersachsen","Hessen","Sachsen"]},
+{k:"Geschichte",kid:1,g:3,t:"Sachkunde",d:1,q:"Wie viele Stunden hat ein Tag?",a:["24","12","20","30"]},
+{k:"Geschichte",kid:1,g:3,t:"Sachkunde",d:1,q:"Wie nennt man 100 Jahre?",a:["Ein Jahrhundert","Ein Jahrzehnt","Ein Jahrtausend","Eine Epoche"]},
+{k:"Geschichte",kid:1,g:3,t:"Sachkunde",d:2,q:"Wie nennt man 10 Jahre?",a:["Ein Jahrzehnt","Ein Jahrhundert","Ein Jahrtausend","Eine Dekade gibt es nicht"]},
+{k:"Geschichte",kid:1,g:3,t:"Sachkunde",d:2,q:"Wer erfand den Buchdruck in Europa?",a:["Johannes Gutenberg","Albert Einstein","Karl Benz","Thomas Edison"]},
+{k:"Geschichte",kid:1,g:3,t:"Sachkunde",d:2,q:"Was benutzt man, um die Uhrzeit abzulesen?",a:["Eine Uhr","Ein Thermometer","Einen Kompass","Ein Lineal"]},
+{k:"Geschichte",kid:1,g:3,t:"Sachkunde",d:3,q:"Wie hieß der erste Mensch auf dem Mond?",a:["Neil Armstrong","Juri Gagarin","Buzz Aldrin","Michael Collins"]},
+{k:"Geschichte",kid:1,g:3,t:"Sachkunde",d:3,q:"Welches Verkehrsmittel fährt auf Schienen?",a:["Der Zug","Das Auto","Das Flugzeug","Das Schiff"]},
+{k:"Musik & Film",kid:1,g:3,t:"Musik & Kunst",d:1,q:"Wie viele Notenlinien hat ein Notensystem?",a:["5","4","6","3"]},
+{k:"Musik & Film",kid:1,g:3,t:"Musik & Kunst",d:2,q:"Welches Instrument gehört zu den Streichinstrumenten?",a:["Die Geige","Die Trompete","Die Flöte","Das Schlagzeug"]},
+{k:"Musik & Film",kid:1,g:3,t:"Musik & Kunst",d:2,q:"Welche Farbe entsteht aus Blau und Rot?",a:["Violett","Grün","Orange","Braun"]},
+{k:"Musik & Film",kid:1,g:3,t:"Musik & Kunst",d:3,q:"Wie nennt man Farben, die man nicht mischen kann?",a:["Grundfarben","Mischfarben","Naturfarben","Wasserfarben"]},
+{k:"Sport",kid:1,g:3,t:"Sport",d:1,q:"Wie viele Spieler hat eine Handballmannschaft auf dem Feld?",a:["7","5","9","11"]},
+{k:"Sport",kid:1,g:3,t:"Sport",d:2,q:"Wie nennt man das Aufwärmen vor dem Sport?",a:["Warmmachen","Abkühlen","Ausruhen","Dehnen nach dem Sport"]},
+{k:"Sport",kid:1,g:3,t:"Sport",d:3,q:"Welche Sportarten gehören zum Triathlon?",a:["Schwimmen, Radfahren, Laufen","Laufen, Springen, Werfen","Skifahren, Schießen, Rodeln","Turnen, Boxen, Ringen"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:1,q:"Wie viel ist 6 mal 7?",a:["42","36","48","49"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:2,q:"Wie viel ist 8 mal 9?",a:["72","64","81","78"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:2,q:"Wie viel ist 400 + 250?",a:["650","640","660","600"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:2,q:"Wie viel ist 900 - 450?",a:["450","350","550","500"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:2,q:"Wie viel ist 81 geteilt durch 9?",a:["9","8","7","6"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:3,q:"Wie viel ist 15 mal 6?",a:["90","80","96","85"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:3,q:"Wie viel ist 144 geteilt durch 12?",a:["12","11","14","10"]},
+{k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:3,q:"Wie viele Liter hat ein halber Liter mal 4?",a:["2 Liter","1 Liter","4 Liter","0,5 Liter"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:1,q:"Welcher Artikel gehört zu „Haus“?",a:["das","der","die","dem"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:2,q:"In welcher Zeitform steht „ich spiele“?",a:["Gegenwart","Vergangenheit","Zukunft","Befehlsform"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:2,q:"Wie nennt man ein Wort mit gegenteiliger Bedeutung?",a:["Ein Gegenwort","Ein Synonym","Ein Reimwort","Eine Silbe"]},
+{k:"Kunst & Literatur",kid:1,g:3,t:"Sprache",d:3,q:"Welches Satzzeichen trennt Aufzählungen?",a:["Das Komma","Der Punkt","Das Ausrufezeichen","Der Doppelpunkt"]},
+{k:"Wissenschaft",kid:1,g:3,t:"Natur & Tiere",d:2,q:"Welches Tier gehört zu den Vögeln?",a:["Der Specht","Die Fledermaus","Der Schmetterling","Die Biene"]},
+{k:"Wissenschaft",kid:1,g:3,t:"Natur & Tiere",d:2,q:"Was fressen Pflanzenfresser?",a:["Nur Pflanzen","Nur Fleisch","Pflanzen und Fleisch","Nur Insekten"]},
+{k:"Wissenschaft",kid:1,g:3,t:"Natur & Tiere",d:3,q:"Wie heißt das Organ, das Nahrung zerkleinert und verdaut?",a:["Der Magen","Das Herz","Die Lunge","Das Gehirn"]},
+{k:"Geografie",kid:1,g:3,t:"Erdkunde",d:2,q:"Welcher Fluss fließt durch Hamburg?",a:["Die Elbe","Der Rhein","Die Donau","Die Oder"]},
+{k:"Geografie",kid:1,g:3,t:"Erdkunde",d:3,q:"Welches Bundesland liegt am weitesten im Norden?",a:["Schleswig-Holstein","Bayern","Hessen","Sachsen"]},
+{k:"Geschichte",kid:1,g:3,t:"Sachkunde",d:2,q:"Wie nennt man 1000 Jahre?",a:["Ein Jahrtausend","Ein Jahrhundert","Ein Jahrzehnt","Eine Ewigkeit"]},
+{k:"Musik & Film",kid:1,g:3,t:"Musik & Kunst",d:2,q:"Welches Instrument hat schwarze und weiße Tasten?",a:["Das Klavier","Die Geige","Die Trompete","Die Trommel"]},
+
+/* ---------- 4. Klasse ---------- */
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:1,q:"Wie viel ist 12 mal 12?",a:["144","132","156","121"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:1,q:"Wie viel ist 1000 + 2500?",a:["3500","3000","4000","2500"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:1,q:"Wie viel ist 5000 - 1500?",a:["3500","4500","2500","3000"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:1,q:"Wie viele Nullen hat die Zahl Zehntausend?",a:["4","3","5","6"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:1,q:"Wie viel ist die Hälfte von 1000?",a:["500","250","750","100"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:1,q:"Wie viele Tausender hat die Zahl 4500?",a:["4","5","45","0"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:1,q:"Wie viel ist 100 mal 10?",a:["1000","110","10000","200"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:2,q:"Wie viel ist 234 mal 3?",a:["702","692","712","602"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:2,q:"Wie viel ist 1250 geteilt durch 5?",a:["250","240","260","200"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:2,q:"Wie viel ist 3456 + 2789?",a:["6245","6145","6345","6235"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:2,q:"Wie viel ist 8000 - 3456?",a:["4544","4644","4444","4554"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:2,q:"Wie viel ist die Hälfte von drei Vierteln – also die Hälfte von 3/4?",a:["3/8","1/2","1/4","2/3"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:2,q:"Was ist mehr: 1/2 oder 1/3?",a:["1/2","1/3","Beide gleich","Kommt darauf an"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:2,q:"Wie viel ist 1/4 von 100?",a:["25","20","40","50"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:2,q:"Wie viel sind 50 Prozent von 80?",a:["40","30","50","60"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:2,q:"Wie viele Quadratzentimeter hat ein Quadrat mit 5 cm Seitenlänge?",a:["25","20","10","30"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:2,q:"Wie groß ist der Umfang eines Quadrats mit 6 cm Seitenlänge?",a:["24 cm","36 cm","12 cm","18 cm"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:2,q:"Wie viele Milliliter hat ein Liter?",a:["1000","100","10","500"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:2,q:"Wie viele Sekunden hat eine Stunde?",a:["3600","600","360","1800"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:3,q:"Wie viel ist 25 mal 16?",a:["400","350","450","375"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:3,q:"Wie viel ist 7 mal 125?",a:["875","775","975","850"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:3,q:"Wie viel ist 4536 geteilt durch 8?",a:["567","557","577","467"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:3,q:"Wie groß ist die Fläche eines Rechtecks mit 8 cm und 5 cm?",a:["40 Quadratzentimeter","26 Quadratzentimeter","13 Quadratzentimeter","45 Quadratzentimeter"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:3,q:"Ein Buch kostet 12,50 Euro. Wie viel kosten 4 Bücher?",a:["50 Euro","48 Euro","45 Euro","52 Euro"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:3,q:"Wie viel Prozent sind ein Viertel?",a:["25 Prozent","20 Prozent","40 Prozent","50 Prozent"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:3,q:"Wie viele Grad hat ein rechter Winkel?",a:["90","45","180","60"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:3,q:"Wie viele Grad haben alle Winkel in einem Dreieck zusammen?",a:["180","360","90","270"]},
+{k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:1,q:"Wie heißt der vierte Fall (Wen oder was?)?",a:["Akkusativ","Nominativ","Genitiv","Dativ"]},
+{k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:1,q:"Wie heißt der dritte Fall (Wem?)?",a:["Dativ","Nominativ","Genitiv","Akkusativ"]},
+{k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:1,q:"Wie nennt man Wörter wie „ich“, „du“ und „er“?",a:["Pronomen","Nomen","Verben","Adjektive"]},
+{k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:2,q:"Wie heißt der zweite Fall (Wessen?)?",a:["Genitiv","Dativ","Akkusativ","Nominativ"]},
+{k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:2,q:"In welcher Zeitform steht „ich hatte gespielt“?",a:["Vorvergangenheit","Gegenwart","Zukunft","Mitvergangenheit"]},
+{k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:2,q:"Wie nennt man ein Wort, das aus zwei Wörtern zusammengesetzt ist?",a:["Zusammengesetztes Nomen","Fremdwort","Fachwort","Kurzwort"]},
+{k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:2,q:"Welches Wort ist richtig geschrieben?",a:["Rhythmus","Rytmus","Rhytmus","Rithmus"]},
+{k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:2,q:"Welches Wort ist richtig geschrieben?",a:["Fahrrad","Fahrad","Farrad","Faahrrad"]},
+{k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:2,q:"Wann schreibt man „das“ mit einem s?",a:["Wenn man „welches“ einsetzen kann","Immer","Nie","Nur am Satzanfang"]},
+{k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:2,q:"Wie nennt man den Teil des Satzes, der sagt, wer etwas tut?",a:["Das Subjekt","Das Prädikat","Das Objekt","Die Ergänzung"]},
+{k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:3,q:"Wie nennt man das Satzglied, das die Tätigkeit ausdrückt?",a:["Das Prädikat","Das Subjekt","Das Objekt","Das Attribut"]},
+{k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:3,q:"Wie nennt man eine Geschichte mit Tieren, die eine Lehre enthält?",a:["Eine Fabel","Ein Märchen","Eine Sage","Ein Gedicht"]},
+{k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:3,q:"Wie nennt man einen Vergleich mit „wie“, etwa „stark wie ein Bär“?",a:["Ein Vergleich","Ein Reim","Ein Rätsel","Eine Übertreibung"]},
+{k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:3,q:"Wie viele Zeilen hat üblicherweise eine Strophe im Gedicht mindestens?",a:["2","1","5","10"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:1,q:"Wie viele Planeten hat unser Sonnensystem?",a:["8","9","7","10"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:1,q:"Welcher Planet ist der Sonne am nächsten?",a:["Merkur","Venus","Erde","Mars"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:1,q:"Um was kreist der Mond?",a:["Um die Erde","Um die Sonne","Um den Mars","Um die Venus"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:2,q:"Wie lange braucht die Erde für eine Drehung um sich selbst?",a:["24 Stunden","1 Jahr","1 Monat","12 Stunden"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:2,q:"Warum gibt es Tag und Nacht?",a:["Weil sich die Erde dreht","Weil die Sonne wandert","Weil der Mond sich dreht","Weil Wolken kommen"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:2,q:"Warum gibt es Jahreszeiten?",a:["Weil die Erdachse geneigt ist","Weil die Sonne kälter wird","Weil der Mond wandert","Weil es regnet"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:2,q:"Wie heißt der größte Planet im Sonnensystem?",a:["Jupiter","Saturn","Neptun","Erde"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:2,q:"Welches Organ pumpt Blut durch den Körper?",a:["Das Herz","Die Lunge","Die Leber","Der Magen"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:2,q:"Wie heißen die Muskeln, mit denen wir uns bewegen?",a:["Skelettmuskeln","Herzmuskeln","Darmmuskeln","Augenmuskeln"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:2,q:"Was passiert beim Einatmen mit der Lunge?",a:["Sie füllt sich mit Luft","Sie wird kleiner","Sie füllt sich mit Wasser","Nichts"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:2,q:"Wie nennt man den festen Zustand von Wasser?",a:["Eis","Dampf","Nebel","Tau"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:3,q:"Bei wie viel Grad Celsius kocht Wasser?",a:["100","50","80","120"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:3,q:"Bei wie viel Grad Celsius gefriert Wasser?",a:["0","10","-10","5"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:3,q:"Wie heißt der Vorgang, bei dem eine Raupe zum Schmetterling wird?",a:["Verwandlung","Vermehrung","Verdauung","Verdunstung"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:3,q:"Welche Nahrungskette ist richtig?",a:["Gras – Hase – Fuchs","Fuchs – Hase – Gras","Hase – Gras – Fuchs","Gras – Fuchs – Hase"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:3,q:"Wie nennt man Stoffe, die Strom leiten?",a:["Leiter","Isolatoren","Magnete","Kristalle"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:3,q:"Welches Material leitet Strom besonders gut?",a:["Kupfer","Holz","Gummi","Glas"]},
+{k:"Geografie",kid:1,g:4,t:"Erdkunde",d:1,q:"Auf welchem Kontinent liegt Deutschland?",a:["In Europa","In Asien","In Afrika","In Amerika"]},
+{k:"Geografie",kid:1,g:4,t:"Erdkunde",d:1,q:"Wie viele Kontinente gibt es?",a:["7","5","6","4"]},
+{k:"Geografie",kid:1,g:4,t:"Erdkunde",d:2,q:"Wie heißt die Hauptstadt von Frankreich?",a:["Paris","Marseille","Lyon","Nizza"]},
+{k:"Geografie",kid:1,g:4,t:"Erdkunde",d:2,q:"Wie heißt die Hauptstadt von Italien?",a:["Rom","Mailand","Venedig","Turin"]},
+{k:"Geografie",kid:1,g:4,t:"Erdkunde",d:2,q:"Welches Gebirge liegt zwischen Deutschland und Italien?",a:["Die Alpen","Die Pyrenäen","Die Karpaten","Der Harz"]},
+{k:"Geografie",kid:1,g:4,t:"Erdkunde",d:2,q:"Welcher Fluss fließt durch Wien und Budapest?",a:["Die Donau","Der Rhein","Die Elbe","Die Weichsel"]},
+{k:"Geografie",kid:1,g:4,t:"Erdkunde",d:3,q:"Wie heißt der längste Fluss Europas?",a:["Die Wolga","Die Donau","Der Rhein","Die Elbe"]},
+{k:"Geografie",kid:1,g:4,t:"Erdkunde",d:3,q:"Wie viele Länder hat die Europäische Union?",a:["27","25","30","20"]},
+{k:"Geografie",kid:1,g:4,t:"Erdkunde",d:3,q:"Wie heißt der höchste Berg der Alpen?",a:["Der Mont Blanc","Das Matterhorn","Die Zugspitze","Der Großglockner"]},
+{k:"Geschichte",kid:1,g:4,t:"Sachkunde",d:1,q:"In welchem Jahr fiel die Berliner Mauer?",a:["1989","1961","1945","1990"]},
+{k:"Geschichte",kid:1,g:4,t:"Sachkunde",d:2,q:"Wer waren die Ritter im Mittelalter?",a:["Kämpfer zu Pferd","Bauern auf dem Feld","Händler in der Stadt","Mönche im Kloster"]},
+{k:"Geschichte",kid:1,g:4,t:"Sachkunde",d:2,q:"Womit heizten die Menschen früher ihre Häuser?",a:["Mit Holz und Kohle","Mit Strom","Mit Erdgas","Mit Solarzellen"]},
+{k:"Geschichte",kid:1,g:4,t:"Sachkunde",d:2,q:"Welche Erfindung veränderte um 1450 die Verbreitung von Wissen?",a:["Der Buchdruck","Das Telefon","Der Computer","Das Radio"]},
+{k:"Geschichte",kid:1,g:4,t:"Sachkunde",d:3,q:"Wie heißt die Regierungsform, in der das Volk wählt?",a:["Demokratie","Monarchie","Diktatur","Anarchie"]},
+{k:"Geschichte",kid:1,g:4,t:"Sachkunde",d:3,q:"Wie oft wird in Deutschland der Bundestag gewählt?",a:["Alle vier Jahre","Jedes Jahr","Alle zwei Jahre","Alle zehn Jahre"]},
+{k:"Geschichte",kid:1,g:4,t:"Sachkunde",d:3,q:"Wie heißt das oberste Gesetz in Deutschland?",a:["Das Grundgesetz","Das Strafgesetz","Die Verfassungsurkunde","Das Bürgerbuch"]},
+{k:"Musik & Film",kid:1,g:4,t:"Musik & Kunst",d:1,q:"Wie viele Töne hat eine Tonleiter von C bis C?",a:["8","7","5","12"]},
+{k:"Musik & Film",kid:1,g:4,t:"Musik & Kunst",d:2,q:"Wer komponierte „Die Zauberflöte“?",a:["Wolfgang Amadeus Mozart","Ludwig van Beethoven","Johann Sebastian Bach","Franz Schubert"]},
+{k:"Musik & Film",kid:1,g:4,t:"Musik & Kunst",d:2,q:"Welches Instrument hat die tiefsten Töne im Orchester?",a:["Der Kontrabass","Die Geige","Die Flöte","Die Trompete"]},
+{k:"Musik & Film",kid:1,g:4,t:"Musik & Kunst",d:3,q:"Wie nennt man den Leiter eines Orchesters?",a:["Dirigent","Solist","Komponist","Intendant"]},
+{k:"Sport",kid:1,g:4,t:"Sport",d:1,q:"Wie viele Ringe hat das olympische Zeichen?",a:["5","4","6","3"]},
+{k:"Sport",kid:1,g:4,t:"Sport",d:2,q:"Wie lang ist ein Marathonlauf?",a:["Etwa 42 Kilometer","Etwa 10 Kilometer","Etwa 100 Kilometer","Etwa 21 Kilometer"]},
+{k:"Sport",kid:1,g:4,t:"Sport",d:3,q:"Alle wie viele Jahre finden die Olympischen Sommerspiele statt?",a:["Alle vier Jahre","Alle zwei Jahre","Jedes Jahr","Alle fünf Jahre"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:1,q:"Wie viel ist 11 mal 11?",a:["121","111","132","110"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:1,q:"Wie viel ist 20 mal 5?",a:["100","90","110","25"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:2,q:"Wie viel ist 640 geteilt durch 8?",a:["80","70","90","60"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:2,q:"Wie viel ist 45 mal 20?",a:["900","800","950","890"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:2,q:"Wie viel sind 10 Prozent von 250?",a:["25","20","30","50"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:2,q:"Wie viel ist 3/4 von 100?",a:["75","70","80","50"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:2,q:"Wie viele Tage hat ein Schaltjahr?",a:["366","365","364","360"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:3,q:"Wie viel ist 1728 geteilt durch 12?",a:["144","134","154","124"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:3,q:"Wie viel ist 2/5 von 250?",a:["100","120","80","125"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:3,q:"Wie groß ist der Umfang eines Rechtecks mit 7 cm und 3 cm?",a:["20 cm","21 cm","10 cm","24 cm"]},
+{k:"Vermischtes",kid:1,g:4,t:"Rechnen",d:3,q:"Wie viele Kanten hat ein Quader?",a:["12","8","6","10"]},
+{k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:1,q:"Wie heißt die Einzahl von „Kinder“?",a:["Kind","Kinde","Kindes","Kindern"]},
+{k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:2,q:"Welches Wort ist ein zusammengesetztes Nomen?",a:["Haustür","Fenster","Straße","Garten"]},
+{k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:2,q:"Wie nennt man Wörter, die aus anderen Sprachen kommen?",a:["Fremdwörter","Reimwörter","Kurzwörter","Mundartwörter"]},
+{k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:3,q:"Wie nennt man eine kurze erfundene Erzählung mit einer Moral?",a:["Eine Fabel","Ein Bericht","Ein Protokoll","Eine Reportage"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:2,q:"Welcher Planet wird der Rote Planet genannt?",a:["Mars","Venus","Jupiter","Merkur"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:2,q:"Wie heißt der Stern, um den die Erde kreist?",a:["Die Sonne","Der Mond","Der Polarstern","Sirius"]},
+{k:"Wissenschaft",kid:1,g:4,t:"Natur & Tiere",d:3,q:"Wie nennt man Stoffe, die keinen Strom leiten?",a:["Isolatoren","Leiter","Magnete","Metalle"]},
+{k:"Geografie",kid:1,g:4,t:"Erdkunde",d:2,q:"Wie heißt die Hauptstadt von Spanien?",a:["Madrid","Barcelona","Sevilla","Valencia"]},
+{k:"Geschichte",kid:1,g:4,t:"Sachkunde",d:2,q:"In welchem Jahr wurde Deutschland wiedervereinigt?",a:["1990","1989","1991","1949"]}
 ];
 
 const DIFF = {1:{n:"leicht",p:1},2:{n:"mittel",p:2},3:{n:"schwer",p:3}};
@@ -2017,7 +2443,7 @@ const only = id => { PANELS.forEach(p => gone(p)); show(id); };
 const shuffle = arr => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
 
 let cfg = { np: 2, diff: "mix", mode: "alt", len: 10, time: 30,
-            family: false, kids: [false, false, false, false], repeatWrong: true };
+            family: false, kids: [false, false, false, false], repeatWrong: true, grade: 1 };
 let G = null, tick = null, pending = null, lastLink = null, showCodeOnly = false;
 
 /* ================= Link-Kodierung ================= */
@@ -2042,7 +2468,9 @@ function makeUrl(kind, payload) {
 }
 
 /* ================= Setup-UI ================= */
-const SOLO = () => cfg.mode === "link" || cfg.mode === "live" || cfg.mode === "solo";
+const SOLO = () => ["link","live","solo","schule"].includes(cfg.mode);
+/* Grundschul-Modus: eigener Fragentopf nach Klassenstufe, ohne Zeitdruck. */
+function schuleOn() { return cfg.mode === "schule"; }
 
 function buildNames() {
   const n = SOLO() ? 1 : cfg.np;
@@ -2088,8 +2516,12 @@ function kidCount() { let n = 0; for (let i = 0; i < cfg.np; i++) if (isKid(i)) 
 
 /* kid = true → Kinderfragen, sonst der normale Katalog. */
 const pool = (kid) => {
+  /* Im Grundschul-Modus zählt allein die Klassenstufe – Kategorien
+     und Schwierigkeitswahl bleiben dort außen vor.                */
+  if (schuleOn()) return BANK.filter(q => q.g === +cfg.grade);
   const on = catsOn(), wantKid = kid ? 1 : 0;
-  return BANK.filter(q => (q.kid ? 1 : 0) === wantKid
+  /* Grundschulfragen tauchen sonst nirgends auf. */
+  return BANK.filter(q => (q.kid ? 1 : 0) === wantKid && !q.g
     && (cfg.diff === "mix" || q.d === +cfg.diff) && on.includes(q.k));
 };
 /* Im Familienspiel begrenzt der kleinere Topf – sonst gehen dem
@@ -2243,7 +2675,8 @@ function hallAdd(entries) {
     .map(e => ({ n: String(e.n).trim().slice(0, 18) || "Unbekannt",
                  s: +e.s || 0, r: +e.r || 0, q: +e.q, t: Date.now(),
                  /* Verlauf für den Schattengegner im Solo-Modus */
-                 v: typeof e.v === "string" ? e.v : undefined }));
+                 v: typeof e.v === "string" ? e.v : undefined,
+                 g: e.g || undefined }));
   if (!clean.length) return;
   const all = hallList().concat(clean).sort((a, b) => b.s - a.s || b.r - a.r || a.t - b.t);
   try { localStorage.setItem(HALL_KEY, JSON.stringify(all.slice(0, HALL_MAX))); } catch (e) {}
@@ -2280,10 +2713,13 @@ function hallTop(n) {
 
 /* Bester bisheriger Lauf dieser Person bei genau dieser Fragenzahl.
    Nur mit Verlauf brauchbar – sonst gäbe es keinen Schatten.      */
-function bestRun(name, q) {
+function bestRun(name, q, grade) {
   const key = String(name || "").trim().toLowerCase();
+  const g = grade || null;
   return hallList()
-    .filter(e => e.n.toLowerCase() === key && e.q === q && typeof e.v === "string" && e.v.length === q)
+    .filter(e => e.n.toLowerCase() === key && e.q === q
+      && (e.g || null) === g                      /* Klassenstufen nicht vermischen */
+      && typeof e.v === "string" && e.v.length === q)
     .sort((a, b) => b.s - a.s)[0] || null;
 }
 /* Punktestand des Rekordlaufs nach den ersten j Fragen. */
@@ -2381,12 +2817,13 @@ const MODE_TEXT = {
   seq:  "Erst spielt einer allein durch, dann die anderen.",
   solo: "Allein spielen – dein bisher bester Lauf läuft als Schatten mit.",
   link: "Du spielst, verschickst einen Link. Der andere spielt dieselben Fragen.",
-  live: "Raum öffnen, Code teilen, alle spielen gleichzeitig."
+  live: "Raum öffnen, Code teilen, alle spielen gleichzeitig.",
+  schule: "Für Grundschulkinder allein – Fragen nach Klassenstufe, ganz ohne Zeitdruck."
 };
 
 /* ---- Einstellungen über Sitzungen hinweg merken ---- */
 const CFG_KEY = "quizduell.cfg";
-const CFG_FELDER = ["np","diff","mode","len","time","family","kids","cats","repeatWrong"];
+const CFG_FELDER = ["np","diff","mode","len","time","family","kids","cats","repeatWrong","grade"];
 function cfgSave() {
   const o = {};
   CFG_FELDER.forEach(k => o[k] = cfg[k]);
@@ -2417,6 +2854,7 @@ function syncChips() {
 }
 
 function summaryText() {
+  if (schuleOn()) return `<b>${cfg.grade}. Klasse</b> · <b>${cfg.len}</b> Fragen · ohne Zeitlimit`;
   const teile = [];
   if (!SOLO()) teile.push(`<b>${cfg.np}</b> Spieler`);
   teile.push(`<b>${cfg.len}</b> Fragen`);
@@ -2440,6 +2878,22 @@ function updateAvail() {
   $("start").textContent = cfg.mode === "link" ? "Challenge spielen"
     : cfg.mode === "live" ? "Raum erstellen"
     : cfg.mode === "solo" ? "Solo starten" : "Spiel starten";
+
+  /* Grundschule: Klassenwahl zeigen, Zeitlimit und die übrigen
+     Fragen-Einstellungen ausblenden. */
+  $("fGrade").classList.toggle("hide", !schuleOn());
+  $("fTime").classList.toggle("hide", schuleOn());
+  $("fDiff").classList.toggle("hide", schuleOn());
+  $("fCats").classList.toggle("hide", schuleOn());
+  if (schuleOn()) {
+    cfg.time = 0;                      /* kein Zeitdruck beim Lernen */
+    [...$("cGrade").children].forEach(c =>
+      c.classList.toggle("on", +c.dataset.v === +cfg.grade));
+    const p = pool(true);
+    const themen = [...new Set(p.map(q => q.t || q.k))];
+    $("gradeHint").innerHTML = `<b>${p.length}</b> Fragen für die ${cfg.grade}. Klasse · `
+      + esc(themen.join(" · ")) + `<br>Ohne Zeitlimit – in Ruhe überlegen.`;
+  }
 
   /* Familienspiel gibt es nur dort, wo alle am selben Gerät sitzen. */
   const famMoeglich = famModes.includes(cfg.mode);
@@ -2488,7 +2942,9 @@ function updateAvail() {
 function renderHint(mp) {
   if (mp === undefined) mp = maxPerPlayer();
   const dn = cfg.diff === "mix" ? "gemischt" : DIFF[cfg.diff].n;
-  const base = famOn()
+  const base = schuleOn()
+    ? `<b>${pool(true).length}</b> Fragen für die ${cfg.grade}. Klasse – höchstens <b>${mp}</b> pro Runde.`
+    : famOn()
     ? `Familienspiel: <b>${pool(false).length}</b> Fragen für Erwachsene, <b>${pool(true).length}</b> für Kinder (${dn}). `
       + `Jeder bekommt eigene – max. <b>${mp}</b> pro Spieler.`
     : cfg.mode === "alt" ? `${pool(false).length} Fragen (${dn}) im Pool, jeder bekommt eigene – max. <b>${mp}</b> pro Spieler bei ${cfg.np} Spielern.`
@@ -2499,7 +2955,7 @@ function renderHint(mp) {
   const memo = fresh
     ? `Davon <b>${fresh}</b> noch nie gestellt – die kommen zuerst.`
     : `Alle Fragen waren schon dran – es kommen jetzt die am längsten zurückliegenden. <a href="#" id="resetSeen">Gedächtnis leeren</a>`;
-  const catNote = cfg.cats.length === CATS.length ? ""
+  const catNote = (schuleOn() || cfg.cats.length === CATS.length) ? ""
     : `<br>Eingeschränkt auf: <b>${esc(cfg.cats.join(", "))}</b>.`;
   $("availHint").innerHTML = base + catNote + "<br>" + memo;
   const rs = $("resetSeen");
@@ -2516,6 +2972,7 @@ function wireChips(boxId, key, after) {
     if (after) after();
   });
 }
+wireChips("cGrade", "grade", () => updateAvail());
 $("cLearn").addEventListener("click", e => {
   const c = e.target.closest(".chip");
   if (!c) return;
@@ -2643,8 +3100,8 @@ $("start").onclick = () => {
         je[p].forEach((qi, j) => order.push({ p, qi, nr: j + 1, pass: j === 0, rev: lastReview.has(qi) }));
     }
     qIdx = je.flat();
-  } else if (cfg.mode === "solo") {
-    qIdx = drawIdx(cfg.len, false);
+  } else if (cfg.mode === "solo" || cfg.mode === "schule") {
+    qIdx = drawIdx(cfg.len, schuleOn());
     qIdx.forEach((qi, j) => order.push({ p: 0, qi, nr: j + 1, pass: false, rev: lastReview.has(qi) }));
   } else if (cfg.mode === "alt") {
     qIdx = drawIdx(cfg.len * np, false);
@@ -2664,8 +3121,9 @@ $("start").onclick = () => {
     streak: Array(np).fill(0), best: Array(np).fill(0), joker: Array(np).fill(true),
     cat: {}, order, i: 0, answered: false, foe: null
   };
-  if (cfg.mode === "solo") {
-    G.record = bestRun(names[0], cfg.len);
+  if (cfg.mode === "solo" || cfg.mode === "schule") {
+    G.grade = schuleOn() ? +cfg.grade : null;
+    G.record = bestRun(names[0], cfg.len, G.grade);
     if (G.record) G.foe = { n: "Dein Rekord", ghost: true };
   }
   buildScore();
@@ -2785,7 +3243,7 @@ function tbRender() {
     c.style.borderColor = i === p ? PCOL[i] : "transparent";
   });
   $("prog").style.width = "100%";
-  $("tagCat").textContent = q.k;
+  $("tagCat").textContent = q.t || q.k;
   $("tagDiff").textContent = "Stichfrage";
   $("tagDiff").className = "tag d" + q.d;
   $("tagKid").style.display = q.kid ? "" : "none";
@@ -2873,7 +3331,7 @@ function render() {
   $("prog").style.width = (g.i / g.order.length * 100) + "%";
   paintRecord(e.nr - 1);
 
-  $("tagCat").textContent = q.k;
+  $("tagCat").textContent = q.t || q.k;
   const d = DIFF[q.d];
   $("tagDiff").textContent = d.n + " · " + d.p + (d.p === 1 ? " Punkt" : " Punkte");
   $("tagDiff").className = "tag d" + q.d;
@@ -3095,7 +3553,8 @@ function showEnd() {
   only("end");
   if (!g.counted) {
     g.counted = true;
-    hallAdd(g.names.map((n, i) => ({ n, s: g.score[i], r: g.right[i], q: g.perPlayer, v: g.pts[i].join("") })));
+    hallAdd(g.names.map((n, i) => ({ n, s: g.score[i], r: g.right[i], q: g.perPlayer,
+      v: g.pts[i].join(""), g: g.grade || undefined })));
   }
   const idx = g.names.map((_, i) => i).sort((a, b) => g.score[b] - g.score[a]);
   const top = g.score[idx[0]];
@@ -3108,7 +3567,7 @@ function showEnd() {
   tbBtn.style.display = tieBreakable && !TB ? "" : "none";
   tbBtn.onclick = () => startTiebreak(winners);
 
-  if (g.mode === "solo") {
+  if (g.mode === "solo" || g.mode === "schule") {
     const rek = g.record ? g.record.s : null;
     const eigen = g.score[0];
     if (rek === null) {
@@ -3727,7 +4186,7 @@ function liveSync() {
 function liveRenderQ() {
   only("game");
   const v = LV.room, q = BANK[v.q[v.cur]];
-  $("tagCat").textContent = q.k;
+  $("tagCat").textContent = q.t || q.k;
   $("tagDiff").textContent = DIFF[q.d].n + " · " + DIFF[q.d].p + (DIFF[q.d].p === 1 ? " Punkt" : " Punkte");
   $("tagDiff").className = "tag d" + q.d;
   $("tagKid").style.display = q.kid ? "" : "none";

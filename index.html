@@ -26,6 +26,8 @@
     --p2: #ff7ab8;
     --p3: #3ddc84;
     --p4: #ffcf5c;
+    --p5: #b18cff;
+    --p6: #ff9a4d;
     --ok: #3ddc84;
     --no: #ff5a6e;
     --gold: #ffcf5c;
@@ -120,9 +122,10 @@
   .divider { border-top: 1px solid var(--line); margin: 22px 0 20px; }
 
   /* scoreboard */
-  .score { display: flex; gap: 9px; margin-bottom: 18px; }
+  /* Bis zu sechs Spieler – die Karten brechen bei Bedarf um. */
+  .score { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 18px; }
   .pcard {
-    flex: 1; min-width: 0; background: var(--card2); border: 2px solid transparent;
+    flex: 1 1 92px; min-width: 0; background: var(--card2); border: 2px solid transparent;
     border-radius: 14px; padding: 11px 13px; transition: .2s;
   }
   .pcard .nm { font-size: .8rem; color: var(--dim); margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -293,7 +296,7 @@
   <!-- ============ SETUP ============ -->
   <div class="panel" id="setup">
     <h1><span>Fragenfuchs</span></h1>
-    <p class="sub">Quiz für Familie, Kinder und Grundschule – 1 bis 4 Spieler.</p>
+    <p class="sub">Quiz für Familie, Kinder und Grundschule – 1 bis 6 Spieler.</p>
 
     <div class="field">
       <div class="modes" id="modeGrid">
@@ -335,6 +338,8 @@
           <div class="chip on" data-v="2">2 Spieler</div>
           <div class="chip" data-v="3">3 Spieler</div>
           <div class="chip" data-v="4">4 Spieler</div>
+          <div class="chip" data-v="5">5 Spieler</div>
+          <div class="chip" data-v="6">6 Spieler</div>
         </div>
       </div>
 
@@ -2544,8 +2549,8 @@ function fracLeftOf(startMs, limitSec) {
   return Math.max(0, Math.min(1, (limitSec * 1000 - (Date.now() - startMs)) / (limitSec * 1000)));
 }
 const KEYS = ["A","B","C","D"];
-const PCOL = ["var(--p1)","var(--p2)","var(--p3)","var(--p4)"];
-const MEDAL = ["🥇","🥈","🥉","4."];
+const PCOL = ["var(--p1)","var(--p2)","var(--p3)","var(--p4)","var(--p5)","var(--p6)"];
+const MEDAL = ["🥇","🥈","🥉","4.","5.","6."];
 const $ = id => document.getElementById(id);
 const show = id => $(id).classList.remove("hide");
 const gone = id => $(id).classList.add("hide");
@@ -2557,7 +2562,7 @@ const ttsDa = typeof window.speechSynthesis !== "undefined"
 const shuffle = arr => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
 
 let cfg = { np: 2, diff: "mix", mode: "alt", len: 10, time: 30,
-            family: false, kids: [false, false, false, false], repeatWrong: true, grade: 1, speak: 0 };
+            family: false, kids: [false, false, false, false, false, false], repeatWrong: true, grade: 1, speak: 0 };
 let G = null, tick = null, pending = null, lastLink = null, showCodeOnly = false;
 
 /* ================= Link-Kodierung ================= */
@@ -2880,11 +2885,11 @@ function paintHall(id, schule) {
     return wire();
   }
   box.innerHTML = head + top.map((e, pos) => `
-    <div class="rrow" style="border-left-color:${PCOL[pos % 4]}">
+    <div class="rrow" style="border-left-color:${PCOL[pos % PCOL.length]}">
       <span class="pos">${MEDAL[pos] || (pos + 1) + "."}</span>
       <span class="rn">${esc(e.n)} <small>· ${e.g ? e.g + ". Klasse · " : ""}${new Date(e.t).toLocaleDateString("de-DE")}</small></span>
       <span class="rq">${e.r}/${e.q} richtig · ${e.s} Pkt.</span>
-      <span class="rp" style="color:${PCOL[pos % 4]}">${
+      <span class="rp" style="color:${PCOL[pos % PCOL.length]}">${
         hallMode === "avg" ? perQ(e).toFixed(1).replace(".", ",") : e.s}</span>
     </div>`).join("");
   wire();
@@ -2973,9 +2978,10 @@ function cfgLoad() {
   if (!Array.isArray(cfg.cats) || !cfg.cats.length) cfg.cats = CATS.slice();
   cfg.cats = cfg.cats.filter(k => CATS.includes(k));
   if (!cfg.cats.length) cfg.cats = CATS.slice();
-  if (!Array.isArray(cfg.kids)) cfg.kids = [false, false, false, false];
+  if (!Array.isArray(cfg.kids)) cfg.kids = [false, false, false, false, false, false];
+  while (cfg.kids.length < PCOL.length) cfg.kids.push(false);   /* ältere Stände auffüllen */
   if (!MODE_TEXT[cfg.mode]) cfg.mode = "alt";
-  if (![2,3,4].includes(+cfg.np)) cfg.np = 2;
+  if (!(+cfg.np >= 2 && +cfg.np <= PCOL.length)) cfg.np = 2;
 }
 /* Auswahl in den Chip-Reihen an cfg angleichen (nach dem Laden). */
 function syncChips() {
@@ -3801,7 +3807,7 @@ function showEnd() {
 
   $("rank").innerHTML = idx.map((i, pos) => `
     <div class="rrow" style="border-left-color:${PCOL[i]}">
-      <span class="pos">${MEDAL[pos]}</span>
+      <span class="pos">${MEDAL[pos] || (pos + 1) + "."}</span>
       <span class="rn" style="color:${PCOL[i]}">${esc(g.names[i])}</span>
       <span class="rq">${g.right[i]}/${g.perPlayer} richtig · ${Math.round(g.right[i] / g.perPlayer * 100)} %</span>
       <span class="rp" style="color:${PCOL[i]}">${g.score[i]}</span>
@@ -4301,7 +4307,7 @@ function renderLobby() {
 
   $("lobPlayers").innerHTML = ids.map((id, i) => `
     <div class="prow">
-      <span class="av" style="background:${PCOL[i % 4]}"></span>
+      <span class="av" style="background:${PCOL[i % PCOL.length]}"></span>
       <span class="pn">${esc(v.players[id].name)}</span>
       ${id === LV.me ? '<span class="tagme">du</span>' : ""}
       ${id === v.host ? '<span class="tagme">Gastgeber</span>' : ""}
@@ -4411,9 +4417,9 @@ function liveRenderQ() {
 function liveScoreboard() {
   const v = LV.room, sc = liveScores(v), ids = Object.keys(v.players || {});
   $("score").innerHTML = ids.map((id, i) => `
-    <div class="pcard" style="border-color:${id === LV.me ? PCOL[i % 4] : "transparent"}">
+    <div class="pcard" style="border-color:${id === LV.me ? PCOL[i % PCOL.length] : "transparent"}">
       <div class="nm">${esc(v.players[id].name)}${id === LV.me ? " (du)" : ""}</div>
-      <div class="pt" style="color:${PCOL[i % 4]}">${sc[id] ? sc[id].pts : 0}</div>
+      <div class="pt" style="color:${PCOL[i % PCOL.length]}">${sc[id] ? sc[id].pts : 0}</div>
     </div>`).join("");
 }
 
@@ -4538,15 +4544,15 @@ function liveEnd() {
   } else {
     const w = winners[0];
     $("leTrophy").textContent = w === LV.me ? "🏆" : "🎉";
-    $("leText").innerHTML = `<span style="color:${PCOL[ids.indexOf(w) % 4]}">${esc(v.players[w].name)}</span> gewinnt!`;
+    $("leText").innerHTML = `<span style="color:${PCOL[ids.indexOf(w) % PCOL.length]}">${esc(v.players[w].name)}</span> gewinnt!`;
     $("leSub").textContent = `${top} Punkte – ${top - sc[ids[1]].pts} mehr als Platz 2.`;
   }
   $("leRank").innerHTML = ids.map((id, pos) => `
-    <div class="rrow" style="border-left-color:${PCOL[pos % 4]}">
+    <div class="rrow" style="border-left-color:${PCOL[pos % PCOL.length]}">
       <span class="pos">${MEDAL[pos] || (pos + 1) + "."}</span>
       <span class="rn">${esc(v.players[id].name)}${id === LV.me ? " (du)" : ""}</span>
       <span class="rq">${sc[id].right}/${v.q.length} richtig</span>
-      <span class="rp" style="color:${PCOL[pos % 4]}">${sc[id].pts}</span>
+      <span class="rp" style="color:${PCOL[pos % PCOL.length]}">${sc[id].pts}</span>
     </div>`).join("");
 }
 

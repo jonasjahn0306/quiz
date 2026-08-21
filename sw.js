@@ -1,4 +1,4 @@
-/* Service Worker für Quiz-Duell
+/* Service Worker für Fragenfuchs
    ------------------------------------------------------------------
    Strategie: Netz zuerst, Cache als Rückfall.
    Damit ist immer die neueste hochgeladene Fassung zu sehen, sobald

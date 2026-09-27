@@ -7,7 +7,7 @@
    wäre offline schneller, würde aber nach jedem Upload eine veraltete
    Version festhalten. Das ist hier der schlechtere Kompromiss.      */
 
-const CACHE = "fragenfuchs-v2";
+const CACHE = "fragenfuchs-v3";
 const DATEIEN = ["./", "./index.html", "./quiz-duell.html", "./manifest.json", "./icon.svg", "./icon-180.png"];
 
 self.addEventListener("install", ev => {

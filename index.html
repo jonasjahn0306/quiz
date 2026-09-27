@@ -8,7 +8,7 @@
 <!-- Installierbar und offline nutzbar. Wirkt nur über https, also
      auf GitHub Pages – beim direkten Öffnen der Datei nicht. -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0f1020">
+<meta name="theme-color" content="#05060e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Fragenfuchs">
@@ -16,280 +16,465 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* ================= Gestaltung =================
+     Angelehnt an die Materialsprache von iOS: dunkler Grund, darüber
+     Flächen aus mattem Glas, große weiche Ecken, kräftige Systemfarben
+     und eine Feder-Kurve für alle Bewegungen. Die Klassennamen sind
+     unverändert – nur das Aussehen ist neu.                        */
   :root {
-    --bg: #0f1020;
-    --card2: #232647;
-    --line: #33375f;
-    --txt: #eef0ff;
-    --dim: #9298c4;
-    --p1: #47c2ff;
-    --p2: #ff7ab8;
-    --p3: #3ddc84;
-    --p4: #ffcf5c;
-    --p5: #b18cff;
-    --p6: #ff9a4d;
-    --ok: #3ddc84;
-    --no: #ff5a6e;
-    --gold: #ffcf5c;
+    color-scheme: dark;
+
+    --bg: #05060e;
+    --bg2: #0b0d1c;
+    /* Glasflächen: helles Weiß mit wenig Deckkraft, damit der
+       Hintergrund durchscheint und Ebenen sichtbar bleiben. */
+    --s1: rgba(255,255,255,.055);
+    --s2: rgba(255,255,255,.10);
+    --card2: var(--s1);            /* alter Name, weiter benutzt */
+    --sunk: rgba(0,0,0,.30);       /* eingelassen: Eingaben, Balken */
+    --line: rgba(255,255,255,.11);
+    --line2: rgba(255,255,255,.20);
+    --txt: #f5f6fa;
+    --dim: #9aa0b4;
+
+    /* Systemfarben in der dunklen Variante */
+    --p1: #64d2ff;
+    --p2: #ff6482;
+    --p3: #30d158;
+    --p4: #ffd60a;
+    --p5: #bf5af2;
+    --p6: #ff9f0a;
+    --ok: #30d158;
+    --no: #ff453a;
+    --gold: #ffd60a;
+
+    /* Zwei Farben für Flächen, drei nur für den Schriftzug – auf
+       breiten Knöpfen wirkt der volle Regenbogen unruhig.        */
+    --grad: linear-gradient(120deg, var(--p1), var(--p5));
+    --grad3: linear-gradient(120deg, var(--p1), var(--p5) 55%, var(--p2));
+    --on-grad: #04060f;            /* Text auf der Farbfläche */
+
+    --r-xl: 30px;
+    --r-l: 22px;
+    --r-m: 16px;
+    --r-s: 12px;
+
+    --glass: inset 0 1px 0 rgba(255,255,255,.09);
+    --lift: 0 1px 2px rgba(0,0,0,.35), 0 12px 32px rgba(0,0,0,.30);
+    --ease: cubic-bezier(.32,.72,0,1);
+    --fast: .22s var(--ease);
   }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: radial-gradient(1200px 700px at 15% -10%, #26295a 0%, transparent 60%),
-                radial-gradient(1000px 600px at 90% 110%, #4a2050 0%, transparent 60%),
-                var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
     color: var(--txt);
-    min-height: 100vh;
+    min-height: 100vh; min-height: 100dvh;
     display: flex; align-items: center; justify-content: center;
-    padding: 18px;
+    padding: calc(18px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right))
+             calc(18px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left));
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+  /* Farbschleier hinter dem Glas. Bewegt sich sehr langsam, damit die
+     Oberfläche lebt, ohne vom Lesen abzulenken.                    */
+  body::before {
+    content: ""; position: fixed; inset: -25%; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(38% 42% at 18% 12%, rgba(100,210,255,.30), transparent 70%),
+      radial-gradient(34% 38% at 86% 20%, rgba(191,90,242,.26), transparent 70%),
+      radial-gradient(44% 46% at 72% 92%, rgba(255,100,130,.22), transparent 70%),
+      var(--bg2);
+    animation: drift 30s var(--ease) infinite alternate;
+  }
+  @keyframes drift {
+    from { transform: translate3d(-2%, -1%, 0) scale(1); }
+    to   { transform: translate3d(2%, 2%, 0) scale(1.08); }
   }
   .wrap { width: 100%; max-width: 780px; }
+
+  /* Mattglas-Platte: Unschärfe plus erhöhte Farbsättigung ist der
+     Kern des Effekts, die feine helle Linie oben die Lichtkante. */
   .panel {
-    background: rgba(26,28,53,.85);
+    position: relative;
+    background: rgba(18,20,34,.62);
     border: 1px solid var(--line);
-    border-radius: 20px;
-    padding: 28px;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 24px 60px rgba(0,0,0,.45);
+    border-radius: var(--r-xl);
+    padding: 30px;
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    backdrop-filter: blur(40px) saturate(180%);
+    box-shadow: var(--glass), 0 1px 2px rgba(0,0,0,.4), 0 30px 70px rgba(0,0,0,.5);
+    animation: rise .5s var(--ease) both;
   }
-  h1 { font-size: 2.1rem; letter-spacing: -.02em; margin-bottom: 6px; }
-  h1 span { background: linear-gradient(90deg, var(--p1), var(--p2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .sub { color: var(--dim); margin-bottom: 20px; font-size: .95rem; line-height: 1.5; }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px) scale(.985); } }
+
+  h1 { font-size: 2.3rem; font-weight: 700; letter-spacing: -.035em; margin-bottom: 6px; }
+  h1 span { background: var(--grad3); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: var(--dim); margin-bottom: 22px; font-size: .95rem; line-height: 1.5; }
+
   /* Zusammenfassung der Detaileinstellungen, aufklappbar */
   .summary {
     width: 100%; display: flex; align-items: center; gap: 12px; text-align: left;
-    padding: 13px 15px; margin-bottom: 16px; border-radius: 13px; cursor: pointer;
-    background: var(--card2); border: 1px solid var(--line); color: var(--dim);
-    font-family: inherit; transition: .15s;
+    padding: 14px 16px; margin-bottom: 16px; border-radius: var(--r-m); cursor: pointer;
+    background: var(--s1); border: 1px solid var(--line); color: var(--dim);
+    font-family: inherit; transition: background var(--fast), border-color var(--fast);
+    box-shadow: var(--glass);
   }
-  .summary:hover, .summary.open { border-color: var(--p1); }
+  .summary:hover, .summary.open { border-color: var(--line2); background: var(--s2); }
+  .summary:active { transform: scale(.99); }
   .summary .sumicon { font-size: 1.1rem; line-height: 1; }
   .summary .sumbody { flex: 1; min-width: 0; }
   .summary .sumtitle { display: block; color: var(--txt); font-weight: 600; font-size: .95rem; }
   .summary .sumsub { display: block; font-size: .8rem; line-height: 1.4; margin-top: 2px; }
   .summary b { color: var(--txt); font-weight: 600; }
-  .summary .chev { color: var(--p1); font-size: 1.05rem; transition: transform .18s; }
+  .summary .chev { color: var(--p1); font-size: 1.05rem; transition: transform .3s var(--ease); }
   .summary.open .chev { transform: rotate(180deg); }
+
   .footlinks { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; }
-  label { display: block; font-size: .78rem; text-transform: uppercase; letter-spacing: .09em; color: var(--dim); margin-bottom: 7px; }
-  .hint { font-size: .82rem; color: var(--dim); margin-top: 8px; line-height: 1.45; }
-  .hint b { color: var(--gold); }
-  input[type=text], textarea {
-    width: 100%; padding: 12px 14px; border-radius: 11px;
-    border: 1px solid var(--line); background: #14162e; color: var(--txt);
-    font-size: 1rem; outline: none; font-family: inherit;
+  label {
+    display: block; font-size: .72rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--dim); margin-bottom: 9px;
   }
-  input[type=text]:focus, textarea:focus { border-color: var(--p1); }
+  .hint { font-size: .82rem; color: var(--dim); margin-top: 9px; line-height: 1.45; }
+  .hint b { color: var(--gold); }
+  .hint:empty { display: none; }          /* leere Hinweiszeile frisst keinen Platz */
+
+  input[type=text], textarea {
+    width: 100%; padding: 13px 15px; border-radius: var(--r-s);
+    border: 1px solid var(--line); background: var(--sunk); color: var(--txt);
+    font-size: 1rem; outline: none; font-family: inherit;
+    transition: border-color var(--fast), box-shadow var(--fast);
+  }
+  input[type=text]:focus, textarea:focus {
+    border-color: var(--p1); box-shadow: 0 0 0 4px rgba(100,210,255,.16);
+  }
   textarea { resize: vertical; font-size: .82rem; line-height: 1.5; word-break: break-all; }
+  ::placeholder { color: #6a7089; }
+
+  /* Tastaturbedienung muss sichtbar sein – vorher gab es keinen Ersatz
+     für den abgeschalteten Standardrahmen.                          */
+  :focus-visible { outline: 2px solid var(--p1); outline-offset: 3px; }
+
   .names { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .names .nf { position: relative; }
-  .names .dot { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 9px; height: 9px; border-radius: 99px; }
+  .names .dot {
+    position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+    width: 9px; height: 9px; border-radius: 99px;
+    box-shadow: 0 0 10px currentColor;
+  }
   .names .agebtn {
-    width: 100%; margin-top: 6px; padding: 7px 10px; font-size: .78rem; font-weight: 600;
-    border: 1px solid var(--line); background: var(--card2); color: var(--dim);
-    border-radius: 10px; cursor: pointer;
+    width: 100%; margin-top: 7px; padding: 8px 10px; font-size: .78rem; font-weight: 600;
+    border: 1px solid var(--line); background: var(--s1); color: var(--dim);
+    border-radius: var(--r-s); cursor: pointer; font-family: inherit;
+    transition: var(--fast);
   }
-  .names .agebtn.kid { border-color: var(--gold); color: var(--gold); }
-  .field { margin-bottom: 16px; }
-  .chips { display: flex; gap: 9px; flex-wrap: wrap; }
+  .names .agebtn:active { transform: scale(.97); }
+  .names .agebtn.kid { border-color: rgba(255,214,10,.5); color: var(--gold); background: rgba(255,214,10,.10); }
+
+  .field { margin-bottom: 18px; }
+
+  /* Pillen-Auswahl im Stil eines Segment-Schalters */
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
   .chip {
-    padding: 10px 14px; border-radius: 999px; border: 1px solid var(--line);
-    background: #14162e; color: var(--dim); cursor: pointer; font-size: .93rem;
-    transition: .15s; user-select: none;
+    padding: 10px 15px; border-radius: 999px; border: 1px solid var(--line);
+    background: var(--s1); color: var(--dim); cursor: pointer; font-size: .93rem;
+    transition: var(--fast); user-select: none; box-shadow: var(--glass);
+    font-variant-numeric: tabular-nums;
   }
-  .chip:hover:not(.off) { border-color: var(--p1); color: var(--txt); }
-  .chip.on { background: linear-gradient(90deg, var(--p1), var(--p2)); color: #0f1020; border-color: transparent; font-weight: 600; }
-  .chip.off { opacity: .3; cursor: not-allowed; }
-  .modes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 11px; }
+  .chip:hover:not(.off) { border-color: var(--line2); color: var(--txt); background: var(--s2); }
+  .chip:active:not(.off) { transform: scale(.95); }
+  /* Ausgewählt = eine satte Fläche statt des Verlaufs. Auf so kleinen
+     Pillen wirkt ein Verlauf mit drei Farben schnell schlammig.    */
+  .chip.on {
+    background: var(--p1); color: var(--on-grad); border-color: transparent; font-weight: 600;
+    box-shadow: 0 2px 16px rgba(100,210,255,.35);
+  }
+  .chip.off { opacity: .28; cursor: not-allowed; }
+
+  .modes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .mode {
-    padding: 11px 14px; border-radius: 14px; border: 1px solid var(--line); background: #14162e;
-    cursor: pointer; transition: .15s; text-align: center;
+    padding: 13px 14px; border-radius: var(--r-m); border: 1px solid var(--line);
+    background: var(--s1); cursor: pointer; transition: var(--fast); text-align: center;
+    box-shadow: var(--glass);
   }
   .mode.wide { grid-column: 1 / -1; }
-  .mode:hover { border-color: var(--p1); }
-  .mode.on { border-color: transparent; background: linear-gradient(135deg, rgba(71,194,255,.18), rgba(255,122,184,.18)); box-shadow: inset 0 0 0 2px var(--p1); }
+  .mode:hover { border-color: var(--line2); background: var(--s2); }
+  .mode:active { transform: scale(.98); }
+  .mode.on {
+    border-color: transparent;
+    background: linear-gradient(135deg, rgba(100,210,255,.20), rgba(191,90,242,.18));
+    box-shadow: inset 0 0 0 1.5px var(--p1), 0 4px 20px rgba(100,210,255,.18);
+  }
   .mode .mt { font-weight: 600; font-size: .95rem; }
   .mode .md { font-size: .8rem; color: var(--dim); line-height: 1.4; }
+
   button.big {
-    width: 100%; padding: 16px; border-radius: 13px; border: 0; cursor: pointer;
-    background: linear-gradient(90deg, var(--p1), var(--p2));
-    color: #0f1020; font-size: 1.05rem; font-weight: 700; margin-top: 8px;
-    transition: transform .12s;
+    width: 100%; padding: 17px; border-radius: var(--r-m); border: 0; cursor: pointer;
+    background: var(--grad); color: var(--on-grad);
+    font-size: 1.05rem; font-weight: 700; font-family: inherit; margin-top: 10px;
+    letter-spacing: -.01em;
+    box-shadow: 0 2px 6px rgba(0,0,0,.3), 0 10px 30px rgba(100,210,255,.22);
+    transition: transform var(--fast), box-shadow var(--fast), filter var(--fast);
   }
-  button.big:hover { transform: translateY(-2px); }
+  button.big:hover { filter: brightness(1.07); box-shadow: 0 4px 10px rgba(0,0,0,.3), 0 14px 38px rgba(100,210,255,.30); }
+  button.big:active { transform: scale(.98); }
+  button.big:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; filter: none; transform: none; }
   button.ghost {
-    padding: 13px 22px; border-radius: 11px; cursor: pointer;
-    background: transparent; border: 1px solid var(--line); color: var(--txt); font-size: .95rem;
+    padding: 14px 22px; border-radius: var(--r-s); cursor: pointer; font-family: inherit;
+    background: var(--s1); border: 1px solid var(--line); color: var(--txt); font-size: .95rem;
+    box-shadow: var(--glass); transition: var(--fast);
   }
-  button.ghost:hover { border-color: var(--p1); }
-  .linkbtn { background: none; border: 0; color: var(--p1); cursor: pointer; font-size: .86rem; text-decoration: underline; padding: 0; font-family: inherit; }
-  .divider { border-top: 1px solid var(--line); margin: 22px 0 20px; }
+  button.ghost:hover { border-color: var(--line2); background: var(--s2); }
+  button.ghost:active { transform: scale(.98); }
+  .linkbtn {
+    background: none; border: 0; color: var(--p1); cursor: pointer; font-size: .86rem;
+    padding: 2px 0; font-family: inherit; font-weight: 500;
+    border-bottom: 1px solid rgba(100,210,255,.35);
+  }
+  .linkbtn:hover { border-bottom-color: var(--p1); }
+  .divider { border-top: 1px solid var(--line); margin: 24px 0 20px; }
 
-  /* scoreboard */
+  /* ---------- Spielstand ---------- */
   /* Bis zu sechs Spieler – die Karten brechen bei Bedarf um. */
-  .score { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 18px; }
+  .score { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
   .pcard {
-    flex: 1 1 92px; min-width: 0; background: var(--card2); border: 2px solid transparent;
-    border-radius: 14px; padding: 11px 13px; transition: .2s;
+    flex: 1 1 92px; min-width: 0; background: var(--s1); border: 2px solid transparent;
+    border-radius: var(--r-m); padding: 11px 13px; transition: var(--fast);
+    box-shadow: var(--glass);
   }
-  .pcard .nm { font-size: .8rem; color: var(--dim); margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .pcard .pt { font-size: 1.5rem; font-weight: 700; }
-  .pcard.active { box-shadow: 0 0 22px rgba(255,255,255,.12); }
+  .pcard .nm { font-size: .78rem; color: var(--dim); margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pcard .pt { font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  /* Wessen Zug ist, sieht man am Rahmen (Spielerfarbe, vom Skript
+     gesetzt) und an dieser leichten Erhebung.                   */
+  .pcard.active { background: var(--s2); box-shadow: var(--glass), 0 6px 22px rgba(0,0,0,.35); transform: translateY(-2px); }
 
-  .bar { height: 6px; background: #14162e; border-radius: 99px; overflow: hidden; margin-bottom: 20px; }
-  .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--p1), var(--p2)); width: 0; transition: width .3s; }
+  .bar {
+    height: 6px; background: var(--sunk); border-radius: 99px; overflow: hidden;
+    margin-bottom: 22px; box-shadow: inset 0 1px 2px rgba(0,0,0,.4);
+  }
+  .bar i {
+    display: block; height: 100%; border-radius: 99px; background: var(--grad); width: 0;
+    box-shadow: 0 0 12px rgba(100,210,255,.55);
+    transition: width .45s var(--ease);
+  }
 
-  .meta { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
-  .tag { font-size: .75rem; padding: 5px 11px; border-radius: 99px; background: #14162e; border: 1px solid var(--line); color: var(--dim); }
-  .tag.d1 { color: var(--ok); border-color: rgba(61,220,132,.4); }
-  .tag.d2 { color: var(--gold); border-color: rgba(255,207,92,.4); }
-  .tag.d3 { color: var(--no); border-color: rgba(255,90,110,.4); }
-  .timer { margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1.05rem; }
-  .timer.warn { color: var(--no); }
+  .meta { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tag {
+    font-size: .74rem; font-weight: 600; padding: 5px 11px; border-radius: 99px;
+    background: var(--s1); border: 1px solid var(--line); color: var(--dim);
+  }
+  .tag.d1 { color: var(--ok); border-color: rgba(48,209,88,.4); background: rgba(48,209,88,.10); }
+  .tag.d2 { color: var(--gold); border-color: rgba(255,214,10,.4); background: rgba(255,214,10,.10); }
+  .tag.d3 { color: var(--no); border-color: rgba(255,69,58,.4); background: rgba(255,69,58,.10); }
+  .timer {
+    margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1.05rem;
+    transition: color var(--fast);
+  }
+  .timer.warn { color: var(--no); animation: puls 1s ease-in-out infinite; }
+  @keyframes puls { 50% { opacity: .45; } }
 
-  .turn { font-size: .9rem; color: var(--dim); margin-bottom: 8px; }
+  .turn { font-size: .9rem; color: var(--dim); margin-bottom: 10px; }
   .turn b { color: var(--txt); }
-  .q { font-size: 1.42rem; line-height: 1.35; margin-bottom: 22px; letter-spacing: -.01em; }
+  .q {
+    font-size: 1.5rem; line-height: 1.3; margin-bottom: 24px;
+    letter-spacing: -.025em; font-weight: 600; text-wrap: balance;
+  }
 
-  .opts { display: grid; gap: 11px; }
+  .opts { display: grid; gap: 10px; }
   .opt {
-    text-align: left; padding: 15px 17px; border-radius: 13px;
-    border: 1px solid var(--line); background: #14162e; color: var(--txt);
-    font-size: 1rem; cursor: pointer; transition: .13s; display: flex; gap: 12px; align-items: center;
+    text-align: left; padding: 16px 17px; border-radius: var(--r-m);
+    border: 1px solid var(--line); background: var(--s1); color: var(--txt);
+    font-size: 1rem; font-family: inherit; cursor: pointer;
+    display: flex; gap: 13px; align-items: center;
+    box-shadow: var(--glass);
+    transition: background var(--fast), border-color var(--fast), transform var(--fast);
   }
-  .opt:hover:not(:disabled) { border-color: var(--p1); background: #1b1e3d; }
+  .opt:hover:not(:disabled) { border-color: var(--line2); background: var(--s2); }
+  .opt:active:not(:disabled) { transform: scale(.985); }
+  .opt .tx { flex: 1; min-width: 0; }     /* lange Antworten brechen um */
   .opt .k {
-    width: 26px; height: 26px; flex: 0 0 26px; border-radius: 7px; background: #262a52;
-    display: grid; place-items: center; font-size: .8rem; font-weight: 700; color: var(--dim);
+    width: 27px; height: 27px; flex: 0 0 27px; border-radius: 9px; background: var(--s2);
+    display: grid; place-items: center; font-size: .78rem; font-weight: 700; color: var(--dim);
+    transition: var(--fast);
   }
-  .opt.correct { border-color: var(--ok); background: rgba(61,220,132,.13); }
-  .opt.correct .k { background: var(--ok); color: #0f1020; }
-  .opt.wrong { border-color: var(--no); background: rgba(255,90,110,.13); }
+  .opt.correct { border-color: var(--ok); background: rgba(48,209,88,.14); box-shadow: 0 0 0 1px var(--ok), 0 6px 22px rgba(48,209,88,.18); }
+  .opt.correct .k { background: var(--ok); color: #04200c; }
+  .opt.wrong { border-color: var(--no); background: rgba(255,69,58,.13); }
   .opt.wrong .k { background: var(--no); color: #fff; }
-  .opt.chosen { border-color: var(--p1); background: #1b1e3d; }
-  .opt.chosen .k { background: var(--p1); color: #0f1020; }
+  .opt.chosen { border-color: var(--p1); background: rgba(100,210,255,.12); box-shadow: 0 0 0 1px var(--p1); }
+  .opt.chosen .k { background: var(--p1); color: var(--on-grad); }
   .opt:disabled { cursor: default; }
 
-  /* live */
-  .wait { margin-top: 18px; padding: 14px 17px; border-radius: 13px; background: var(--card2);
-          font-size: .95rem; color: var(--dim); display: flex; align-items: center; gap: 11px; }
+  /* ---------- Live ---------- */
+  .wait {
+    margin-top: 18px; padding: 15px 17px; border-radius: var(--r-m); background: var(--s1);
+    border: 1px solid var(--line); box-shadow: var(--glass);
+    font-size: .95rem; color: var(--dim); display: flex; align-items: center; gap: 11px;
+  }
   .dots { display: inline-flex; gap: 4px; }
   .dots i { width: 6px; height: 6px; border-radius: 99px; background: var(--p1); animation: bl 1.2s infinite; }
   .dots i:nth-child(2) { animation-delay: .2s } .dots i:nth-child(3) { animation-delay: .4s }
   @keyframes bl { 0%,100% { opacity: .25 } 50% { opacity: 1 } }
   .roomcode {
-    font-size: 2.6rem; font-weight: 800; letter-spacing: .22em; text-align: center;
-    padding: 16px; border-radius: 15px; background: #14162e; border: 1px dashed var(--line);
-    margin-bottom: 12px; color: var(--p1); font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 2.7rem; font-weight: 800; letter-spacing: .22em; text-align: center;
+    padding: 20px 16px; border-radius: var(--r-l); background: var(--sunk);
+    border: 1px solid var(--line); margin-bottom: 14px; color: var(--p1);
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    text-shadow: 0 0 26px rgba(100,210,255,.45);
   }
   .plist { display: grid; gap: 8px; margin-bottom: 18px; }
-  .prow { display: flex; align-items: center; gap: 11px; padding: 11px 14px; background: var(--card2);
-          border-radius: 12px; font-size: .95rem; text-align: left; }
-  .prow .av { width: 10px; height: 10px; border-radius: 99px; flex: 0 0 10px; }
+  .prow {
+    display: flex; align-items: center; gap: 11px; padding: 12px 14px; background: var(--s1);
+    border: 1px solid var(--line); box-shadow: var(--glass);
+    border-radius: var(--r-s); font-size: .95rem; text-align: left;
+  }
+  .prow .av { width: 10px; height: 10px; border-radius: 99px; flex: 0 0 10px; box-shadow: 0 0 10px currentColor; }
   .prow .pn { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .prow .tagme { font-size: .74rem; color: var(--dim); }
-  .warnbox { background: rgba(255,90,110,.1); border: 1px solid rgba(255,90,110,.35);
-             border-radius: 12px; padding: 12px 14px; font-size: .87rem; line-height: 1.5; text-align: left; margin-bottom: 16px; }
-  .okbox { background: rgba(61,220,132,.1); border: 1px solid rgba(61,220,132,.35);
-           border-radius: 12px; padding: 12px 14px; font-size: .87rem; line-height: 1.5; text-align: left; margin-bottom: 16px; }
+  .warnbox {
+    background: rgba(255,69,58,.11); border: 1px solid rgba(255,69,58,.35);
+    border-radius: var(--r-s); padding: 13px 15px; font-size: .87rem; line-height: 1.5;
+    text-align: left; margin-bottom: 16px;
+  }
+  .okbox {
+    background: rgba(48,209,88,.11); border: 1px solid rgba(48,209,88,.35);
+    border-radius: var(--r-s); padding: 13px 15px; font-size: .87rem; line-height: 1.5;
+    text-align: left; margin-bottom: 16px;
+  }
   ol.guide { text-align: left; color: var(--dim); font-size: .89rem; line-height: 1.75; margin: 0 0 18px 18px; }
   ol.guide b { color: var(--txt); }
-  ol.guide code { background: #14162e; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; font-size: .85em; }
+  ol.guide code { background: var(--sunk); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; font-size: .85em; }
 
-  .fb { margin-top: 18px; padding: 15px 17px; border-radius: 13px; background: var(--card2); font-size: .97rem; line-height: 1.5; }
+  .fb {
+    margin-top: 18px; padding: 16px 18px; border-radius: var(--r-m); background: var(--s1);
+    border: 1px solid var(--line); box-shadow: var(--glass);
+    font-size: .97rem; line-height: 1.5;
+    animation: rise .35s var(--ease) both;
+  }
   .fb.ok { border-left: 4px solid var(--ok); }
   .fb.no { border-left: 4px solid var(--no); }
   .fb b { display: block; margin-bottom: 3px; }
 
-  /* centered info panels */
+  /* ---------- zentrierte Infoseiten ---------- */
   .ctr { text-align: center; }
   .ctr .ico { font-size: 3.4rem; margin-bottom: 14px; }
-  .ctr h2 { font-size: 1.7rem; margin-bottom: 10px; }
-  .ctr p { color: var(--dim); line-height: 1.55; margin-bottom: 20px; }
+  .ctr h2 { font-size: 1.8rem; font-weight: 700; letter-spacing: -.03em; margin-bottom: 10px; }
+  .ctr p { color: var(--dim); line-height: 1.55; margin-bottom: 20px; text-wrap: pretty; }
 
   .box {
-    background: #14162e; border: 1px solid var(--line); border-radius: 13px;
-    padding: 14px; text-align: left; margin-bottom: 12px;
+    background: var(--sunk); border: 1px solid var(--line); border-radius: var(--r-m);
+    padding: 15px; text-align: left; margin-bottom: 12px;
   }
   .steps { text-align: left; color: var(--dim); font-size: .88rem; line-height: 1.7; margin-bottom: 20px; }
   .steps b { color: var(--txt); }
 
-  /* end screen */
-  .winner { text-align: center; padding: 6px 0 22px; }
-  .trophy { font-size: 3.6rem; margin-bottom: 10px; }
-  .winner h2 { font-size: 1.9rem; margin-bottom: 8px; }
+  /* ---------- Ergebnis ---------- */
+  .winner { text-align: center; padding: 6px 0 24px; }
+  .trophy { font-size: 3.8rem; margin-bottom: 10px; animation: pop .6s var(--ease) both; }
+  @keyframes pop { from { opacity: 0; transform: scale(.4) rotate(-12deg); } }
+  .winner h2 { font-size: 2rem; font-weight: 700; letter-spacing: -.03em; margin-bottom: 8px; text-wrap: balance; }
   .winner p { color: var(--dim); }
   .rank { margin-bottom: 22px; }
   .rrow {
-    display: flex; align-items: center; gap: 12px; padding: 13px 15px;
-    background: var(--card2); border-radius: 13px; margin-bottom: 9px;
-    border-left: 4px solid transparent;
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+    background: var(--s1); border-radius: var(--r-m); margin-bottom: 8px;
+    border-left: 4px solid transparent; box-shadow: var(--glass);
   }
   .rrow .pos { font-size: 1.1rem; font-weight: 700; color: var(--dim); width: 28px; }
   .rrow .rn { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .rrow .rq { font-size: .84rem; color: var(--dim); margin-right: 10px; white-space: nowrap; }
-  .rrow .rp { font-size: 1.2rem; font-weight: 700; }
-  .tag.streak { background: rgba(255,176,32,.16); color: var(--gold); border-color: rgba(255,176,32,.35); }
-  .tag.kidtag { background: rgba(122,162,255,.16); color: var(--p1); border-color: rgba(122,162,255,.4); }
-  .tag.revtag { background: rgba(61,220,132,.14); color: var(--ok); border-color: rgba(61,220,132,.4); }
-  .jokerbtn { width: 100%; margin: 4px 0 14px; font-size: .9rem; padding: 11px; }
+  .rrow .rp { font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tag.streak { background: rgba(255,214,10,.14); color: var(--gold); border-color: rgba(255,214,10,.35); }
+  .tag.kidtag { background: rgba(100,210,255,.14); color: var(--p1); border-color: rgba(100,210,255,.35); }
+  .tag.revtag { background: rgba(48,209,88,.14); color: var(--ok); border-color: rgba(48,209,88,.35); }
+  .jokerbtn { width: 100%; margin: 4px 0 14px; font-size: .9rem; padding: 12px; }
+
+  /* Fragezeile im Spiel: Text plus Vorlese-Knopf. Muss eigenständig
+     bleiben – die Liste im Direktvergleich benutzt denselben Namen
+     und hat den Rahmen darunter früher hierher vererbt.          */
   .qrow { display: flex; align-items: flex-start; gap: 10px; }
   .qrow .q { flex: 1; }
   .speakbtn {
-    flex: 0 0 auto; width: 44px; height: 44px; border-radius: 12px; cursor: pointer;
-    background: var(--card2); border: 1px solid var(--line); font-size: 1.15rem; line-height: 1;
+    flex: 0 0 auto; width: 46px; height: 46px; border-radius: var(--r-s); cursor: pointer;
+    background: var(--s1); border: 1px solid var(--line); color: var(--txt);
+    font-size: 1.15rem; line-height: 1; box-shadow: var(--glass); transition: var(--fast);
   }
-  .speakbtn:hover { border-color: var(--p1); }
-  .speakbtn.on { border-color: var(--p1); background: #1b1e3d; }
-  .linkbtn.danger { color: var(--no); font-weight: 600; }
-  .statgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }
-  .statcard { background: var(--card2); border-radius: 13px; padding: 14px 15px; }
-  .statcard .sv { font-size: 1.5rem; font-weight: 700; line-height: 1.15; }
+  .speakbtn:hover { border-color: var(--line2); background: var(--s2); }
+  .speakbtn:active { transform: scale(.94); }
+  .speakbtn.on { border-color: var(--p1); background: rgba(100,210,255,.14); color: var(--p1); }
+  .linkbtn.danger { color: var(--no); font-weight: 600; border-bottom-color: rgba(255,69,58,.35); }
+
+  /* ---------- Statistik ---------- */
+  .statgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+  .statcard {
+    background: var(--s1); border: 1px solid var(--line); border-radius: var(--r-m);
+    padding: 15px 16px; box-shadow: var(--glass);
+  }
+  .statcard .sv { font-size: 1.55rem; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; letter-spacing: -.025em; }
   .statcard .sl { font-size: .78rem; color: var(--dim); margin-top: 3px; line-height: 1.35; }
   .statcard.wide { grid-column: 1 / -1; }
   .stathead {
-    grid-column: 1 / -1; font-size: .74rem; text-transform: uppercase; letter-spacing: .09em;
-    color: var(--dim); margin: 6px 0 -4px;
+    grid-column: 1 / -1; font-size: .72rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--dim); margin: 8px 0 -4px;
   }
-  .statbar { height: 7px; border-radius: 99px; background: var(--line); margin-top: 9px; overflow: hidden; }
-  .statbar i { display: block; height: 100%; background: linear-gradient(90deg,var(--p1),var(--p2)); }
+  .statbar { height: 7px; border-radius: 99px; background: var(--sunk); margin-top: 10px; overflow: hidden; }
+  .statbar i { display: block; height: 100%; border-radius: 99px; background: var(--grad); }
   .hall { margin-bottom: 22px; }
   .hall .hlbl {
-    font-size: .78rem; text-transform: uppercase; letter-spacing: .09em;
-    color: var(--dim); margin-bottom: 10px; display: flex; align-items: baseline; gap: 8px;
+    font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em;
+    color: var(--dim); margin-bottom: 11px; display: flex; align-items: baseline; gap: 8px;
   }
   .hall .hlbl .clr { margin-left: auto; text-transform: none; letter-spacing: 0; }
   .hall .rrow .rn small { font-weight: 400; color: var(--dim); }
   .hall .empty { font-size: .84rem; color: var(--dim); line-height: 1.45; }
   .hswitch { display: flex; gap: 8px; margin-bottom: 12px; }
-  .hswitch .chip { font-size: .78rem; padding: 7px 12px; }
+  .hswitch .chip { font-size: .78rem; padding: 7px 13px; }
   .catlist { margin-bottom: 22px; }
-  .catrow { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: .9rem; }
+  .catrow { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: .9rem; }
   .catrow .cn { flex: 1; color: var(--dim); }
-  .catrow .cs { font-weight: 700; width: 30px; text-align: right; }
+  .catrow .cs { font-weight: 700; width: 30px; text-align: right; font-variant-numeric: tabular-nums; }
 
-  /* head to head */
+  /* ---------- Direktvergleich ---------- */
   .h2h { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; margin-bottom: 22px; }
-  .h2h .side { background: var(--card2); border-radius: 15px; padding: 16px 12px; text-align: center; }
+  .h2h .side {
+    background: var(--s1); border: 1px solid var(--line); border-radius: var(--r-l);
+    padding: 18px 12px; text-align: center; box-shadow: var(--glass);
+  }
   .h2h .side .n { font-size: .88rem; color: var(--dim); margin-bottom: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .h2h .side .p { font-size: 2rem; font-weight: 700; }
+  .h2h .side .p { font-size: 2.1rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
   .h2h .side .r { font-size: .78rem; color: var(--dim); margin-top: 4px; }
   .h2h .vs { color: var(--dim); font-weight: 700; font-size: .9rem; }
   .qlist { margin-bottom: 22px; }
-  .qrow { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: .88rem; }
-  .qrow .qt { flex: 1; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .qrow .m { width: 22px; text-align: center; font-weight: 700; }
-  .qrow .m.y { color: var(--ok); }
-  .qrow .m.n { color: var(--no); }
+  .qlist .qrow { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: .88rem; }
+  .qlist .qrow .qt { flex: 1; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .qlist .qrow .m { width: 22px; text-align: center; font-weight: 700; }
+  .qlist .qrow .m.y { color: var(--ok); }
+  .qlist .qrow .m.n { color: var(--no); }
+
   .hide { display: none !important; }
+
   /* Die Modus-Kacheln tragen nur noch den Namen und bleiben deshalb
      auch auf schmalen Bildschirmen zweispaltig – das spart Höhe. */
   @media (max-width: 560px) {
-    .panel { padding: 20px; }
-    h1 { font-size: 1.7rem; }
-    .q { font-size: 1.2rem; }
+    :root { --r-xl: 24px; --r-l: 18px; }
+    .panel { padding: 21px; }
+    h1 { font-size: 1.85rem; }
+    .q { font-size: 1.24rem; }
     .names { grid-template-columns: 1fr; }
     .pcard .pt { font-size: 1.2rem; }
     .pcard { padding: 9px 10px; }
+    .roomcode { font-size: 2.1rem; letter-spacing: .16em; }
+    /* Etwas schmalere Pillen, damit die vier Schwierigkeitsstufen
+       auf einem Telefon in eine Zeile passen.                  */
+    .chips { gap: 7px; }
+    .chip { padding: 10px 13px; font-size: .9rem; }
+  }
+  /* Wer Animationen abgeschaltet hat, bekommt keine. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .001s !important; animation-iteration-count: 1 !important;
+      transition-duration: .001s !important;
+    }
   }
 </style>
 </head>
@@ -3424,7 +3609,7 @@ const BANK = [
 {k:"Sport",d:2,q:"Wie viele Reifen wechselt ein Formel-1-Team bei einem Boxenstopp meist?",a:["4","2","3","6"]},
 {k:"Sport",d:3,q:"Welcher Rennstall gewann die meisten Formel-1-Weltmeisterschaften?",a:["Ferrari","McLaren","Williams","Mercedes"]},
 {k:"Vermischtes",d:1,q:"Wie viele Finger hat ein Handschuh?",a:["5","4","3","6"]},
-{k:"Vermischtes",d:1,q:"Welche Form hat ein Fußballfeld?",a:["Rechteckig","Rund","Dreieckig","Oval"]},
+{k:"Vermischtes",d:1,q:"Welche Form hat ein Tennisplatz?",a:["Rechteckig","Rund","Dreieckig","Oval"]},
 {k:"Vermischtes",d:2,q:"Wie viele Minuten hat ein Drittel beim Eishockey?",a:["20","15","25","30"]},
 {k:"Vermischtes",d:2,q:"Wie viel ist 17 mal 3?",a:["51","48","54","47"]},
 {k:"Vermischtes",d:2,q:"Wie viele Zentimeter hat ein Kilometer?",a:["100.000","10.000","1.000.000","1.000"]},
@@ -3478,7 +3663,7 @@ const BANK = [
 {k:"Vermischtes",kid:1,d:2,q:"Wie viel ist 40 plus 25?",a:["65","55","75","60"]},
 {k:"Kunst & Literatur",kid:1,d:2,q:"Welches Tier verwandelt sich im Märchen in einen Prinzen?",a:["Der Frosch","Der Hund","Der Vogel","Die Katze"]},
 {k:"Sport",kid:1,d:3,q:"Wie viele Spieler stehen bei einer Eishockeymannschaft auf dem Eis?",a:["6","5","7","4"]},
-{k:"Musik & Film",kid:1,d:2,q:"Welches Tier ist Balu im Dschungelbuch?",a:["Ein Bär","Ein Tiger","Ein Affe","Eine Schlange"]},
+{k:"Musik & Film",kid:1,d:2,q:"Welches Tier ist Shir Khan im Dschungelbuch?",a:["Ein Tiger","Ein Bär","Ein Affe","Eine Schlange"]},
 {k:"Vermischtes",kid:1,g:1,t:"Rechnen",d:1,q:"Wie viel ist 5 + 4?",a:["9","8","10","7"]},
 {k:"Vermischtes",kid:1,g:2,t:"Rechnen",d:3,q:"Wie viel ist 7 mal 9?",a:["63","56","72","54"]},
 {k:"Vermischtes",kid:1,g:3,t:"Rechnen",d:2,q:"Wie viel ist 12 mal 8?",a:["96","86","106","88"]},
@@ -3486,7 +3671,145 @@ const BANK = [
 {k:"Wissenschaft",kid:1,g:1,t:"Natur & Tiere",d:2,q:"Welches Tier hat einen Rüssel?",a:["Der Elefant","Der Löwe","Das Zebra","Die Giraffe"]},
 {k:"Geografie",kid:1,g:3,t:"Erdkunde",d:2,q:"Wie heißt der größte Fluss in Bayern?",a:["Die Donau","Die Elbe","Der Rhein","Die Weser"]},
 {k:"Kunst & Literatur",kid:1,g:4,t:"Sprache",d:2,q:"Welches Wort ist ein Verb?",a:["schwimmen","schnell","Wasser","dort"]},
-{k:"Sport",kid:1,g:2,t:"Sport",d:2,q:"Wie viele Räder hat ein Fahrrad?",a:["2","3","4","1"]}
+{k:"Sport",kid:1,g:2,t:"Sport",d:2,q:"Wie viele Räder hat ein Fahrrad?",a:["2","3","4","1"]},
+/* ===== Zeitgeschehen =====
+   Stand: September 2026. Diese Rubrik veraltet als einzige von selbst –
+   wer sie pflegt, ergänzt am Ende einfach neue Zeilen (nie dazwischen,
+   sonst zeigen alte Challenge-Links auf die falsche Frage).          */
+{k:"Zeitgeschehen",d:1,q:"Welches Land wurde 2026 Fußball-Weltmeister?",a:["Spanien","Argentinien","Frankreich","Brasilien"]},
+{k:"Zeitgeschehen",d:2,q:"In welchen drei Ländern fand die Fußball-WM 2026 statt?",a:["USA, Kanada und Mexiko","Brasilien, Argentinien und Chile","Spanien, Portugal und Marokko","Japan, Südkorea und China"]},
+{k:"Zeitgeschehen",d:2,q:"Wen besiegte Spanien im WM-Finale 2026?",a:["Argentinien","England","Frankreich","Deutschland"]},
+{k:"Zeitgeschehen",d:3,q:"Wer schoss 2026 in der Verlängerung das Siegtor im WM-Finale?",a:["Ferran Torres","Lamine Yamal","Nico Williams","Álvaro Morata"]},
+{k:"Zeitgeschehen",d:2,q:"Zum wievielten Mal wurde Spanien 2026 Fußball-Weltmeister?",a:["Zum zweiten Mal","Zum ersten Mal","Zum dritten Mal","Zum vierten Mal"]},
+{k:"Zeitgeschehen",d:2,q:"Wie viele Mannschaften spielten bei der WM 2026 erstmals mit?",a:["48","32","40","64"]},
+{k:"Zeitgeschehen",d:3,q:"Welcher Trainer wurde 2026 zum ältesten Weltmeister-Trainer der Geschichte?",a:["Luis de la Fuente","Lionel Scaloni","Didier Deschamps","Julian Nagelsmann"]},
+{k:"Zeitgeschehen",d:1,q:"In welchem Land fanden 2026 die Olympischen Winterspiele statt?",a:["In Italien","In Frankreich","In Japan","In Kanada"]},
+{k:"Zeitgeschehen",d:2,q:"Welche beiden Orte richteten die Winterspiele 2026 aus?",a:["Mailand und Cortina d’Ampezzo","Turin und Rom","Innsbruck und Seefeld","Oslo und Lillehammer"]},
+{k:"Zeitgeschehen",d:2,q:"Welches Land führte den Medaillenspiegel der Winterspiele 2026 an?",a:["Norwegen","Die USA","Deutschland","Italien"]},
+{k:"Zeitgeschehen",d:3,q:"Zum wievielten Mal in Folge gewann Norwegen 2026 den Winter-Medaillenspiegel?",a:["Zum vierten Mal","Zum zweiten Mal","Zum dritten Mal","Zum fünften Mal"]},
+{k:"Zeitgeschehen",d:3,q:"Auf welchem Platz lag Deutschland im Medaillenspiegel der Winterspiele 2026?",a:["Auf Platz fünf","Auf Platz zwei","Auf Platz drei","Auf Platz acht"]},
+{k:"Zeitgeschehen",d:3,q:"Welches Land holte 2026 mit Platz drei sein bestes Winterspiel-Ergebnis überhaupt?",a:["Die Niederlande","Österreich","Kanada","Schweden"]},
+{k:"Zeitgeschehen",d:2,q:"Welcher Verein gewann 2026 die Champions League?",a:["Paris Saint-Germain","Arsenal","Real Madrid","FC Bayern München"]},
+{k:"Zeitgeschehen",d:3,q:"Gegen welchen Klub gewann Paris Saint-Germain das Champions-League-Finale 2026?",a:["Arsenal","Manchester City","Inter Mailand","FC Barcelona"]},
+{k:"Zeitgeschehen",d:1,q:"Wer wurde 2026 Deutscher Fußballmeister?",a:["FC Bayern München","Bayer Leverkusen","Borussia Dortmund","RB Leipzig"]},
+{k:"Zeitgeschehen",d:3,q:"Wie viele Bundesliga-Titel hatte der FC Bayern nach der Saison 2025/26?",a:["34","28","30","40"]},
+{k:"Zeitgeschehen",d:2,q:"Wer gewann 2026 die Tour de France?",a:["Tadej Pogačar","Jonas Vingegaard","Remco Evenepoel","Primož Roglič"]},
+{k:"Zeitgeschehen",d:3,q:"Zum wievielten Mal gewann Tadej Pogačar 2026 die Tour de France?",a:["Zum fünften Mal","Zum dritten Mal","Zum vierten Mal","Zum sechsten Mal"]},
+{k:"Zeitgeschehen",d:2,q:"Wer gewann 2026 das Herren-Einzel in Wimbledon?",a:["Jannik Sinner","Carlos Alcaraz","Novak Đoković","Alexander Zverev"]},
+{k:"Zeitgeschehen",d:3,q:"Wen besiegte Jannik Sinner im Wimbledon-Finale 2026?",a:["Alexander Zverev","Carlos Alcaraz","Taylor Fritz","Daniil Medwedew"]},
+{k:"Zeitgeschehen",d:2,q:"Welches Team gewann im Februar 2026 den Super Bowl?",a:["Die Seattle Seahawks","Die New England Patriots","Die Kansas City Chiefs","Die Philadelphia Eagles"]},
+{k:"Zeitgeschehen",d:2,q:"Welches Land gewann 2026 den Eurovision Song Contest?",a:["Bulgarien","Israel","Österreich","Schweden"]},
+{k:"Zeitgeschehen",d:2,q:"In welcher Stadt fand der Eurovision Song Contest 2026 statt?",a:["In Wien","In Basel","In Malmö","In Liverpool"]},
+{k:"Zeitgeschehen",d:3,q:"Welche Sängerin gewann 2026 den Eurovision Song Contest?",a:["Dara","Loreen","Nemo","Käärijä"]},
+{k:"Zeitgeschehen",d:3,q:"Welcher Film gewann 2026 den Oscar als bester Film?",a:["„One Battle After Another“","„Anora“","„Der Brutalist“","„Emilia Pérez“"]},
+{k:"Zeitgeschehen",d:3,q:"Wer gewann 2026 den Oscar für die beste Regie?",a:["Paul Thomas Anderson","Christopher Nolan","Sean Baker","Greta Gerwig"]},
+{k:"Zeitgeschehen",d:1,q:"Welche Mission brachte 2026 erstmals seit 1972 wieder Menschen zum Mond?",a:["Artemis II","Apollo 18","Orion 1","Sojus 12"]},
+{k:"Zeitgeschehen",d:2,q:"Wie viele Menschen flogen mit Artemis II zum Mond?",a:["Vier","Zwei","Drei","Sechs"]},
+{k:"Zeitgeschehen",d:2,q:"Was tat die Besatzung von Artemis II am Mond?",a:["Sie umrundete ihn, ohne zu landen","Sie landete am Südpol","Sie baute eine Station auf","Sie sammelte Gestein ein"]},
+{k:"Zeitgeschehen",d:3,q:"Welche Mission war vor Artemis II die letzte bemannte Mondmission?",a:["Apollo 17","Apollo 11","Apollo 13","Sojus 7"]},
+{k:"Zeitgeschehen",d:2,q:"Welches Land führte am 1. Januar 2026 den Euro ein?",a:["Bulgarien","Rumänien","Ungarn","Polen"]},
+{k:"Zeitgeschehen",d:3,q:"Das wievielte Land der Eurozone wurde Bulgarien 2026?",a:["Das 21.","Das 19.","Das 20.","Das 22."]},
+{k:"Zeitgeschehen",d:1,q:"Wer ist seit Mai 2025 deutscher Bundeskanzler?",a:["Friedrich Merz","Olaf Scholz","Markus Söder","Robert Habeck"]},
+{k:"Zeitgeschehen",d:2,q:"Welche Parteien bilden seit 2025 die deutsche Bundesregierung?",a:["CDU/CSU und SPD","SPD, Grüne und FDP","CDU/CSU und Grüne","SPD und Linke"]},
+{k:"Zeitgeschehen",d:2,q:"Wer ist seit 2017 deutscher Bundespräsident?",a:["Frank-Walter Steinmeier","Joachim Gauck","Christian Wulff","Horst Köhler"]},
+{k:"Zeitgeschehen",d:2,q:"Wann fand die letzte Bundestagswahl statt?",a:["Im Februar 2025","Im September 2021","Im Oktober 2024","Im Mai 2025"]},
+{k:"Zeitgeschehen",d:3,q:"Welche Partei wurde bei der Bundestagswahl 2025 zweitstärkste Kraft?",a:["Die AfD","Die SPD","Die Grünen","Die Linke"]},
+{k:"Zeitgeschehen",d:3,q:"Wie viele Sitze hat der Bundestag seit der Wahlrechtsreform?",a:["630","598","709","736"]},
+{k:"Zeitgeschehen",d:3,q:"Wann zerbrach die Ampel-Koalition?",a:["Im November 2024","Im Juni 2024","Im September 2024","Im Januar 2025"]},
+{k:"Zeitgeschehen",d:3,q:"Was war 2024 das Wort des Jahres in Deutschland?",a:["„Ampel-Aus“","„Krisenmodus“","„Zeitenwende“","„Respektrente“"]},
+{k:"Zeitgeschehen",d:3,q:"Was war 2025 das Jugendwort des Jahres?",a:["„das crazy“","„Aura“","„goofy“","„Talahon“"]},
+{k:"Zeitgeschehen",d:1,q:"Wer wurde im Mai 2025 zum Papst gewählt?",a:["Leo XIV.","Franziskus","Benedikt XVII.","Johannes XXIV."]},
+{k:"Zeitgeschehen",d:2,q:"Aus welchem Land stammt Papst Leo XIV.?",a:["Aus den USA","Aus Italien","Aus Argentinien","Von den Philippinen"]},
+{k:"Zeitgeschehen",d:3,q:"Wie hieß Papst Leo XIV. mit bürgerlichem Namen?",a:["Robert Francis Prevost","Jorge Mario Bergoglio","Pietro Parolin","Luis Antonio Tagle"]},
+{k:"Zeitgeschehen",d:1,q:"Welcher Papst starb im April 2025?",a:["Franziskus","Benedikt XVI.","Johannes Paul II.","Paul VI."]},
+{k:"Zeitgeschehen",d:1,q:"Wer wurde im Januar 2025 als US-Präsident vereidigt?",a:["Donald Trump","Joe Biden","Kamala Harris","Barack Obama"]},
+{k:"Zeitgeschehen",d:2,q:"Der wievielte Präsident der USA ist Donald Trump in seiner zweiten Amtszeit?",a:["Der 47.","Der 45.","Der 46.","Der 48."]},
+{k:"Zeitgeschehen",d:2,q:"Wer gewann 2025 den Friedensnobelpreis?",a:["María Corina Machado","Nihon Hidankyo","Narges Mohammadi","Das Welternährungsprogramm"]},
+{k:"Zeitgeschehen",d:3,q:"Aus welchem Land kommt die Friedensnobelpreisträgerin des Jahres 2025?",a:["Aus Venezuela","Aus Kolumbien","Aus Kuba","Aus Chile"]},
+{k:"Zeitgeschehen",d:3,q:"Wer erhielt 2025 den Literaturnobelpreis?",a:["László Krasznahorkai","Han Kang","Jon Fosse","Annie Ernaux"]},
+{k:"Zeitgeschehen",d:3,q:"Wer erhielt 2024 den Literaturnobelpreis?",a:["Han Kang","László Krasznahorkai","Abdulrazak Gurnah","Louise Glück"]},
+{k:"Zeitgeschehen",d:3,q:"Welche Organisation erhielt 2024 den Friedensnobelpreis?",a:["Nihon Hidankyo","Ärzte ohne Grenzen","Das Rote Kreuz","Greenpeace"]},
+{k:"Zeitgeschehen",d:3,q:"Wofür wurde 2024 der Physik-Nobelpreis verliehen?",a:["Für Grundlagen des maschinellen Lernens","Für Quantencomputer","Für schwarze Löcher","Für neue Solarzellen"]},
+{k:"Zeitgeschehen",d:1,q:"Wer wurde 2025 Formel-1-Weltmeister?",a:["Lando Norris","Max Verstappen","Oscar Piastri","Charles Leclerc"]},
+{k:"Zeitgeschehen",d:2,q:"Für welches Team fuhr der Formel-1-Weltmeister von 2025?",a:["McLaren","Red Bull","Ferrari","Mercedes"]},
+{k:"Zeitgeschehen",d:3,q:"Wie viele Titel in Folge hatte Max Verstappen vor der Saison 2025 gewonnen?",a:["Vier","Zwei","Drei","Fünf"]},
+{k:"Zeitgeschehen",d:2,q:"Wer wurde 2024 Formel-1-Weltmeister?",a:["Max Verstappen","Lando Norris","Lewis Hamilton","Charles Leclerc"]},
+{k:"Zeitgeschehen",d:2,q:"Welcher Verein gewann 2025 die Champions League?",a:["Paris Saint-Germain","Inter Mailand","Real Madrid","FC Barcelona"]},
+{k:"Zeitgeschehen",d:2,q:"Welches Land gewann 2025 die Fußball-Europameisterschaft der Frauen?",a:["England","Spanien","Deutschland","Frankreich"]},
+{k:"Zeitgeschehen",d:3,q:"In welchem Land fand die Frauen-Fußball-EM 2025 statt?",a:["In der Schweiz","In England","In Deutschland","In Schweden"]},
+{k:"Zeitgeschehen",d:2,q:"Wer gewann 2025 das Damen-Einzel in Wimbledon?",a:["Iga Świątek","Aryna Sabalenka","Coco Gauff","Barbora Krejčíková"]},
+{k:"Zeitgeschehen",d:3,q:"Wer gewann 2025 den DFB-Pokal?",a:["Der VfB Stuttgart","Der FC Bayern","Arminia Bielefeld","Bayer Leverkusen"]},
+{k:"Zeitgeschehen",d:3,q:"In welcher Stadt fand 2025 die Weltklimakonferenz statt?",a:["In Belém","In Baku","In Dubai","In Glasgow"]},
+{k:"Zeitgeschehen",d:1,q:"Welches Land wurde 2024 Fußball-Europameister?",a:["Spanien","England","Frankreich","Deutschland"]},
+{k:"Zeitgeschehen",d:1,q:"In welchem Land fand die Fußball-EM 2024 statt?",a:["In Deutschland","In Frankreich","In England","In Italien"]},
+{k:"Zeitgeschehen",d:2,q:"In welcher Stadt wurde das EM-Finale 2024 gespielt?",a:["In Berlin","In München","In Dortmund","In Hamburg"]},
+{k:"Zeitgeschehen",d:2,q:"Mit welchem Ergebnis gewann Spanien das EM-Finale 2024 gegen England?",a:["2:1","1:0","3:2","2:0"]},
+{k:"Zeitgeschehen",d:1,q:"In welcher Stadt fanden 2024 die Olympischen Sommerspiele statt?",a:["In Paris","In Tokio","In Los Angeles","In Rom"]},
+{k:"Zeitgeschehen",d:2,q:"Welches Land führte 2024 in Paris den Medaillenspiegel an?",a:["Die USA","China","Frankreich","Japan"]},
+{k:"Zeitgeschehen",d:2,q:"Welche Sportart war 2024 in Paris erstmals olympisch?",a:["Breaking","Klettern","Skateboard","Surfen"]},
+{k:"Zeitgeschehen",d:2,q:"Wo finden die Olympischen Sommerspiele 2028 statt?",a:["In Los Angeles","In Brisbane","In Madrid","In Berlin"]},
+{k:"Zeitgeschehen",d:3,q:"Wo finden die Olympischen Sommerspiele 2032 statt?",a:["In Brisbane","In Los Angeles","In Kairo","In Doha"]},
+{k:"Zeitgeschehen",d:2,q:"Wo finden die Olympischen Winterspiele 2030 statt?",a:["In den französischen Alpen","In Salt Lake City","In Sapporo","In Mailand"]},
+{k:"Zeitgeschehen",d:2,q:"Wo findet die Fußball-Europameisterschaft 2028 statt?",a:["In Großbritannien und Irland","In Italien und der Türkei","In Deutschland","In Spanien"]},
+{k:"Zeitgeschehen",d:3,q:"In welchen Ländern findet die Fußball-WM 2030 statt?",a:["In Spanien, Portugal und Marokko","In Saudi-Arabien","In China und Japan","In Mexiko und den USA"]},
+{k:"Zeitgeschehen",d:3,q:"Wo findet die Fußball-WM 2034 statt?",a:["In Saudi-Arabien","In China","In Australien","In Argentinien"]},
+{k:"Zeitgeschehen",d:2,q:"Welcher Verein wurde 2024 erstmals Deutscher Fußballmeister?",a:["Bayer Leverkusen","RB Leipzig","Union Berlin","Die TSG Hoffenheim"]},
+{k:"Zeitgeschehen",d:3,q:"Wie beendete Bayer Leverkusen die Bundesliga-Saison 2023/24?",a:["Ohne eine einzige Niederlage","Mit einer Niederlage","Mit zwei Niederlagen","Mit fünf Niederlagen"]},
+{k:"Zeitgeschehen",d:3,q:"Welches Land gewann 2024 den Eurovision Song Contest?",a:["Die Schweiz","Schweden","Israel","Kroatien"]},
+{k:"Zeitgeschehen",d:3,q:"Welches Land gewann 2025 den Eurovision Song Contest?",a:["Österreich","Israel","Estland","Schweden"]},
+{k:"Zeitgeschehen",d:3,q:"In welcher Stadt fand der Eurovision Song Contest 2025 statt?",a:["In Basel","In Malmö","In Liverpool","In Turin"]},
+{k:"Zeitgeschehen",d:3,q:"Welcher Film gewann 2025 den Oscar als bester Film?",a:["„Anora“","„Der Brutalist“","„Konklave“","„Emilia Pérez“"]},
+{k:"Zeitgeschehen",d:2,q:"Welches Bauwerk wurde im Dezember 2024 nach einem Brand wiedereröffnet?",a:["Notre-Dame in Paris","Der Kölner Dom","Der Reichstag","Die Frauenkirche in Dresden"]},
+{k:"Zeitgeschehen",d:3,q:"In welchem Jahr brannte Notre-Dame in Paris?",a:["2019","2015","2017","2020"]},
+{k:"Zeitgeschehen",d:1,q:"Wer ist seit 2022 König von Großbritannien?",a:["Charles III.","William V.","Harry I.","Philip I."]},
+{k:"Zeitgeschehen",d:2,q:"In welchem Jahr starb Königin Elisabeth II.?",a:["2022","2020","2021","2023"]},
+{k:"Zeitgeschehen",d:2,q:"In welchem Jahr wurde König Charles III. gekrönt?",a:["2023","2021","2022","2024"]},
+{k:"Zeitgeschehen",d:2,q:"Zu welchem Klub wechselte Lionel Messi 2023?",a:["Inter Miami","Al-Nassr","FC Barcelona","Manchester City"]},
+{k:"Zeitgeschehen",d:2,q:"In welchem Land fand die Fußball-WM 2022 statt?",a:["In Katar","In Russland","In Brasilien","In Südafrika"]},
+{k:"Zeitgeschehen",d:2,q:"Welcher Spieler gewann 2022 mit Argentinien seinen ersten WM-Titel?",a:["Lionel Messi","Cristiano Ronaldo","Neymar","Kylian Mbappé"]},
+{k:"Zeitgeschehen",d:2,q:"In welchem Jahr begann der russische Großangriff auf die Ukraine?",a:["2022","2014","2021","2023"]},
+{k:"Zeitgeschehen",d:2,q:"Welche beiden Länder traten 2023 und 2024 der NATO bei?",a:["Finnland und Schweden","Österreich und Irland","Ukraine und Georgien","Serbien und Bosnien"]},
+{k:"Zeitgeschehen",d:3,q:"Wie viele Mitglieder hat die NATO seit 2024?",a:["32","28","30","34"]},
+{k:"Zeitgeschehen",d:2,q:"Wie viele Länder gehören zur Europäischen Union?",a:["27","25","28","30"]},
+{k:"Zeitgeschehen",d:2,q:"Wie nennt man den Austritt Großbritanniens aus der EU?",a:["Brexit","Grexit","Frexit","Eurexit"]},
+{k:"Zeitgeschehen",d:2,q:"Welches Land führte 2023 den Euro ein?",a:["Kroatien","Bulgarien","Polen","Tschechien"]},
+{k:"Zeitgeschehen",d:2,q:"Welches Programm machte ab Ende 2022 künstliche Intelligenz weltweit bekannt?",a:["ChatGPT","Wikipedia","Google Maps","Photoshop"]},
+{k:"Zeitgeschehen",d:3,q:"Welche Firma veröffentlichte ChatGPT?",a:["OpenAI","Microsoft","Google","Meta"]},
+{k:"Zeitgeschehen",d:3,q:"Wie heißt die KI von Google?",a:["Gemini","Siri","Alexa","Cortana"]},
+{k:"Zeitgeschehen",d:2,q:"Welche Firma stellt die für künstliche Intelligenz besonders begehrten Chips her?",a:["Nvidia","Intel","IBM","Siemens"]},
+{k:"Zeitgeschehen",d:2,q:"Wie heißt der Kurznachrichtendienst Twitter seit 2023?",a:["X","Threads","Bluesky","Mastodon"]},
+{k:"Zeitgeschehen",d:3,q:"Wer kaufte Twitter im Jahr 2022?",a:["Elon Musk","Mark Zuckerberg","Jeff Bezos","Bill Gates"]},
+{k:"Zeitgeschehen",d:2,q:"Welches Weltraumteleskop liefert seit 2022 die tiefsten Blicke ins Universum?",a:["Das James-Webb-Teleskop","Hubble","Kepler","Spitzer"]},
+{k:"Zeitgeschehen",d:3,q:"Wie heißt die größte jemals gebaute Rakete?",a:["Starship","Falcon 9","Ariane 6","Saturn V"]},
+{k:"Zeitgeschehen",d:2,q:"Welche europäische Rakete startete 2024 zum ersten Mal?",a:["Ariane 6","Ariane 5","Vega","Falcon 9"]},
+{k:"Zeitgeschehen",d:3,q:"Welche Mission brachte 2024 erstmals Proben von der Rückseite des Mondes zur Erde?",a:["Chang’e 6","Apollo 17","Luna 25","Perseverance"]},
+{k:"Zeitgeschehen",d:2,q:"Wie heißt das deutsche Zentrum für Luft- und Raumfahrt in Kurzform?",a:["DLR","ESA","NASA","DFG"]},
+{k:"Zeitgeschehen",d:3,q:"Wie viele Menschen leben normalerweise gleichzeitig auf der Raumstation ISS?",a:["Sieben","Drei","Zwölf","Zwanzig"]},
+{k:"Zeitgeschehen",d:3,q:"Wann erklärte die WHO die Corona-Notlage für beendet?",a:["2023","2021","2022","2024"]},
+{k:"Zeitgeschehen",d:2,q:"Welches Abkommen von 2015 soll die Erderwärmung begrenzen?",a:["Das Pariser Abkommen","Das Kyoto-Protokoll","Die Genfer Konvention","Das Montrealer Protokoll"]},
+{k:"Zeitgeschehen",d:2,q:"Auf wie viel Grad soll die Erderwärmung laut Pariser Abkommen möglichst begrenzt werden?",a:["1,5 Grad","1 Grad","2,5 Grad","3 Grad"]},
+{k:"Zeitgeschehen",d:2,q:"Welches Land ist seit 2023 das bevölkerungsreichste der Welt?",a:["Indien","China","Die USA","Indonesien"]},
+{k:"Zeitgeschehen",d:2,q:"Wie viele Menschen leben heute etwa auf der Erde?",a:["Über 8 Milliarden","Über 6 Milliarden","Über 7 Milliarden","Über 10 Milliarden"]},
+{k:"Zeitgeschehen",d:2,q:"Wie viele Einwohner hat Deutschland etwa?",a:["Rund 83 Millionen","Rund 68 Millionen","Rund 95 Millionen","Rund 110 Millionen"]},
+{k:"Zeitgeschehen",d:2,q:"Was wurde in Deutschland im April 2024 teilweise legalisiert?",a:["Cannabis","Glücksspiel im Internet","Sterbehilfe","Sonntagsarbeit"]},
+{k:"Zeitgeschehen",d:2,q:"Wann wurden in Deutschland die letzten Atomkraftwerke abgeschaltet?",a:["Im April 2023","Im Jahr 2021","Im Jahr 2022","Im Jahr 2025"]},
+{k:"Zeitgeschehen",d:2,q:"Welches bundesweite Nahverkehrsticket gibt es in Deutschland seit 2023?",a:["Das Deutschlandticket","Das Neun-Euro-Ticket","Das Europaticket","Das Bahnland-Ticket"]},
+{k:"Zeitgeschehen",d:3,q:"Was kostet das Deutschlandticket seit 2025 im Monat?",a:["58 Euro","49 Euro","54 Euro","65 Euro"]},
+{k:"Zeitgeschehen",d:3,q:"Welcher Anschluss ist in der EU seit Ende 2024 der einheitliche Ladestandard?",a:["USB-C","Micro-USB","Lightning","USB-A"]},
+{k:"Zeitgeschehen",d:2,q:"Welches Land verbietet soziale Medien für Kinder unter 16 Jahren?",a:["Australien","Kanada","Norwegen","Japan"]},
+{k:"Zeitgeschehen",d:3,q:"Wie heißt die geplante digitale Währung der Europäischen Zentralbank?",a:["Der digitale Euro","Der E-Franken","Bitcoin","Der Krypto-Euro"]},
+{k:"Zeitgeschehen",kid:1,d:1,q:"Wer ist das Oberhaupt der katholischen Kirche?",a:["Der Papst","Der Bundeskanzler","Der König","Der Bundespräsident"]},
+{k:"Zeitgeschehen",kid:1,d:1,q:"Wie heißt das Geld, mit dem man in Deutschland bezahlt?",a:["Der Euro","Der Dollar","Das Pfund","Der Franken"]},
+{k:"Zeitgeschehen",kid:1,d:1,q:"Wer bestimmt in Deutschland bei einer Wahl, wer regiert?",a:["Die Wähler","Der König","Das Fernsehen","Die Fußballvereine"]},
+{k:"Zeitgeschehen",kid:1,d:2,q:"Wie oft finden die Olympischen Winterspiele statt?",a:["Alle vier Jahre","Jedes Jahr","Alle zwei Jahre","Alle zehn Jahre"]},
+{k:"Zeitgeschehen",kid:1,d:2,q:"Was schützt man, wenn man Müll trennt?",a:["Die Umwelt","Die Straßen","Das Internet","Die Schule"]},
+{k:"Zeitgeschehen",kid:1,d:1,q:"Womit fliegen Menschen zum Mond?",a:["Mit einer Rakete","Mit einem Zug","Mit einem Segelboot","Mit einem Ballon"]},
+{k:"Zeitgeschehen",kid:1,d:2,q:"Welches Land hat die meisten Einwohner auf der Welt?",a:["Indien","Deutschland","Japan","Frankreich"]},
+{k:"Zeitgeschehen",kid:1,d:1,q:"Welches Auto fährt mit Strom statt mit Benzin?",a:["Das Elektroauto","Der Traktor","Das Motorrad","Der Lastwagen"]},
+{k:"Zeitgeschehen",kid:1,d:2,q:"Wie nennt man ein Computerprogramm, mit dem man sich schreibend unterhalten kann?",a:["Einen Chatbot","Einen Drucker","Einen Toaster","Einen Bildschirm"]},
+{k:"Zeitgeschehen",kid:1,d:2,q:"Woraus machen Windräder Strom?",a:["Aus Wind","Aus Wasser","Aus Kohle","Aus Sand"]},
+{k:"Zeitgeschehen",kid:1,d:2,q:"Wie nennt man es, wenn Müll wieder zu neuen Sachen wird?",a:["Recycling","Rezept","Rekord","Radar"]},
+{k:"Zeitgeschehen",kid:1,d:2,q:"In welchem Land waren 2026 die Olympischen Winterspiele?",a:["In Italien","In Spanien","In Ägypten","In Australien"]}
 ];
 
 const DIFF = {1:{n:"leicht",p:1},2:{n:"mittel",p:2},3:{n:"schwer",p:3}};
@@ -4011,9 +4334,18 @@ const MODE_TEXT = {
 /* ---- Einstellungen über Sitzungen hinweg merken ---- */
 const CFG_KEY = "quizduell.cfg";
 const CFG_FELDER = ["np","diff","mode","len","time","family","kids","cats","repeatWrong","grade","speak"];
+/* Die Kategorien, die es vor der Rubrik „Zeitgeschehen“ gab. Wer damals
+   „Alle“ ausgewählt hatte, hat genau diese Liste gespeichert – daran
+   erkennen wir alte Stände und schalten neue Rubriken mit dazu, statt
+   sie stillschweigend abgewählt zu lassen.                          */
+const CATS_ALT = ["Geografie","Geschichte","Wissenschaft","Kunst & Literatur",
+                  "Musik & Film","Sport","Vermischtes"];
 function cfgSave() {
   const o = {};
   CFG_FELDER.forEach(k => o[k] = cfg[k]);
+  /* Merken, DASS alles an war – nicht welche Rubriken es gerade gibt.
+     Sonst gilt eine später ergänzte Rubrik als abgewählt.          */
+  o.catsAll = cfg.cats.length === CATS.length;
   try { localStorage.setItem(CFG_KEY, JSON.stringify(o)); } catch (e) {}
 }
 function cfgLoad() {
@@ -4024,6 +4356,10 @@ function cfgLoad() {
   /* Gegen alte oder beschädigte Stände absichern. */
   if (!Array.isArray(cfg.cats) || !cfg.cats.length) cfg.cats = CATS.slice();
   cfg.cats = cfg.cats.filter(k => CATS.includes(k));
+  /* „Alles an“ bleibt „alles an“, auch wenn seither Rubriken dazukamen. */
+  if (o.catsAll === true) cfg.cats = CATS.slice();
+  else if (o.catsAll === undefined && CATS_ALT.every(k => cfg.cats.includes(k)))
+    cfg.cats = CATS.slice();
   if (!cfg.cats.length) cfg.cats = CATS.slice();
   if (!Array.isArray(cfg.kids)) cfg.kids = [false, false, false, false, false, false];
   while (cfg.kids.length < PCOL.length) cfg.kids.push(false);   /* ältere Stände auffüllen */
@@ -4126,6 +4462,12 @@ function updateAvail() {
     if (pick) { pick.classList.add("on"); cfg.len = +pick.dataset.v; }
   } else cfg.len = +chips.find(c => c.classList.contains("on")).dataset.v;
 
+  /* Lässt die Auswahl keine einzige Frage zu (z.B. nur eine kleine
+     Kategorie in Verbindung mit „schwer“), sind oben alle Chips aus
+     und cfg.len behält seinen alten Wert. Dann darf nicht gestartet
+     werden – sonst beginnt eine Runde mit leerem Fragentopf.     */
+  $("start").disabled = mp <= 0;
+
   renderHint(mp);
   $("modeHint").textContent = MODE_TEXT[cfg.mode] || "";
   $("sumText").innerHTML = summaryText();
@@ -4144,14 +4486,21 @@ function renderHint(mp) {
 
   /* 1. Die gewählte Einschränkung lässt weniger Fragen zu als wählbar. */
   const groessterChip = Math.max(...[...$("cLen").children].map(c => +c.dataset.v));
-  if (mp < groessterChip)
+  if (mp <= 0)
+    teile.push(famOn() && !pool(true).length
+      ? `Für die Kinder bleibt mit dieser Auswahl keine Frage übrig. `
+        + `Nimm eine Kategorie dazu oder wähle eine leichtere Stufe.`
+      : `Mit dieser Auswahl bleibt keine einzige Frage übrig. `
+        + `Nimm eine Kategorie dazu oder wähle eine andere Schwierigkeit.`);
+  else if (mp < groessterChip)
     teile.push(`Mit dieser Auswahl sind höchstens <b>${mp}</b> Fragen möglich.`);
 
-  /* 2. Der Vorrat an ungestellten Fragen geht zur Neige. */
-  if (!fresh)
+  /* 2. Der Vorrat an ungestellten Fragen geht zur Neige. Blockiert die
+        Auswahl ohnehin, hilft dieser Hinweis nicht weiter.          */
+  if (mp > 0 && !fresh)
     teile.push(`Alle Fragen waren schon einmal dran – es kommen jetzt die, `
       + `die am längsten zurückliegen. <a href="#" id="resetSeen">Von vorn beginnen</a>`);
-  else if (fresh < cfg.len * 2)
+  else if (mp > 0 && fresh < cfg.len * 2)
     teile.push(`Nur noch <b>${fresh}</b> neue Fragen übrig. `
       + `<a href="#" id="resetSeen">Von vorn beginnen</a>`);
 

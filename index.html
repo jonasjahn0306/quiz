@@ -130,6 +130,30 @@
   .summary .chev { color: var(--p1); font-size: 1.05rem; transition: transform .3s var(--ease); }
   .summary.open .chev { transform: rotate(180deg); }
 
+  /* ---------- Eingangsfrage „Wer spielt?“ ---------- */
+  #welcome .sub { font-size: 1.12rem; color: var(--txt); font-weight: 500; margin-bottom: 20px; }
+  .who { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
+  .whobtn {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 26px 18px 22px; border-radius: var(--r-l); cursor: pointer;
+    background: var(--s1); border: 1px solid var(--line); color: var(--txt);
+    font-family: inherit; text-align: center;
+    box-shadow: var(--glass); transition: var(--fast);
+  }
+  .whobtn:hover { border-color: var(--p1); background: var(--s2); }
+  .whobtn:active { transform: scale(.98); }
+  .whobtn .wicon { font-size: 2.9rem; line-height: 1.1; }
+  .whobtn .wname { font-size: 1.22rem; font-weight: 700; letter-spacing: -.02em; }
+  .whobtn .wsub { font-size: .83rem; color: var(--dim); line-height: 1.45; text-wrap: balance; }
+
+  /* Zurück zur Eingangsfrage – klein und über der Überschrift. */
+  .backlink {
+    background: none; border: 0; cursor: pointer; font-family: inherit;
+    color: var(--dim); font-size: .85rem; padding: 0 0 10px; display: block;
+    transition: color var(--fast);
+  }
+  .backlink:hover { color: var(--p1); }
+
   .footlinks { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; }
   label {
     display: block; font-size: .72rem; font-weight: 600; text-transform: uppercase;
@@ -468,6 +492,10 @@
        auf einem Telefon in eine Zeile passen.                  */
     .chips { gap: 7px; }
     .chip { padding: 10px 13px; font-size: .9rem; }
+    .whobtn { padding: 20px 11px 17px; }
+    .whobtn .wicon { font-size: 2.3rem; }
+    .whobtn .wname { font-size: 1.05rem; }
+    .whobtn .wsub { font-size: .78rem; }
   }
   /* Wer Animationen abgeschaltet hat, bekommt keine. */
   @media (prefers-reduced-motion: reduce) {
@@ -481,19 +509,45 @@
 <body>
 <div class="wrap">
 
-  <!-- ============ SETUP ============ -->
-  <div class="panel" id="setup">
+  <!-- ============ WER SPIELT? ============
+       Die Eingangsfrage teilt die App in zwei Wege. Dahinter sieht
+       jeder nur noch, was ihn betrifft – Kinder keine Raumcodes und
+       keine Schwierigkeitsgrade, Erwachsene keine Klassenstufen. -->
+  <div class="panel ctr" id="welcome">
     <h1><span>Fragenfuchs</span></h1>
-    <p class="sub">Quiz für Familie, Kinder und Grundschule.</p>
+    <p class="sub">Wer spielt?</p>
+    <div class="who">
+      <button class="whobtn" id="whoKid">
+        <span class="wicon">🧒</span>
+        <span class="wname">Ein Kind</span>
+        <span class="wsub">Grundschule nach Klassenstufe oder Kinderquiz. Ohne Zeitdruck.</span>
+      </button>
+      <button class="whobtn" id="whoAdult">
+        <span class="wicon">🙋</span>
+        <span class="wname">Erwachsene</span>
+        <span class="wsub">Alle Spielarten – allein, zu sechst am Tisch oder online.</span>
+      </button>
+    </div>
+    <div class="footlinks" style="margin-top:24px">
+      <button class="linkbtn" id="wStats">📊 Statistik</button>
+    </div>
+  </div>
+
+  <!-- ============ SETUP ============ -->
+  <div class="panel hide" id="setup">
+    <button class="backlink" id="toWelcome">‹ Wer spielt?</button>
+    <h1><span>Fragenfuchs</span></h1>
+    <p class="sub" id="setupSub">Quiz für Familie, Kinder und Grundschule.</p>
 
     <div class="field">
       <div class="modes" id="modeGrid">
         <div class="mode on" data-mode="alt"><div class="mt">Abwechselnd</div></div>
         <div class="mode" data-mode="seq"><div class="mt">Nacheinander</div></div>
         <div class="mode" data-mode="solo"><div class="mt">Solo 🎯</div></div>
-        <div class="mode" data-mode="schule"><div class="mt">Grundschule 🎒</div></div>
         <div class="mode" data-mode="link"><div class="mt">Challenge</div></div>
         <div class="mode wide" data-mode="live"><div class="mt">Live online ⚡</div></div>
+        <div class="mode" data-mode="schule"><div class="mt">Grundschule 🎒</div></div>
+        <div class="mode" data-mode="kidquiz"><div class="mt">Kinderquiz 🧒</div></div>
       </div>
       <div class="hint" id="modeHint"></div>
     </div>
@@ -603,8 +657,8 @@
 
     <button class="big" id="start">Spiel starten</button>
 
-    <div class="divider"></div>
-    <div class="footlinks">
+    <div class="divider" id="setupDiv"></div>
+    <div class="footlinks" id="setupFoot">
       <button class="linkbtn" id="showStats">📊 Statistik</button>
       <button class="linkbtn" id="showRedeem">Challenge einlösen</button>
     </div>
@@ -3924,7 +3978,7 @@ const MEDAL = ["🥇","🥈","🥉","4.","5.","6."];
 const $ = id => document.getElementById(id);
 const show = id => $(id).classList.remove("hide");
 const gone = id => $(id).classList.add("hide");
-const PANELS = ["setup","fbsetup","lobby","join","invite","pass","game","share","end","vs","liveEnd","stats"];
+const PANELS = ["welcome","setup","fbsetup","lobby","join","invite","pass","game","share","end","vs","liveEnd","stats"];
 const only = id => { PANELS.forEach(p => gone(p)); show(id); };
 /* Kann der Browser vorlesen? Muss vor dem ersten updateAvail() feststehen. */
 const ttsDa = typeof window.speechSynthesis !== "undefined"
@@ -3934,6 +3988,15 @@ const shuffle = arr => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j
 let cfg = { np: 2, diff: "mix", mode: "alt", len: 10, time: 30,
             family: false, kids: [false, false, false, false, false, false], repeatWrong: true, grade: 1, speak: 0 };
 let G = null, tick = null, pending = null, lastLink = null, showCodeOnly = false;
+
+/* ================= Wer spielt? =================
+   Die Eingangsfrage wird bewusst NICHT gespeichert: Das Gerät wandert
+   zwischen Eltern und Kind hin und her, da soll jeder Start neu fragen.
+   Welche Spielarten hinter welcher Antwort stecken, steht hier.      */
+const MODI_KIND = ["schule", "kidquiz"];
+const MODI_ERW  = ["alt", "seq", "solo", "link", "live"];
+let wer = "erw";                                   /* "kind" | "erw" */
+let statsVon = "welcome";    /* wohin „Zurück“ auf der Statistikseite führt */
 
 /* ================= Link-Kodierung ================= */
 function b64e(str) {
@@ -3957,9 +4020,12 @@ function makeUrl(kind, payload) {
 }
 
 /* ================= Setup-UI ================= */
-const SOLO = () => ["link","live","solo","schule"].includes(cfg.mode);
+const SOLO = () => ["link","live","solo","schule","kidquiz"].includes(cfg.mode);
 /* Grundschul-Modus: eigener Fragentopf nach Klassenstufe, ohne Zeitdruck. */
 function schuleOn() { return cfg.mode === "schule"; }
+/* Zieht dieser Modus aus dem Kindertopf? Gilt für Grundschule
+   (Klassenstufen) und Kinderquiz (die kid-Fragen des Katalogs). */
+function kinderfragen() { return schuleOn() || cfg.mode === "kidquiz"; }
 
 function buildNames() {
   const n = SOLO() ? 1 : cfg.np;
@@ -4016,7 +4082,11 @@ const pool = (kid) => {
 /* Im Familienspiel begrenzt der kleinere Topf – sonst gehen dem
    Kind mitten im Spiel die Fragen aus.                        */
 function maxPerPlayer() {
-  if (!famOn()) return cfg.mode === "alt" ? Math.floor(pool(false).length / cfg.np) : pool(false).length;
+  /* Kinderquiz und Grundschule ziehen aus dem Kindertopf. */
+  if (!famOn()) {
+    const topf = pool(kinderfragen()).length;
+    return cfg.mode === "alt" ? Math.floor(topf / cfg.np) : topf;
+  }
   const kinder = kidCount(), erw = Math.max(0, cfg.np - kinder), grenzen = [];
   if (erw)    grenzen.push(Math.floor(pool(false).length / erw));
   if (kinder) grenzen.push(Math.floor(pool(true).length / kinder));
@@ -4305,8 +4375,8 @@ function paintStats() {
   paintHall("hallStats", false);
   paintHall("hallStatsSchule", true);
 }
-$("showStats").onclick = () => { paintStats(); only("stats"); };
-$("statBack").onclick = () => only("setup");
+$("showStats").onclick = () => { statsVon = "setup"; paintStats(); only("stats"); };
+$("statBack").onclick = () => only(statsVon);
 $("statReset").onclick = () => {
   const b = $("statReset");
   if (b.dataset.armed !== "1") {
@@ -4328,8 +4398,36 @@ const MODE_TEXT = {
   solo: "Allein spielen – dein bisher bester Lauf läuft als Schatten mit.",
   link: "Du spielst, verschickst einen Link. Der andere spielt dieselben Fragen.",
   live: "Raum öffnen, Code teilen, alle spielen gleichzeitig.",
-  schule: "Für Grundschulkinder allein – Fragen nach Klassenstufe, ganz ohne Zeitdruck."
+  schule: "Fragen genau für deine Klassenstufe – Rechnen, Sprache, Sachkunde.",
+  kidquiz: "Bunt gemischte Kinderfragen aus allen Rubriken."
 };
+
+/* ================= Wer spielt: umschalten =================
+   Setzt den Weg und sorgt dafür, dass die gemerkte Spielart dazu
+   passt. Für Kinder werden Schwierigkeit und Rubriken auf „alles“
+   gestellt – die Regler dafür sind auf ihrem Weg ausgeblendet und
+   dürfen nicht unsichtbar nachwirken.                           */
+function setzeWer(w, zeigen = true) {
+  wer = w;
+  const erlaubt = w === "kind" ? MODI_KIND : MODI_ERW;
+  if (!erlaubt.includes(cfg.mode)) cfg.mode = erlaubt[0];
+  if (w === "kind") { cfg.diff = "mix"; cfg.cats = CATS.slice(); cfg.family = false; }
+  else $("advanced").classList.add("hide");   /* beim Kind war es offen */
+  /* Nur die Kacheln des gewählten Weges zeigen. */
+  document.querySelectorAll("#modeGrid .mode").forEach(m => {
+    const dran = erlaubt.includes(m.dataset.mode);
+    m.classList.toggle("hide", !dran);
+    m.classList.toggle("on", dran && m.dataset.mode === cfg.mode);
+  });
+  $("setupSub").textContent = w === "kind"
+    ? "Such dir aus, was du üben möchtest."
+    : "Quiz für Familie, Kinder und Grundschule.";
+  buildCatChips();
+  buildNames();
+  syncChips();
+  updateAvail();
+  if (zeigen) only("setup");
+}
 
 /* ---- Einstellungen über Sitzungen hinweg merken ---- */
 const CFG_KEY = "quizduell.cfg";
@@ -4399,18 +4497,36 @@ $("sumBtn").onclick = () => {
 };
 
 function updateAvail() {
+  /* Auf dem Kinderweg bleibt nur, was ein Kind selbst entscheiden
+     soll: Klassenstufe, Name, Anzahl der Fragen. Alles andere –
+     Schwierigkeit, Rubriken, Bedenkzeit, Familienspiel, Vorlesen,
+     Lernkartei, Challenge-Einlösung – ist für Erwachsene.        */
+  const kind = wer === "kind";
+  $("sumBtn").classList.toggle("hide", kind);
+  if (kind) {
+    /* Kein Aufklapp-Knopf, aber Vorlesen bleibt sichtbar – für
+       Leseanfänger ist das die wichtigste Einstellung überhaupt. */
+    $("advanced").classList.remove("hide");
+    $("sumBtn").classList.remove("open");
+    $("redeemBox").classList.add("hide");
+  }
+  $("fLearn").classList.toggle("hide", kind);
+  $("setupFoot").classList.toggle("hide", kind);
+  $("setupDiv").classList.toggle("hide", kind);
+
   $("fPlayers").classList.toggle("hide", SOLO());
   $("lblLen").textContent = cfg.mode === "alt" || famOn() ? "Fragen pro Spieler" : "Anzahl Fragen";
-  $("start").textContent = cfg.mode === "link" ? "Challenge spielen"
+  $("start").textContent = kind ? "Los geht’s!"
+    : cfg.mode === "link" ? "Challenge spielen"
     : cfg.mode === "live" ? "Raum erstellen"
     : cfg.mode === "solo" ? "Solo starten" : "Spiel starten";
 
   /* Grundschule: Klassenwahl zeigen, Zeitlimit und die übrigen
      Fragen-Einstellungen ausblenden. */
   $("fGrade").classList.toggle("hide", !schuleOn());
-  $("fTime").classList.toggle("hide", schuleOn());
-  $("fDiff").classList.toggle("hide", schuleOn());
-  $("fCats").classList.toggle("hide", schuleOn());
+  $("fTime").classList.toggle("hide", kind);
+  $("fDiff").classList.toggle("hide", kind);
+  $("fCats").classList.toggle("hide", kind);
   if (schuleOn()) {
     [...$("cGrade").children].forEach(c =>
       c.classList.toggle("on", +c.dataset.v === +cfg.grade));
@@ -4421,7 +4537,12 @@ function updateAvail() {
   }
 
   $("fSpeak").classList.toggle("hide", !ttsDa);
+  /* Auf dem Kinderweg spricht der Hinweis das Kind an, nicht die Eltern. */
   $("speakHint").innerHTML = !ttsDa ? ""
+    : kind
+      ? (+cfg.speak === 0 ? `Du liest selbst. Wenn du magst, liest die App dir vor.`
+       : +cfg.speak === 1 ? `Tippe neben der Frage auf 🔊, dann wird sie vorgelesen.`
+       : `Jede Frage wird dir vorgelesen.`)
     : +cfg.speak === 0 ? `Aus. Für Leseanfänger lohnt sich „Automatisch“.`
     : +cfg.speak === 1 ? `Ein Lautsprecher-Knopf neben der Frage liest auf Tippen vor.`
     : `Jede Frage wird beim Erscheinen automatisch vorgelesen.`;
@@ -4481,7 +4602,7 @@ function renderHint(mp) {
      das steht auf der Statistikseite. Hier erscheint nur etwas, wenn
      es die Wahl beeinflusst.                                        */
   const fresh = famOn() ? freshCount(false) + freshCount(true)
-              : schuleOn() ? freshCount(true) : freshCount(false);
+              : kinderfragen() ? freshCount(true) : freshCount(false);
   const teile = [];
 
   /* 1. Die gewählte Einschränkung lässt weniger Fragen zu als wählbar. */
@@ -4550,11 +4671,19 @@ document.querySelectorAll(".mode").forEach(m => {
   };
 });
 
+/* ---- Eingangsfrage verdrahten ---- */
+$("whoKid").onclick   = () => setzeWer("kind");
+$("whoAdult").onclick = () => setzeWer("erw");
+$("toWelcome").onclick = () => only("welcome");
+$("wStats").onclick = () => { statsVon = "welcome"; paintStats(); only("stats"); };
+
 cfgLoad();
 syncChips();
 buildNames();
 buildCatChips();
-updateAvail();
+/* Grid und Felder auf den Standardweg einstellen, ohne die
+   Eingangsfrage zu überspringen – die bleibt das erste Bild. */
+setzeWer(MODI_KIND.includes(cfg.mode) ? "kind" : "erw", false);
 paintHalls();
 
 /* ================= Fragen ziehen ================= */
@@ -4656,8 +4785,8 @@ $("start").onclick = () => {
         je[p].forEach((qi, j) => order.push({ p, qi, nr: j + 1, pass: j === 0, rev: lastReview.has(qi) }));
     }
     qIdx = je.flat();
-  } else if (cfg.mode === "solo" || cfg.mode === "schule") {
-    qIdx = drawIdx(cfg.len, schuleOn());
+  } else if (SOLO() && cfg.mode !== "link" && cfg.mode !== "live") {
+    qIdx = drawIdx(cfg.len, kinderfragen());
     qIdx.forEach((qi, j) => order.push({ p: 0, qi, nr: j + 1, pass: false, rev: lastReview.has(qi) }));
   } else if (cfg.mode === "alt") {
     qIdx = drawIdx(cfg.len * np, false);
@@ -4670,7 +4799,7 @@ $("start").onclick = () => {
 
   G = {
     names, np, mode: cfg.mode, perPlayer: cfg.len,
-    time: schuleOn() ? 0 : cfg.time,   /* Grundschule immer ohne Zeitdruck */
+    time: kinderfragen() ? 0 : cfg.time,   /* Kinderwege immer ohne Zeitdruck */
     family: famOn(), kids: kidFlags,
     qIdx, score: Array(np).fill(0), right: Array(np).fill(0),
     res: Array.from({length: np}, () => []),
@@ -4678,7 +4807,7 @@ $("start").onclick = () => {
     streak: Array(np).fill(0), best: Array(np).fill(0), joker: Array(np).fill(true),
     cat: {}, order, i: 0, answered: false, foe: null
   };
-  if (cfg.mode === "solo" || cfg.mode === "schule") {
+  if (["solo","schule","kidquiz"].includes(cfg.mode)) {
     G.grade = schuleOn() ? +cfg.grade : null;
     G.record = bestRun(names[0], cfg.len, G.grade);
     if (G.record) G.foe = { n: "Dein Rekord", ghost: true };
@@ -5267,7 +5396,7 @@ function paintShare() {
 }
 $("shToggle").onclick = () => { showCodeOnly = !showCodeOnly; paintShare(); };
 $("shCopy").onclick = () => copyOut("shOut", "shCopy");
-$("shHome").onclick = () => { location.hash = ""; only("setup"); };
+$("shHome").onclick = () => { location.hash = ""; only("welcome"); };
 
 function copyOut(taId, btnId) {
   const ta = $(taId), b = $(btnId), old = b.textContent;
@@ -5345,7 +5474,7 @@ $("vsRevenge").onclick = () => {
   document.querySelector('.mode[data-mode="link"]').click();
   only("setup");
 };
-$("vsHome").onclick = () => { location.hash = ""; only("setup"); };
+$("vsHome").onclick = () => { location.hash = ""; only("welcome"); };
 
 $("again").onclick = () => $("start").click();
 $("menu").onclick = () => only("setup");
